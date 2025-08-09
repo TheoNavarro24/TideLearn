@@ -12,6 +12,8 @@ import { loadCourse, saveCourse } from "@/lib/courses";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportScorm12Zip, buildScormFileName } from "@/lib/scorm12";
 import JSZip from "jszip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -35,6 +37,8 @@ export default function Editor() {
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
   const [quickPickerOpen, setQuickPickerOpen] = useState(false);
+  const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
+  const [isDragOver, setIsDragOver] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
 
   const selectedLesson = useMemo(
@@ -217,9 +221,27 @@ useEffect(() => {
     toast({ title: label });
   };
 
-  // Import/Export JSON helpers
+  // Import helpers and modes
   const importInputRef = useRef<HTMLInputElement>(null);
+  const scormImportInputRef = useRef<HTMLInputElement>(null);
+
   const onImportClick = () => importInputRef.current?.click();
+  const onImportScormClick = () => scormImportInputRef.current?.click();
+
+  const applyImportedCourse = (data: { title?: string; lessons: Lesson[] }, mode: "merge" | "replace") => {
+    if (mode === "replace") {
+      setCourseTitle(data.title || "Untitled Course");
+      setLessons(data.lessons);
+      setSelectedLessonId(data.lessons[0]?.id ?? uid());
+      toast({ title: "Course imported" });
+    } else {
+      // Merge: append incoming lessons with fresh IDs to avoid collisions
+      const incoming = data.lessons.map((l) => ({ ...l, id: uid() }));
+      setLessons((prev) => [...prev, ...incoming]);
+      toast({ title: `Merged ${data.lessons.length} lessons` });
+    }
+  };
+
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -227,10 +249,8 @@ useEffect(() => {
       const text = await file.text();
       const data = JSON.parse(text);
       if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course file");
-      setCourseTitle(data.title || "Untitled Course");
-      setLessons(data.lessons);
-      setSelectedLessonId(data.lessons[0]?.id ?? uid());
-      toast({ title: "Course imported" });
+      if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
+      applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
     } catch (err) {
       toast({ title: "Import failed" });
     } finally {
@@ -238,8 +258,6 @@ useEffect(() => {
     }
   };
 
-  const scormImportInputRef = useRef<HTMLInputElement>(null);
-  const onImportScormClick = () => scormImportInputRef.current?.click();
   const handleImportScormFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -257,10 +275,8 @@ useEffect(() => {
       if (!jsonStr) throw new Error("Failed to decode data");
       const data = JSON.parse(jsonStr);
       if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course data");
-      setCourseTitle(data.title || "Untitled Course");
-      setLessons(data.lessons);
-      setSelectedLessonId(data.lessons[0]?.id ?? uid());
-      toast({ title: "Course imported from SCORM" });
+      if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
+      applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
     } catch (err) {
       toast({ title: "SCORM import failed" });
     } finally {
@@ -268,6 +284,27 @@ useEffect(() => {
     }
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+  const handleDragLeave = () => setIsDragOver(false);
+  const handleDropImport = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (/\.json$/i.test(file.name) || file.type.includes("json")) {
+      // Simulate JSON import
+      const fakeEvent = { target: { files: [file] } } as any as React.ChangeEvent<HTMLInputElement>;
+      await handleImportFile(fakeEvent);
+    } else if (/\.zip$/i.test(file.name) || file.type.includes("zip")) {
+      const fakeEvent = { target: { files: [file] } } as any as React.ChangeEvent<HTMLInputElement>;
+      await handleImportScormFile(fakeEvent);
+    } else {
+      toast({ title: "Unsupported file type" });
+    }
+  };
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify(courseData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -426,6 +463,30 @@ useEffect(() => {
                       </TabsContent>
 
                       <TabsContent value="import" className="space-y-4 mt-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">Import mode</label>
+                          <RadioGroup value={importMode} onValueChange={(v) => setImportMode(v as any)} className="mt-2 flex gap-6">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="replace" id="mode-replace" />
+                              <Label htmlFor="mode-replace">Replace current course</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="merge" id="mode-merge" />
+                              <Label htmlFor="mode-merge">Merge (append lessons)</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        <div
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDropImport}
+                          className={`rounded-md border-2 border-dashed p-6 text-center bg-muted/30 ${isDragOver ? "border-primary" : "border-muted"}`}
+                        >
+                          <p className="text-sm">Drag and drop a .json or .zip (SCORM 1.2) file here to import</p>
+                          <p className="text-xs text-muted-foreground mt-1">JSON replaces or merges the raw course. SCORM restores a package exported from this editor.</p>
+                        </div>
+
                         <div>
                           <label className="text-sm text-muted-foreground">Import JSON</label>
                           <div className="mt-2 flex flex-wrap gap-2">
