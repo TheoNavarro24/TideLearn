@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3 } from "lucide-react";
+import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
 
@@ -310,6 +310,11 @@ useEffect(() => {
           <header className="border-b bg-hero">
             <div className="container mx-auto flex items-center gap-3 py-3">
               <SidebarTrigger />
+              <a href="/courses">
+                <Button variant="secondary" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Courses
+                </Button>
+              </a>
               <h1 className="sr-only">Rapid E-learning Authoring Editor</h1>
               <Input
                 value={courseTitle}
