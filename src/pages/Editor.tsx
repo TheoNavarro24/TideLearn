@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote } from "lucide-react";
+import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3 } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
 
 // Shared types
@@ -345,6 +345,12 @@ export default function Editor() {
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => addBlock("quote" as BlockType)}>
                   <Quote className="mr-2 h-4 w-4" /> Quote
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("truefalse" as BlockType)}>
+                  <CheckSquare className="mr-2 h-4 w-4" /> True/False
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("shortanswer" as BlockType)}>
+                  <Edit3 className="mr-2 h-4 w-4" /> Short Answer
                 </Button>
                 <AddBlockMenu
                   onSelect={(t) => { addBlock(t); setQuickPickerOpen(false); }}
