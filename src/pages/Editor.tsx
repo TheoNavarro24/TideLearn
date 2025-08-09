@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Save, Share2, Trash2 } from "lucide-react";
+import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
 
 // Shared types
@@ -33,6 +34,23 @@ export default function Editor() {
     () => lessons.find(l => l.id === selectedLessonId)!,
     [lessons, selectedLessonId]
   );
+
+  // Load autosaved draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("editor:course");
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved?.lessons?.length) {
+        setCourseTitle(saved.title || "My Course");
+        setLessons(saved.lessons);
+        setSelectedLessonId(saved.lessons[0]?.id ?? defaultLesson.id);
+      }
+    } catch (e) {
+      console.warn("Failed to load autosave", e);
+    }
+  }, []);
+
 
   const addLesson = () => {
     const newLesson: Lesson = { id: uid(), title: `Lesson ${lessons.length + 1}`, blocks: [] };
@@ -65,16 +83,90 @@ export default function Editor() {
     setLessons(prev => prev.map(l => l.id === selectedLesson.id ? { ...l, blocks: l.blocks.filter(b => b.id !== blockId) } : l));
   };
 
+  const insertBlockAt = (index: number, type: BlockType) => {
+    const block = createBlock(type);
+    setLessons((prev) => prev.map((l) =>
+      l.id === selectedLesson.id
+        ? { ...l, blocks: [...l.blocks.slice(0, index), block, ...l.blocks.slice(index)] }
+        : l
+    ));
+  };
+
+  const moveBlock = (blockId: string, dir: "up" | "down") => {
+    setLessons((prev) => prev.map((l) => {
+      if (l.id !== selectedLesson.id) return l;
+      const idx = l.blocks.findIndex((b) => b.id === blockId);
+      if (idx < 0) return l;
+      const newIdx = dir === "up" ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= l.blocks.length) return l;
+      const blocks = [...l.blocks];
+      const [item] = blocks.splice(idx, 1);
+      blocks.splice(newIdx, 0, item);
+      return { ...l, blocks };
+    }));
+  };
+
+  const duplicateBlock = (blockId: string) => {
+    setLessons((prev) => prev.map((l) => {
+      if (l.id !== selectedLesson.id) return l;
+      const idx = l.blocks.findIndex((b) => b.id === blockId);
+      if (idx < 0) return l;
+      const copy = { ...(l.blocks[idx] as any), id: uid() } as Block;
+      const blocks = [...l.blocks];
+      blocks.splice(idx + 1, 0, copy);
+      return { ...l, blocks };
+    }));
+  };
+
   const courseData = { schemaVersion: 1, title: courseTitle, lessons };
   const publishUrl = useMemo(() => {
     const compressed = compressToEncodedURIComponent(JSON.stringify(courseData));
     return `${window.location.origin}/view#${compressed}`;
   }, [courseData]);
 
+  // Autosave with debounce
+  const saveTimer = useRef<number | null>(null);
+  const saveNow = () => {
+    try {
+      localStorage.setItem("editor:course", JSON.stringify(courseData));
+      toast({ title: "Saved" });
+    } catch (e) {
+      toast({ title: "Save failed" });
+    }
+  };
+  useEffect(() => {
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem("editor:course", JSON.stringify(courseData));
+      } catch {}
+    }, 500);
+    return () => {
+      if (saveTimer.current) window.clearTimeout(saveTimer.current!);
+    };
+  }, [courseTitle, lessons]);
+
   const copy = async (text: string, label = "Copied to clipboard") => {
     await navigator.clipboard.writeText(text);
     toast({ title: label });
   };
+
+  const AddBlockMenu = ({ onSelect, text = "Add block" }: { onSelect: (t: BlockType) => void; text?: string }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="ghost"><PlusCircle className="mr-2 h-4 w-4" /> {text}</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Insert</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {registry.map((spec) => (
+          <DropdownMenuItem key={spec.type} onClick={() => onSelect(spec.type)}>
+            <spec.icon className="mr-2 h-4 w-4" /> {spec.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <SidebarProvider>
@@ -160,7 +252,7 @@ export default function Editor() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-                <Button variant="outline"><Save /> Save</Button>
+                <Button variant="outline" onClick={saveNow}><Save /> Save</Button>
               </div>
             </div>
           </header>
@@ -192,16 +284,33 @@ export default function Editor() {
                 <p className="text-muted-foreground">No blocks yet. Use the buttons above to add content.</p>
               )}
 
-              {selectedLesson.blocks.map((b) => {
+              {selectedLesson.blocks.map((b, idx) => {
                 const spec = getSpec(b.type as BlockType);
                 const EditorComp = spec.Editor as any;
+                const lastIndex = selectedLesson.blocks.length - 1;
                 return (
-                  <article key={b.id} className="card-surface p-4">
-                    <EditorComp block={b as any} onChange={(updated: any) => updateBlock(b.id, () => updated as Block)} />
-                    <div className="mt-3 flex justify-end">
-                      <Button variant="ghost" onClick={() => removeBlock(b.id)}><Trash2 /> Remove block</Button>
+                  <div key={b.id} className="space-y-2">
+                    <article className="card-surface p-4">
+                      <div className="flex justify-end gap-1 mb-2">
+                        <Button size="sm" variant="ghost" onClick={() => moveBlock(b.id, "up")} disabled={idx === 0} aria-label="Move up">
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => moveBlock(b.id, "down")} disabled={idx === lastIndex} aria-label="Move down">
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => duplicateBlock(b.id)} aria-label="Duplicate">
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => removeBlock(b.id)} aria-label="Remove">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <EditorComp block={b as any} onChange={(updated: any) => updateBlock(b.id, () => updated as Block)} />
+                    </article>
+                    <div className="flex justify-center">
+                      <AddBlockMenu onSelect={(t) => insertBlockAt(idx + 1, t)} text="Add block here" />
                     </div>
-                  </article>
+                  </div>
                 );
               })}
             </section>
