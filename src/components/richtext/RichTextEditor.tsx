@@ -4,8 +4,8 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { lowlight } from "lowlight";
+
+
 import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
@@ -44,10 +44,7 @@ export function RichTextEditor({
 }) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      CodeBlockLowlight.configure({ lowlight }),
+      StarterKit,
       Underline,
       Link.configure({ openOnClick: false, autolink: true, protocols: ["http", "https", "mailto"] }),
       Placeholder.configure({ placeholder: placeholder || "Start typing..." }),
@@ -78,7 +75,7 @@ export function RichTextEditor({
       editor.commands.setContent(value, { emitUpdate: false });
     }
     if (!value && current !== "") {
-      editor.commands.clearContent({ emitUpdate: false });
+      editor.commands.clearContent(false);
     }
   }, [value, editor]);
 
