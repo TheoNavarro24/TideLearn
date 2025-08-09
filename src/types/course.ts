@@ -36,6 +36,29 @@ export type TabsBlock = {
   items: { id: string; label: string; content: string }[];
 };
 
+export type DividerBlock = { id: string; type: "divider" };
+
+export type CalloutBlock = {
+  id: string;
+  type: "callout";
+  variant: "info" | "success" | "warning" | "danger";
+  title?: string;
+  text: string;
+};
+
+export type VideoBlock = {
+  id: string;
+  type: "video";
+  url: string; // YouTube/Vimeo or direct mp4
+};
+
+export type AudioBlock = {
+  id: string;
+  type: "audio";
+  src: string; // direct audio file
+  title?: string;
+};
+
 export type Block =
   | HeadingBlock
   | TextBlock
@@ -44,7 +67,11 @@ export type Block =
   | ListBlock
   | QuoteBlock
   | AccordionBlock
-  | TabsBlock;
+  | TabsBlock
+  | DividerBlock
+  | CalloutBlock
+  | VideoBlock
+  | AudioBlock;
 
 export type Lesson = { id: string; title: string; blocks: Block[] };
 export type Course = { schemaVersion: 1; title: string; lessons: Lesson[] };
@@ -83,6 +110,10 @@ export const factories = {
       { id: uid(), label: "Tab B", content: "Content B" },
     ],
   }),
+  divider: (): DividerBlock => ({ id: uid(), type: "divider" }),
+  callout: (): CalloutBlock => ({ id: uid(), type: "callout", variant: "info", title: "Heads up", text: "Useful context goes here." }),
+  video: (): VideoBlock => ({ id: uid(), type: "video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
+  audio: (): AudioBlock => ({ id: uid(), type: "audio", src: "https://www.w3schools.com/html/horse.mp3", title: "Audio clip" }),
 } as const;
 
 export type BlockType = keyof typeof factories;

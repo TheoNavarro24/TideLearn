@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, CalloutBlock, VideoBlock, AudioBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { ImageView } from "./view/Image";
@@ -8,6 +8,10 @@ import { ListView } from "./view/List";
 import { QuoteView } from "./view/Quote";
 import { AccordionView } from "./view/Accordion";
 import { TabsView } from "./view/Tabs";
+import { DividerView } from "./view/Divider";
+import { CalloutView } from "./view/Callout";
+import { VideoView } from "./view/Video";
+import { AudioView } from "./view/Audio";
 import { HeadingForm } from "./editor/HeadingForm";
 import { TextForm } from "./editor/TextForm";
 import { ImageForm } from "./editor/ImageForm";
@@ -16,7 +20,11 @@ import { ListForm } from "./editor/ListForm";
 import { QuoteForm } from "./editor/QuoteForm";
 import { AccordionForm } from "./editor/AccordionForm";
 import { TabsForm } from "./editor/TabsForm";
-import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle } from "lucide-react";
+import { DividerForm } from "./editor/DividerForm";
+import { CalloutForm } from "./editor/CalloutForm";
+import { VideoForm } from "./editor/VideoForm";
+import { AudioForm } from "./editor/AudioForm";
+import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -78,6 +86,24 @@ export const registry: BlockSpec[] = [
     category: "Text",
   },
   {
+    type: "divider",
+    label: "Divider",
+    icon: Minus,
+    create: factories.divider,
+    Editor: DividerForm as EditorRenderer<DividerBlock>,
+    View: DividerView as ViewRenderer<DividerBlock>,
+    category: "Text",
+  },
+  {
+    type: "callout",
+    label: "Callout",
+    icon: Info,
+    create: factories.callout,
+    Editor: CalloutForm as EditorRenderer<CalloutBlock>,
+    View: CalloutView as ViewRenderer<CalloutBlock>,
+    category: "Text",
+  },
+  {
     type: "accordion",
     label: "Accordion",
     icon: SquareStack,
@@ -94,6 +120,24 @@ export const registry: BlockSpec[] = [
     Editor: TabsForm as EditorRenderer<TabsBlock>,
     View: TabsView as ViewRenderer<TabsBlock>,
     category: "Interactive",
+  },
+  {
+    type: "video",
+    label: "Video",
+    icon: Video,
+    create: factories.video,
+    Editor: VideoForm as EditorRenderer<VideoBlock>,
+    View: VideoView as ViewRenderer<VideoBlock>,
+    category: "Media",
+  },
+  {
+    type: "audio",
+    label: "Audio",
+    icon: AudioLines,
+    create: factories.audio,
+    Editor: AudioForm as EditorRenderer<AudioBlock>,
+    View: AudioView as ViewRenderer<AudioBlock>,
+    category: "Media",
   },
   {
     type: "quiz",
