@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, CalloutBlock, VideoBlock, AudioBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { ImageView } from "./view/Image";
@@ -12,6 +12,8 @@ import { DividerView } from "./view/Divider";
 import { CalloutView } from "./view/Callout";
 import { VideoView } from "./view/Video";
 import { AudioView } from "./view/Audio";
+import { TrueFalseView } from "./view/TrueFalse";
+import { ShortAnswerView } from "./view/ShortAnswer";
 import { HeadingForm } from "./editor/HeadingForm";
 import { TextForm } from "./editor/TextForm";
 import { ImageForm } from "./editor/ImageForm";
@@ -24,7 +26,9 @@ import { DividerForm } from "./editor/DividerForm";
 import { CalloutForm } from "./editor/CalloutForm";
 import { VideoForm } from "./editor/VideoForm";
 import { AudioForm } from "./editor/AudioForm";
-import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines } from "lucide-react";
+import { TrueFalseForm } from "./editor/TrueFalseForm";
+import { ShortAnswerForm } from "./editor/ShortAnswerForm";
+import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3 } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -138,6 +142,24 @@ export const registry: BlockSpec[] = [
     Editor: AudioForm as EditorRenderer<AudioBlock>,
     View: AudioView as ViewRenderer<AudioBlock>,
     category: "Media",
+  },
+  {
+    type: "truefalse",
+    label: "True / False",
+    icon: CheckSquare,
+    create: factories.truefalse,
+    Editor: TrueFalseForm as EditorRenderer<TrueFalseBlock>,
+    View: TrueFalseView as ViewRenderer<TrueFalseBlock>,
+    category: "Knowledge",
+  },
+  {
+    type: "shortanswer",
+    label: "Short Answer",
+    icon: Edit3,
+    create: factories.shortanswer,
+    Editor: ShortAnswerForm as EditorRenderer<ShortAnswerBlock>,
+    View: ShortAnswerView as ViewRenderer<ShortAnswerBlock>,
+    category: "Knowledge",
   },
   {
     type: "quiz",

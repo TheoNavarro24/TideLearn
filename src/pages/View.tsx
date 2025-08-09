@@ -20,7 +20,9 @@ export default function View() {
   }, []);
 
   const flatNav = useMemo(() => course?.lessons.map((l) => ({ id: l.id, title: l.title })) ?? [], [course]);
-  const gateEnabled = useMemo(() => new URLSearchParams(window.location.search).get("gate") === "1", []);
+  const gateParam = useMemo(() => new URLSearchParams(window.location.search).get("gate"), []);
+  const gateEnabled = useMemo(() => gateParam === "1" || gateParam === "quiz", [gateParam]);
+  const gateQuiz = useMemo(() => gateParam === "quiz", [gateParam]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
@@ -32,6 +34,29 @@ export default function View() {
       setUnlocked(new Set(course.lessons.map((l) => l.id)));
     }
   }, [course, gateEnabled]);
+
+  const [answers, setAnswers] = useState<Record<string, boolean>>({});
+  const storageKey = useMemo(() => "quizAnswers:" + window.location.hash.slice(1), []);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) setAnswers(JSON.parse(raw));
+    } catch {}
+  }, [storageKey]);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const anyE = e as CustomEvent<{ blockId: string; correct: boolean }>;
+      const { blockId, correct } = anyE.detail || ({} as any);
+      if (!blockId) return;
+      setAnswers((prev) => {
+        const next = { ...prev, [blockId]: !!correct };
+        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        return next;
+      });
+    };
+    window.addEventListener("quiz:answered", handler as EventListener);
+    return () => window.removeEventListener("quiz:answered", handler as EventListener);
+  }, [storageKey]);
 
   // Scrollspy for active section
   useEffect(() => {
@@ -110,6 +135,10 @@ export default function View() {
         {course.lessons.map((l, idx) => {
           const isUnlocked = unlocked.has(l.id);
           const nextId = course.lessons[idx + 1]?.id as string | undefined;
+          const quizIds = l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id);
+          const totalChecks = quizIds.length;
+          const correctChecks = quizIds.filter((id: string) => answers[id]).length;
+          
           return (
             <section key={l.id} id={l.id} className="scroll-mt-24">
               <h2 className="text-2xl font-semibold mb-4">{l.title}</h2>
@@ -131,10 +160,20 @@ export default function View() {
                     })}
                   </div>
                   {gateEnabled && nextId && !unlocked.has(nextId) && (
-                    <div className="mt-4 flex justify-end">
-                      <Button onClick={() => setUnlocked((prev) => { const n = new Set(prev); n.add(nextId); return n; })}>
-                        Continue
-                      </Button>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      {gateQuiz && (
+                        <p className="text-sm text-muted-foreground">
+                          Checks: {correctChecks}/{totalChecks} correct {totalChecks > 0 && correctChecks < totalChecks ? "— answer all to continue" : ""}
+                        </p>
+                      )}
+                      <div className="flex justify-end">
+                        <Button
+                          disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
+                          onClick={() => setUnlocked((prev) => { const n = new Set(prev); n.add(nextId); return n; })}
+                        >
+                          Continue
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>

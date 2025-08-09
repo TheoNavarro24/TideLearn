@@ -26,7 +26,17 @@ export function QuizView({ block }: { block: QuizBlock }) {
         })}
       </ul>
       <div className="mt-3 flex gap-2">
-        <Button size="sm" onClick={() => setRevealed(true)} disabled={revealed || selected == null}>Check</Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            setRevealed(true);
+            const ok = selected !== null && selected === block.correctIndex;
+            window.dispatchEvent(new CustomEvent("quiz:answered", { detail: { blockId: block.id, correct: ok } }));
+          }}
+          disabled={revealed || selected == null}
+        >
+          Check
+        </Button>
         <Button size="sm" variant="secondary" onClick={() => { setSelected(null); setRevealed(false); }}>Reset</Button>
       </div>
     </div>

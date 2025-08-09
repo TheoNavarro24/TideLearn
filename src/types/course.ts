@@ -59,11 +59,32 @@ export type AudioBlock = {
   title?: string;
 };
 
+export type TrueFalseBlock = {
+  id: string;
+  type: "truefalse";
+  question: string;
+  correct: boolean;
+  feedbackCorrect?: string;
+  feedbackIncorrect?: string;
+};
+
+export type ShortAnswerBlock = {
+  id: string;
+  type: "shortanswer";
+  question: string;
+  answer: string;
+  acceptable?: string[];
+  caseSensitive?: boolean;
+  trimWhitespace?: boolean;
+};
+
 export type Block =
   | HeadingBlock
   | TextBlock
   | ImageBlock
   | QuizBlock
+  | TrueFalseBlock
+  | ShortAnswerBlock
   | ListBlock
   | QuoteBlock
   | AccordionBlock
@@ -114,6 +135,8 @@ export const factories = {
   callout: (): CalloutBlock => ({ id: uid(), type: "callout", variant: "info", title: "Heads up", text: "Useful context goes here." }),
   video: (): VideoBlock => ({ id: uid(), type: "video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
   audio: (): AudioBlock => ({ id: uid(), type: "audio", src: "https://www.w3schools.com/html/horse.mp3", title: "Audio clip" }),
+  truefalse: (): TrueFalseBlock => ({ id: uid(), type: "truefalse", question: "Statement goes here.", correct: true, feedbackCorrect: "Correct!", feedbackIncorrect: "Not quite." }),
+  shortanswer: (): ShortAnswerBlock => ({ id: uid(), type: "shortanswer", question: "Your question?", answer: "answer", acceptable: [], caseSensitive: false, trimWhitespace: true }),
 } as const;
 
 export type BlockType = keyof typeof factories;
