@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { getSpec } from "@/components/blocks/registry";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 import type { Block, Lesson, Course } from "@/types/course";
 
@@ -225,6 +226,15 @@ export default function View() {
               </Button>
             </div>
           </div>
+          {isPaged && currentLesson && (
+            <div className="mt-4">
+              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Lesson progress</span>
+                <span aria-live="polite">{Math.round(lessonProgress)}%</span>
+              </div>
+              <Progress value={lessonProgress} aria-label={`Lesson progress ${Math.round(lessonProgress)} percent`} />
+            </div>
+          )}
           {flatNav.length > 1 && !isPaged && (
             <nav className="mt-3 text-sm text-muted-foreground">
               <ul className="flex flex-wrap gap-3">
@@ -253,7 +263,7 @@ export default function View() {
       <main className="container mx-auto py-8">
         {isPaged ? (
           currentLesson ? (
-            <section key={currentLesson.id} className="space-y-6">
+            <section key={currentLesson.id} ref={lessonRef as any} className="space-y-6">
               <h2 className="text-2xl font-semibold mb-4">{currentLesson.title}</h2>
               {currentLesson.blocks.map((b) => {
                 const spec = getSpec((b as any).type);
