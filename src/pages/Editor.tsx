@@ -9,6 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { exportScorm12Zip, buildScormFileName } from "@/lib/scorm12";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -247,6 +249,22 @@ useEffect(() => {
     URL.revokeObjectURL(url);
   };
 
+  const exportSCORM12 = async () => {
+    try {
+      const blob = await exportScorm12Zip(courseData as any, publishUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = buildScormFileName(courseTitle || "course");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "SCORM 1.2 package exported" });
+    } catch (e) {
+      toast({ title: "Export failed" });
+    }
+  };
   const AddBlockMenu = ({
     onSelect,
     text = "Add block",
@@ -329,43 +347,64 @@ useEffect(() => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Publish & Embed</DialogTitle>
+                      <DialogTitle>Share & Export</DialogTitle>
                       <DialogDescription>
-                        Use this URL in Google Sites (Insert → Embed → By URL), or use the iframe snippet below.
+                        Share via URL or iframe, export packages, or import a course.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      {hashSize > 100000 && (
-                        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm">
-                          Large course detected: link size is {hashSize.toLocaleString()} characters. Consider Export JSON for portability.
+                    <Tabs defaultValue="share" className="mt-2">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="share">Share</TabsTrigger>
+                        <TabsTrigger value="export">Export</TabsTrigger>
+                        <TabsTrigger value="import">Import</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="share" className="space-y-4 mt-4">
+                        {hashSize > 100000 && (
+                          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm">
+                            Large course detected: link size is {hashSize.toLocaleString()} characters. Consider Export JSON for portability.
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-sm text-muted-foreground">Shareable URL</label>
+                          <Input value={publishUrl} readOnly />
+                          <div className="mt-2">
+                            <Button variant="secondary" onClick={() => copy(publishUrl, "URL copied!")}>Copy URL</Button>
+                          </div>
                         </div>
-                      )}
-                      <div>
-                        <label className="text-sm text-muted-foreground">Shareable URL</label>
-                        <Input value={publishUrl} readOnly />
-                        <div className="mt-2">
-                          <Button variant="secondary" onClick={() => copy(publishUrl, "URL copied!")}>Copy URL</Button>
+                        <div>
+                          <label className="text-sm text-muted-foreground">Iframe embed</label>
+                          <Textarea
+                            readOnly
+                            value={`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`}
+                          />
+                          <div className="mt-2">
+                            <Button variant="secondary" onClick={() => copy(`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">Iframe embed</label>
-                        <Textarea
-                          readOnly
-                          value={`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`}
-                        />
-                        <div className="mt-2">
-                          <Button variant="secondary" onClick={() => copy(`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
+                      </TabsContent>
+
+                      <TabsContent value="export" className="space-y-4 mt-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">Export options</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button variant="secondary" onClick={exportJSON}>Export JSON</Button>
+                            <Button variant="secondary" onClick={exportSCORM12}>Export SCORM 1.2</Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">SCORM export wraps your course in a SCORM 1.2-compliant package.</p>
                         </div>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">Portability</label>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <Button variant="secondary" onClick={exportJSON}>Export JSON</Button>
-                          <Button variant="outline" onClick={onImportClick}>Import JSON</Button>
-                          <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
+                      </TabsContent>
+
+                      <TabsContent value="import" className="space-y-4 mt-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">Import JSON</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button variant="outline" onClick={onImportClick}>Choose file</Button>
+                            <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
                     <DialogFooter>
                       <Button onClick={() => window.open(publishUrl, "_blank")}>Preview</Button>
                     </DialogFooter>
