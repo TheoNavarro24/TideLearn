@@ -7,10 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
-import { compressToEncodedURIComponent } from "lz-string";
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportScorm12Zip, buildScormFileName } from "@/lib/scorm12";
+import JSZip from "jszip";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -237,6 +238,36 @@ useEffect(() => {
     }
   };
 
+  const scormImportInputRef = useRef<HTMLInputElement>(null);
+  const onImportScormClick = () => scormImportInputRef.current?.click();
+  const handleImportScormFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const indexEntry = zip.file(/index\.html$/i)?.[0] || zip.file(/\.html$/i)?.[0];
+      if (!indexEntry) throw new Error("index.html not found");
+      const html = await indexEntry.async("text");
+      const m = html.match(/href=\"([^\"]*\/view#[^\"]+)\"/i) || html.match(/src=\"([^\"]*\/view#[^\"]+)\"/i);
+      if (!m) throw new Error("Course URL not found");
+      const url = new URL(m[1], window.location.origin);
+      const hash = url.hash?.slice(1);
+      if (!hash) throw new Error("Missing data hash");
+      const jsonStr = decompressFromEncodedURIComponent(hash || "");
+      if (!jsonStr) throw new Error("Failed to decode data");
+      const data = JSON.parse(jsonStr);
+      if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course data");
+      setCourseTitle(data.title || "Untitled Course");
+      setLessons(data.lessons);
+      setSelectedLessonId(data.lessons[0]?.id ?? uid());
+      toast({ title: "Course imported from SCORM" });
+    } catch (err) {
+      toast({ title: "SCORM import failed" });
+    } finally {
+      if (scormImportInputRef.current) scormImportInputRef.current.value = "";
+    }
+  };
+
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify(courseData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -248,7 +279,6 @@ useEffect(() => {
     a.remove();
     URL.revokeObjectURL(url);
   };
-
   const exportSCORM12 = async () => {
     try {
       const blob = await exportScorm12Zip(courseData as any, publishUrl);
@@ -402,6 +432,14 @@ useEffect(() => {
                             <Button variant="outline" onClick={onImportClick}>Choose file</Button>
                             <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
                           </div>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">Import SCORM 1.2 (.zip)</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button variant="outline" onClick={onImportScormClick}>Choose SCORM file</Button>
+                            <input ref={scormImportInputRef} type="file" accept=".zip,application/zip" className="hidden" onChange={handleImportScormFile} />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">Imports courses previously exported as SCORM from this editor.</p>
                         </div>
                       </TabsContent>
                     </Tabs>
