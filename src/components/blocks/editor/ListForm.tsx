@@ -2,6 +2,7 @@ import { ListBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/richtext/RichTextEditor";
 
 export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: ListBlock) => void }) {
   const updateItem = (idx: number, val: string) => {
@@ -30,8 +31,8 @@ export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: 
         <label className="text-sm text-muted-foreground">Items</label>
         <div className="space-y-2">
           {block.items.map((it, idx) => (
-            <div key={idx} className="flex gap-2">
-              <Input value={it} onChange={(e) => updateItem(idx, e.target.value)} />
+            <div key={idx} className="space-y-2">
+              <RichTextEditor value={it} onChange={(html) => updateItem(idx, html)} placeholder={`Item ${idx + 1}`} />
               <Button variant="ghost" onClick={() => removeItem(idx)}>Remove</Button>
             </div>
           ))}

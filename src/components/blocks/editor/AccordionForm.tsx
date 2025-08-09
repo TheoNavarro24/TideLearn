@@ -1,6 +1,7 @@
 import { AccordionBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/richtext/RichTextEditor";
 
 export function AccordionForm({ block, onChange }: { block: AccordionBlock; onChange: (b: AccordionBlock) => void }) {
   const updateItem = (idx: number, patch: Partial<AccordionBlock["items"][number]>) => {
@@ -20,7 +21,7 @@ export function AccordionForm({ block, onChange }: { block: AccordionBlock; onCh
           </div>
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">Content</label>
-            <Input value={it.content} onChange={(e) => updateItem(idx, { content: e.target.value })} />
+            <RichTextEditor value={it.content} onChange={(html) => updateItem(idx, { content: html })} placeholder="Section content..." />
           </div>
           <div className="sm:col-span-2">
             <Button variant="ghost" onClick={() => removeItem(idx)}>Remove section</Button>

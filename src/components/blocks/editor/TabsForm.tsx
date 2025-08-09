@@ -1,6 +1,7 @@
 import { TabsBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { RichTextEditor } from "@/components/richtext/RichTextEditor";
 
 export function TabsForm({ block, onChange }: { block: TabsBlock; onChange: (b: TabsBlock) => void }) {
   const updateItem = (idx: number, patch: Partial<TabsBlock["items"][number]>) => {
@@ -20,7 +21,7 @@ export function TabsForm({ block, onChange }: { block: TabsBlock; onChange: (b: 
           </div>
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">Content</label>
-            <Input value={it.content} onChange={(e) => updateItem(idx, { content: e.target.value })} />
+            <RichTextEditor value={it.content} onChange={(html) => updateItem(idx, { content: html })} placeholder="Tab content..." />
           </div>
           <div className="sm:col-span-2">
             <Button variant="ghost" onClick={() => removeItem(idx)}>Remove tab</Button>
