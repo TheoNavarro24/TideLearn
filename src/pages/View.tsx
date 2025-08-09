@@ -46,6 +46,7 @@ export default function View() {
     }
   }, [course, gateEnabled, paged, params]);
 
+  const currentHash = useMemo(() => window.location.hash.slice(1), []);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const storageKey = useMemo(() => "quizAnswers:" + window.location.hash.slice(1), []);
   useEffect(() => {
@@ -150,7 +151,15 @@ export default function View() {
             <nav className="mt-3 text-sm text-muted-foreground">
               <ul className="flex flex-wrap gap-3">
                 {flatNav.map((l) => (
-                  <li key={l.id}><a className={l.id === activeId ? "text-primary font-medium" : "hover:text-foreground"} href={`#${l.id}`}>{l.title}</a></li>
+                  <li key={l.id}>
+                    <a
+                      className={l.id === activeId ? "text-primary font-medium" : "hover:text-foreground"}
+                      href={`#${currentHash}`}
+                      onClick={(e) => { e.preventDefault(); document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+                    >
+                      {l.title}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </nav>

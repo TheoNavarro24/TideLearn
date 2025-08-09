@@ -16,7 +16,7 @@ const Index = () => {
           <h1 className="text-4xl font-bold leading-tight mb-4">Rapid E-learning Authoring Tool</h1>
           <p className="text-lg text-muted-foreground mb-6">Create responsive, beautiful courses in minutes. Publish a shareable URL you can embed on Google Sites.</p>
           <div className="flex gap-3">
-            <a href="/editor"><Button variant="hero" className="animate-float">Start authoring</Button></a>
+            <a href="/courses"><Button variant="hero" className="animate-float">Start authoring</Button></a>
             <a href="#features"><Button variant="outline">See features</Button></a>
           </div>
         </section>

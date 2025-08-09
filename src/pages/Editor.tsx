@@ -19,10 +19,11 @@ import { registry, createBlock, getSpec } from "@/components/blocks/registry";
 
 const defaultLesson: Lesson = {
   id: uid(),
-  title: "Lesson 1",
+  title: "Welcome",
   blocks: [
-    { id: uid(), type: "heading", text: "Welcome" },
-    { id: uid(), type: "text", text: "Start writing your lesson content here." },
+    { id: uid(), type: "heading", text: "Welcome to My Course" },
+    { id: uid(), type: "text", text: "This welcome page introduces your course. Use the Table of Contents below to jump to any lesson." },
+    { id: uid(), type: "toc" as any },
   ],
 };
 
@@ -62,6 +63,29 @@ export default function Editor() {
       console.warn("Failed to load autosave", e);
     }
   }, [courseId]);
+// Keep the welcome heading in sync with the course title
+useEffect(() => {
+  setLessons((prev) => {
+    if (!prev.length) return prev;
+    const first = prev[0];
+    const firstBlock: any = first.blocks[0];
+    let changed = false;
+    const nextFirst: Lesson = { ...first };
+    if (first.title !== "Welcome") {
+      nextFirst.title = "Welcome";
+      changed = true;
+    }
+    if (firstBlock && firstBlock.type === "heading") {
+      const expected = `Welcome to ${courseTitle}`;
+      if (firstBlock.text !== expected) {
+        nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
+        changed = true;
+      }
+    }
+    if (changed) return [nextFirst, ...prev.slice(1)];
+    return prev;
+  });
+}, [courseTitle]);
 
 
   const addLesson = () => {
