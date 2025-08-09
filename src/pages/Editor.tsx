@@ -120,10 +120,9 @@ export default function Editor() {
   };
 
   const courseData = { schemaVersion: 1, title: courseTitle, lessons };
-  const publishUrl = useMemo(() => {
-    const compressed = compressToEncodedURIComponent(JSON.stringify(courseData));
-    return `${window.location.origin}/view#${compressed}`;
-  }, [courseData]);
+  const compressedHash = useMemo(() => compressToEncodedURIComponent(JSON.stringify(courseData)), [courseData]);
+  const publishUrl = useMemo(() => `${window.location.origin}/view#${compressedHash}`,[compressedHash]);
+  const hashSize = compressedHash.length;
 
   // Autosave with debounce
   const saveTimer = useRef<number | null>(null);
@@ -170,6 +169,39 @@ export default function Editor() {
   const copy = async (text: string, label = "Copied to clipboard") => {
     await navigator.clipboard.writeText(text);
     toast({ title: label });
+  };
+
+  // Import/Export JSON helpers
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const onImportClick = () => importInputRef.current?.click();
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course file");
+      setCourseTitle(data.title || "Untitled Course");
+      setLessons(data.lessons);
+      setSelectedLessonId(data.lessons[0]?.id ?? uid());
+      toast({ title: "Course imported" });
+    } catch (err) {
+      toast({ title: "Import failed" });
+    } finally {
+      if (importInputRef.current) importInputRef.current.value = "";
+    }
+  };
+
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(courseData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${courseTitle || "course"}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const AddBlockMenu = ({
@@ -254,7 +286,12 @@ export default function Editor() {
                         Use this URL in Google Sites (Insert → Embed → By URL), or use the iframe snippet below.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
+                      {hashSize > 100000 && (
+                        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm">
+                          Large course detected: link size is {hashSize.toLocaleString()} characters. Consider Export JSON for portability.
+                        </div>
+                      )}
                       <div>
                         <label className="text-sm text-muted-foreground">Shareable URL</label>
                         <Input value={publishUrl} readOnly />
@@ -266,10 +303,18 @@ export default function Editor() {
                         <label className="text-sm text-muted-foreground">Iframe embed</label>
                         <Textarea
                           readOnly
-                          value={`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`}
+                          value={`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`}
                         />
                         <div className="mt-2">
                           <Button variant="secondary" onClick={() => copy(`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Portability</label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Button variant="secondary" onClick={exportJSON}>Export JSON</Button>
+                          <Button variant="outline" onClick={onImportClick}>Import JSON</Button>
+                          <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
                         </div>
                       </div>
                     </div>
