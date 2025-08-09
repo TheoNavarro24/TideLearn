@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle } from "lucide-react";
+import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
 
 // Shared types
@@ -29,6 +29,7 @@ export default function Editor() {
   const [courseTitle, setCourseTitle] = useState("My Course");
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
+  const [quickPickerOpen, setQuickPickerOpen] = useState(false);
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
@@ -146,17 +147,42 @@ export default function Editor() {
     };
   }, [courseTitle, lessons]);
 
+  // Keyboard shortcut to open full block picker
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        const target = e.target as HTMLElement | null;
+        const isTyping =
+          !!target &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            (target as any).isContentEditable);
+        if (!isTyping) {
+          e.preventDefault();
+          setQuickPickerOpen(true);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const copy = async (text: string, label = "Copied to clipboard") => {
     await navigator.clipboard.writeText(text);
     toast({ title: label });
   };
 
-  const AddBlockMenu = ({ onSelect, text = "Add block" }: { onSelect: (t: BlockType) => void; text?: string }) => (
-    <DropdownMenu>
+  const AddBlockMenu = ({
+    onSelect,
+    text = "Add block",
+    open,
+    onOpenChange,
+  }: { onSelect: (t: BlockType) => void; text?: string; open?: boolean; onOpenChange?: (o: boolean) => void }) => (
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button size="sm" variant="ghost"><PlusCircle className="mr-2 h-4 w-4" /> {text}</Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent className="z-50 w-56">
         <DropdownMenuLabel>Insert</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {registry.map((spec) => (
@@ -258,13 +284,30 @@ export default function Editor() {
           </header>
 
           <main className="container mx-auto py-6">
-            <section className="mb-6">
-              <div className="flex flex-wrap gap-2">
-                {registry.map((spec) => (
-                  <Button key={spec.type} variant="secondary" onClick={() => addBlock(spec.type)}>
-                    <spec.icon className="mr-2 h-4 w-4" /> Add {spec.label}
-                  </Button>
-                ))}
+            <section className="sticky top-0 z-50 border-b bg-background/95">
+              <div className="flex items-center gap-2 py-2">
+                <Button size="sm" variant="secondary" onClick={() => addBlock("heading" as BlockType)}>
+                  <FileText className="mr-2 h-4 w-4" /> Heading
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("text" as BlockType)}>
+                  <Type className="mr-2 h-4 w-4" /> Text
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("image" as BlockType)}>
+                  <ImageIcon className="mr-2 h-4 w-4" /> Image
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("list" as BlockType)}>
+                  <ListIcon className="mr-2 h-4 w-4" /> List
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => addBlock("quote" as BlockType)}>
+                  <Quote className="mr-2 h-4 w-4" /> Quote
+                </Button>
+                <AddBlockMenu
+                  onSelect={(t) => { addBlock(t); setQuickPickerOpen(false); }}
+                  text="More"
+                  open={quickPickerOpen}
+                  onOpenChange={setQuickPickerOpen}
+                />
+                <span className="text-xs text-muted-foreground hidden sm:inline-block">Press “/” for more</span>
               </div>
             </section>
 
