@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
+import { getSpec } from "@/components/blocks/registry";
 
-type Block =
-  | { id: string; type: "heading"; text: string }
-  | { id: string; type: "text"; text: string }
-  | { id: string; type: "image"; src: string; alt: string }
-  | { id: string; type: "quiz"; question: string; options: string[]; correctIndex: number };
-
-interface Lesson { id: string; title: string; blocks: Block[] }
-interface Course { title: string; lessons: Lesson[] }
+import type { Block, Lesson, Course } from "@/types/course";
 
 export default function View() {
   const [course, setCourse] = useState<Course | null>(null);
@@ -59,34 +53,15 @@ export default function View() {
           <section key={l.id} id={l.id} className="scroll-mt-24">
             <h2 className="text-2xl font-semibold mb-4">{l.title}</h2>
             <div className="space-y-6">
-              {l.blocks.map((b) => (
-                <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
-                  {b.type === "heading" && (
-                    <h3 className="text-xl font-semibold">{b.text}</h3>
-                  )}
-                  {b.type === "text" && (
-                    <p className="text-base leading-7 text-foreground/90">{b.text}</p>
-                  )}
-                  {b.type === "image" && (
-                    <figure>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={(b as any).src} alt={(b as any).alt || "Course image"} loading="lazy" className="w-full rounded-lg border" />
-                      {(b as any).alt && <figcaption className="text-sm text-muted-foreground mt-2">{(b as any).alt}</figcaption>}
-                    </figure>
-                  )}
-                  {b.type === "quiz" && (
-                    <div className="card-surface p-4">
-                      <p className="font-medium mb-2">{(b as any).question}</p>
-                      <ul className="grid gap-2">
-                        {(b as any).options.map((opt: string, i: number) => (
-                          <li key={i} className={`rounded-md border p-2 ${i === (b as any).correctIndex ? 'bg-secondary' : ''}`}>{opt}</li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-muted-foreground mt-2">Correct answer: option {(b as any).correctIndex + 1}</p>
-                    </div>
-                  )}
-                </article>
-              ))}
+              {l.blocks.map((b) => {
+                const spec = getSpec(b.type as any);
+                const ViewComp = spec.View as any;
+                return (
+                  <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
+                    <ViewComp block={b as any} />
+                  </article>
+                );
+              })}
             </div>
           </section>
         ))}
