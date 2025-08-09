@@ -24,12 +24,13 @@ export default function View() {
   const gateParam = useMemo(() => params.get("gate"), [params]);
   const gateEnabled = useMemo(() => gateParam === "1" || gateParam === "quiz", [gateParam]);
   const gateQuiz = useMemo(() => gateParam === "quiz", [gateParam]);
-  const paged = useMemo(() => {
+  const initialPaged = useMemo(() => {
     const p = params.get("paged");
     // Default to paged mode unless explicitly disabled (?paged=0)
     if (p === "0") return false;
     return true;
   }, [params]);
+  const [isPaged, setIsPaged] = useState<boolean>(initialPaged);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
@@ -41,7 +42,7 @@ export default function View() {
     } else {
       setUnlocked(new Set(course.lessons.map((l) => l.id)));
     }
-    if (paged) {
+    if (isPaged) {
       const paramLesson = params.get("lesson");
       const first = course.lessons[0]?.id ?? null;
       const target = course.lessons.some((l)=>l.id===paramLesson) ? (paramLesson as string) : first;
@@ -49,7 +50,7 @@ export default function View() {
       const url = new URL(window.location.href);
       if (target) { url.searchParams.set("lesson", target); url.searchParams.set("paged","1"); history.replaceState(null, "", url.toString()); }
     }
-  }, [course, gateEnabled, paged, params]);
+  }, [course, gateEnabled, isPaged, params]);
 
   const currentHash = useMemo(() => window.location.hash.slice(1), []);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
@@ -117,6 +118,43 @@ export default function View() {
     };
   }, []);
 
+  // Per-lesson progress tracking in paged mode
+  const lessonRef = useRef<HTMLElement | null>(null);
+  const [lessonProgress, setLessonProgress] = useState(0);
+  useEffect(() => {
+    if (!isPaged) return;
+    const onScroll = () => {
+      const el = lessonRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const height = el.scrollHeight;
+      const total = Math.max(height - window.innerHeight, 0);
+      const scrolled = Math.min(Math.max(window.scrollY - top, 0), total);
+      const pct = total > 0 ? (scrolled / total) * 100 : 0;
+      setLessonProgress(Math.max(0, Math.min(100, pct)));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isPaged, currentLessonId]);
+
+  // Arrow key navigation in paged mode
+  useEffect(() => {
+    if (!isPaged) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag && ["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); go("prev"); }
+      if (e.key === "ArrowRight") { e.preventDefault(); go("next"); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isPaged, currentLessonId, course]);
+
   if (!course) {
     return (
       <main className="min-h-screen container mx-auto flex items-center justify-center">
@@ -151,8 +189,43 @@ export default function View() {
     <div>
       <header className="border-b bg-hero">
         <div className="container mx-auto py-8">
-          <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
-          {flatNav.length > 1 && !paged && (
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
+            <div role="group" aria-label="View mode" className="inline-flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={isPaged ? "default" : "secondary"}
+                aria-pressed={isPaged}
+                onClick={() => {
+                  if (isPaged) return;
+                  setIsPaged(true);
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("paged", "1");
+                  const target = currentLessonId ?? course.lessons[0]?.id ?? "";
+                  if (target) url.searchParams.set("lesson", target);
+                  history.replaceState(null, "", url.toString());
+                }}
+              >
+                Paged
+              </Button>
+              <Button
+                size="sm"
+                variant={!isPaged ? "default" : "secondary"}
+                aria-pressed={!isPaged}
+                onClick={() => {
+                  if (!isPaged) return;
+                  setIsPaged(false);
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("paged", "0");
+                  url.searchParams.delete("lesson");
+                  history.replaceState(null, "", url.toString());
+                }}
+              >
+                View All
+              </Button>
+            </div>
+          </div>
+          {flatNav.length > 1 && !isPaged && (
             <nav className="mt-3 text-sm text-muted-foreground">
               <ul className="flex flex-wrap gap-3">
                 {flatNav.map((l) => (
@@ -169,7 +242,7 @@ export default function View() {
               </ul>
             </nav>
           )}
-          {!paged && (
+          {!isPaged && (
             <div className="mt-4 h-1 w-full rounded bg-muted">
               <div className="h-1 rounded bg-primary" style={{ width: `${progress}%` }} />
             </div>
@@ -178,7 +251,7 @@ export default function View() {
       </header>
 
       <main className="container mx-auto py-8">
-        {paged ? (
+        {isPaged ? (
           currentLesson ? (
             <section key={currentLesson.id} className="space-y-6">
               <h2 className="text-2xl font-semibold mb-4">{currentLesson.title}</h2>

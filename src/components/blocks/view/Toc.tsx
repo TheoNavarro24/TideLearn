@@ -4,6 +4,7 @@ import type { Course, TocBlock } from "@/types/course";
 
 export function TocView({ block }: { block: TocBlock }) {
   const [course, setCourse] = useState<Course | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     try {
       const hash = window.location.hash.slice(1);
