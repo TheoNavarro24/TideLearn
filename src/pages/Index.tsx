@@ -7,7 +7,7 @@ const Index = () => {
       <header className="container mx-auto py-6 flex items-center justify-between">
         <a href="/" className="text-lg font-semibold text-gradient">Rise-like Builder</a>
         <nav className="text-sm">
-          <a href="/editor" className="hover:underline">Open Editor</a>
+          <a href="/courses" className="hover:underline">Course Manager</a>
         </nav>
       </header>
 

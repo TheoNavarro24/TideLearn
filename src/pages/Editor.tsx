@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { toast } from "@/hooks/use-toast";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3 } from "lucide-react";
 import { compressToEncodedURIComponent } from "lz-string";
+import { loadCourse, saveCourse } from "@/lib/courses";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -30,15 +31,25 @@ export default function Editor() {
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
   const [quickPickerOpen, setQuickPickerOpen] = useState(false);
+  const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
     [lessons, selectedLessonId]
   );
 
-  // Load autosaved draft on mount
+  // Load course by id if provided, else legacy autosave
   useEffect(() => {
     try {
+      if (courseId) {
+        const loaded = loadCourse(courseId);
+        if (loaded?.lessons?.length) {
+          setCourseTitle(loaded.title || "My Course");
+          setLessons(loaded.lessons);
+          setSelectedLessonId(loaded.lessons[0]?.id ?? defaultLesson.id);
+        }
+        return;
+      }
       const raw = localStorage.getItem("editor:course");
       if (!raw) return;
       const saved = JSON.parse(raw);
@@ -50,7 +61,7 @@ export default function Editor() {
     } catch (e) {
       console.warn("Failed to load autosave", e);
     }
-  }, []);
+  }, [courseId]);
 
 
   const addLesson = () => {
@@ -128,7 +139,11 @@ export default function Editor() {
   const saveTimer = useRef<number | null>(null);
   const saveNow = () => {
     try {
-      localStorage.setItem("editor:course", JSON.stringify(courseData));
+      if (courseId) {
+        saveCourse(courseId, courseData as any);
+      } else {
+        localStorage.setItem("editor:course", JSON.stringify(courseData));
+      }
       toast({ title: "Saved" });
     } catch (e) {
       toast({ title: "Save failed" });
@@ -138,13 +153,17 @@ export default function Editor() {
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
       try {
-        localStorage.setItem("editor:course", JSON.stringify(courseData));
+        if (courseId) {
+          saveCourse(courseId, courseData as any);
+        } else {
+          localStorage.setItem("editor:course", JSON.stringify(courseData));
+        }
       } catch {}
     }, 500);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current!);
     };
-  }, [courseTitle, lessons]);
+  }, [courseTitle, lessons, courseId]);
 
   // Keyboard shortcut to open full block picker
   useEffect(() => {

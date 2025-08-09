@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { ImageView } from "./view/Image";
@@ -28,6 +28,8 @@ import { VideoForm } from "./editor/VideoForm";
 import { AudioForm } from "./editor/AudioForm";
 import { TrueFalseForm } from "./editor/TrueFalseForm";
 import { ShortAnswerForm } from "./editor/ShortAnswerForm";
+import { TocForm } from "./editor/TocForm";
+import { TocView } from "./view/Toc";
 import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3 } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
@@ -96,6 +98,15 @@ export const registry: BlockSpec[] = [
     create: factories.divider,
     Editor: DividerForm as EditorRenderer<DividerBlock>,
     View: DividerView as ViewRenderer<DividerBlock>,
+    category: "Text",
+  },
+  {
+    type: "toc",
+    label: "Table of Contents",
+    icon: ListIcon,
+    create: factories.toc,
+    Editor: TocForm as EditorRenderer<TocBlock>,
+    View: TocView as ViewRenderer<TocBlock>,
     category: "Text",
   },
   {

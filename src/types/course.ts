@@ -38,6 +38,9 @@ export type TabsBlock = {
 
 export type DividerBlock = { id: string; type: "divider" };
 
+// Auto-generated table of contents for lessons
+export type TocBlock = { id: string; type: "toc" };
+
 export type CalloutBlock = {
   id: string;
   type: "callout";
@@ -90,6 +93,7 @@ export type Block =
   | AccordionBlock
   | TabsBlock
   | DividerBlock
+  | TocBlock
   | CalloutBlock
   | VideoBlock
   | AudioBlock;
@@ -132,6 +136,7 @@ export const factories = {
     ],
   }),
   divider: (): DividerBlock => ({ id: uid(), type: "divider" }),
+  toc: (): TocBlock => ({ id: uid(), type: "toc" }),
   callout: (): CalloutBlock => ({ id: uid(), type: "callout", variant: "info", title: "Heads up", text: "Useful context goes here." }),
   video: (): VideoBlock => ({ id: uid(), type: "video", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
   audio: (): AudioBlock => ({ id: uid(), type: "audio", src: "https://www.w3schools.com/html/horse.mp3", title: "Audio clip" }),
