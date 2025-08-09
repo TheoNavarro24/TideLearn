@@ -3,6 +3,7 @@ import { decompressFromEncodedURIComponent } from "lz-string";
 import { getSpec } from "@/components/blocks/registry";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 import type { Block, Lesson, Course } from "@/types/course";
 
@@ -76,6 +77,61 @@ export default function View() {
     window.addEventListener("quiz:answered", handler as EventListener);
     return () => window.removeEventListener("quiz:answered", handler as EventListener);
   }, [storageKey]);
+
+  // Persistent course progress (completed lessons + resume)
+  const progressKey = useMemo(() => "courseProgress:" + window.location.hash.slice(1), []);
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [lastLessonId, setLastLessonId] = useState<string | null>(null);
+
+  const loadProgress = () => {
+    try {
+      const raw = localStorage.getItem(progressKey);
+      if (raw) {
+        const p = JSON.parse(raw) as { completed?: string[]; lastLessonId?: string };
+        setCompleted(new Set(p.completed || []));
+        setLastLessonId(p.lastLessonId || null);
+      } else {
+        setCompleted(new Set());
+        setLastLessonId(null);
+      }
+    } catch {}
+  };
+
+  useEffect(() => { loadProgress(); }, [progressKey]);
+
+  const persistProgress = (nextCompleted: Set<string>, nextLast: string | null) => {
+    try {
+      localStorage.setItem(
+        progressKey,
+        JSON.stringify({ completed: Array.from(nextCompleted), lastLessonId: nextLast || undefined })
+      );
+    } catch {}
+  };
+
+  const toggleComplete = (lessonId: string) => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId); else next.add(lessonId);
+      persistProgress(next, lastLessonId);
+      window.dispatchEvent(new Event("course:progress:changed"));
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handler = () => loadProgress();
+    window.addEventListener("course:progress:changed", handler as EventListener);
+    return () => window.removeEventListener("course:progress:changed", handler as EventListener);
+  }, [progressKey]);
+
+  // Update last viewed lesson (resume)
+  useEffect(() => {
+    if (!currentLessonId) return;
+    setLastLessonId(currentLessonId);
+    persistProgress(completed, currentLessonId);
+    window.dispatchEvent(new Event("course:progress:changed"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLessonId]);
 
   // Scrollspy for active section
   useEffect(() => {
@@ -186,7 +242,8 @@ export default function View() {
   const prevLesson = idx > 0 ? course.lessons[idx - 1] : null;
   const nextLesson = idx >= 0 && idx < course.lessons.length - 1 ? course.lessons[idx + 1] : null;
   const totalLessons = course.lessons.length;
-  const courseProgress = isPaged && idx >= 0 && totalLessons > 0 ? ((idx + 1) / totalLessons) * 100 : 0;
+  const courseProgress = totalLessons > 0 ? (completed.size / totalLessons) * 100 : 0;
+  const canResume = !!(lastLessonId && course.lessons.some((l) => l.id === lastLessonId));
 
   return (
     <div>
@@ -200,6 +257,23 @@ export default function View() {
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
             <div role="group" aria-label="View mode" className="inline-flex items-center gap-2">
+              {canResume && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    if (!lastLessonId) return;
+                    setIsPaged(true);
+                    setCurrentLessonId(lastLessonId);
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("paged", "1");
+                    url.searchParams.set("lesson", lastLessonId);
+                    history.replaceState(null, "", url.toString());
+                  }}
+                >
+                  <PlayCircle className="mr-2 h-4 w-4" /> Resume
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant={isPaged ? "default" : "secondary"}
@@ -277,8 +351,28 @@ export default function View() {
                 );
               })}
               <div className="mt-6 flex items-center justify-between">
-                <Button variant="secondary" disabled={!prevLesson} onClick={() => go("prev")}>Previous</Button>
-                <Button disabled={!nextLesson} onClick={() => go("next")}>Next</Button>
+                <div>
+                  <Button
+                    size="sm"
+                    variant={completed.has(currentLesson.id) ? "secondary" : "outline"}
+                    aria-pressed={completed.has(currentLesson.id)}
+                    onClick={() => toggleComplete(currentLesson.id)}
+                  >
+                    {completed.has(currentLesson.id) ? (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Completed
+                      </>
+                    ) : (
+                      <>
+                        <Circle className="mr-2 h-4 w-4" /> Mark complete
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="secondary" disabled={!prevLesson} onClick={() => go("prev")}>Previous</Button>
+                  <Button disabled={!nextLesson} onClick={() => go("next")}>Next</Button>
+                </div>
               </div>
             </section>
           ) : (
