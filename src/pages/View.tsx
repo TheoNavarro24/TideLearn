@@ -134,6 +134,43 @@ export default function View() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLessonId]);
 
+  // SCORM/LMS bridge: messaging (ready/resume/progress)
+  useEffect(() => {
+    if (!course) return;
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'ready' }, '*'); } catch {}
+  }, [course]);
+  useEffect(() => {
+    if (!course) return;
+    const onMsg = (event: MessageEvent) => {
+      const data: any = (event as any).data;
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'resume') {
+        const st = (data.state || {}) as { completed?: string[]; lastLessonId?: string };
+        if (Array.isArray(st.completed)) setCompleted(new Set(st.completed));
+        if (st.lastLessonId && course.lessons.some((l) => l.id === st.lastLessonId)) {
+          setIsPaged(true);
+          setCurrentLessonId(st.lastLessonId);
+          const url = new URL(window.location.href);
+          url.searchParams.set('paged', '1');
+          url.searchParams.set('lesson', st.lastLessonId);
+          history.replaceState(null, '', url.toString());
+        }
+      }
+    };
+    window.addEventListener('message', onMsg as any);
+    return () => window.removeEventListener('message', onMsg as any);
+  }, [course]);
+  useEffect(() => {
+    if (!course) return;
+    const total = course.lessons.length || 0;
+    const courseCompleted = total > 0 && completed.size >= total;
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'progress', completed: Array.from(completed), lastLessonId, courseCompleted }, '*');
+      }
+    } catch {}
+  }, [completed, lastLessonId, course]);
+
   // Scrollspy for active section
   useEffect(() => {
     if (!course) return;

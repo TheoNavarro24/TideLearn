@@ -10,7 +10,7 @@ import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileT
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { exportScorm12Zip, buildScormFileName } from "@/lib/scorm12";
+import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFileName } from "@/lib/scorm12";
 import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -263,20 +263,31 @@ useEffect(() => {
     if (!file) return;
     try {
       const zip = await JSZip.loadAsync(file);
-      const indexEntry = zip.file(/index\.html$/i)?.[0] || zip.file(/\.html$/i)?.[0];
-      if (!indexEntry) throw new Error("index.html not found");
-      const html = await indexEntry.async("text");
-      const m = html.match(/href=\"([^\"]*\/view#[^\"]+)\"/i) || html.match(/src=\"([^\"]*\/view#[^\"]+)\"/i);
-      if (!m) throw new Error("Course URL not found");
-      const url = new URL(m[1], window.location.origin);
-      const hash = url.hash?.slice(1);
-      if (!hash) throw new Error("Missing data hash");
-      const jsonStr = decompressFromEncodedURIComponent(hash || "");
-      if (!jsonStr) throw new Error("Failed to decode data");
-      const data = JSON.parse(jsonStr);
-      if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course data");
-      if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
-      applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
+      // Prefer embedded course.json if available
+      const courseEntry = zip.file(/(^|\/)course\.json$/i)?.[0];
+      if (courseEntry) {
+        const json = await courseEntry.async("text");
+        const data = JSON.parse(json);
+        if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course data");
+        if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
+        applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
+      } else {
+        // Fallback: extract publish URL from HTML wrapper
+        const indexEntry = zip.file(/index\.html$/i)?.[0] || zip.file(/\.html$/i)?.[0];
+        if (!indexEntry) throw new Error("index.html not found");
+        const html = await indexEntry.async("text");
+        const m = html.match(/href=\"([^\"]*\/view#[^\"]+)\"/i) || html.match(/src=\"([^\"]*\/view#[^\"]+)\"/i);
+        if (!m) throw new Error("Course URL not found");
+        const url = new URL(m[1], window.location.origin);
+        const hash = url.hash?.slice(1);
+        if (!hash) throw new Error("Missing data hash");
+        const jsonStr = decompressFromEncodedURIComponent(hash || "");
+        if (!jsonStr) throw new Error("Failed to decode data");
+        const data = JSON.parse(jsonStr);
+        if (!data || !Array.isArray(data.lessons)) throw new Error("Invalid course data");
+        if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
+        applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
+      }
     } catch (err) {
       toast({ title: "SCORM import failed" });
     } finally {
@@ -328,6 +339,22 @@ useEffect(() => {
       a.remove();
       URL.revokeObjectURL(url);
       toast({ title: "SCORM 1.2 package exported" });
+    } catch (e) {
+      toast({ title: "Export failed" });
+    }
+  };
+  const exportStaticZip = async () => {
+    try {
+      const blob = await exportStaticWebZip(courseData as any, publishUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = buildStaticFileName(courseTitle || "course");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "Static web package exported" });
     } catch (e) {
       toast({ title: "Export failed" });
     }
@@ -457,8 +484,9 @@ useEffect(() => {
                           <div className="mt-2 flex flex-wrap gap-2">
                             <Button variant="secondary" onClick={exportJSON}>Export JSON</Button>
                             <Button variant="secondary" onClick={exportSCORM12}>Export SCORM 1.2</Button>
+                            <Button variant="secondary" onClick={exportStaticZip}>Export Static Web Zip</Button>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">SCORM export wraps your course in a SCORM 1.2-compliant package.</p>
+                          <p className="text-xs text-muted-foreground mt-2">SCORM export wraps your course for LMS. Static zip is ideal for simple hosting.</p>
                         </div>
                       </TabsContent>
 
