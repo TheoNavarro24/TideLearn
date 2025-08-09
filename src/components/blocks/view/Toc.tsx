@@ -17,7 +17,10 @@ const lessons = useMemo(() => course?.lessons ?? [], [course]);
 
 const paged = useMemo(() => {
   const params = new URLSearchParams(window.location.search);
-  return params.get("paged") === "1" || !!params.get("lesson");
+  const p = params.get("paged");
+  // Default to paged view unless explicitly disabled (?paged=0)
+  if (p === "0") return false;
+  return true;
 }, []);
 const currentHash = useMemo(() => window.location.hash.slice(1), []);
 

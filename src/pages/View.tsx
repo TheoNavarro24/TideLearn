@@ -24,7 +24,12 @@ export default function View() {
   const gateParam = useMemo(() => params.get("gate"), [params]);
   const gateEnabled = useMemo(() => gateParam === "1" || gateParam === "quiz", [gateParam]);
   const gateQuiz = useMemo(() => gateParam === "quiz", [gateParam]);
-  const paged = useMemo(() => params.get("paged") === "1" || !!params.get("lesson"), [params]);
+  const paged = useMemo(() => {
+    const p = params.get("paged");
+    // Default to paged mode unless explicitly disabled (?paged=0)
+    if (p === "0") return false;
+    return true;
+  }, [params]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
