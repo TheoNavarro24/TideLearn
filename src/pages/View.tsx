@@ -3,6 +3,7 @@ import { decompressFromEncodedURIComponent } from "lz-string";
 import { getSpec } from "@/components/blocks/registry";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 import type { Block, Lesson, Course } from "@/types/course";
@@ -244,6 +245,7 @@ export default function View() {
   const totalLessons = course.lessons.length;
   const courseProgress = totalLessons > 0 ? (completed.size / totalLessons) * 100 : 0;
   const canResume = !!(lastLessonId && course.lessons.some((l) => l.id === lastLessonId));
+  const isCourseCompleted = totalLessons > 0 && completed.size >= totalLessons;
 
   return (
     <div>
@@ -255,7 +257,14 @@ export default function View() {
       <header className="border-b bg-hero">
         <div className="container mx-auto py-8">
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
+              {isCourseCompleted && (
+                <Badge variant="secondary" aria-live="polite" className="inline-flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+                </Badge>
+              )}
+            </div>
             <div role="group" aria-label="View mode" className="inline-flex items-center gap-2">
               {canResume && (
                 <Button
