@@ -306,7 +306,7 @@ useEffect(() => {
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <header className="border-b bg-hero">
             <div className="container mx-auto flex items-center gap-3 py-3">
               <SidebarTrigger />
@@ -378,7 +378,7 @@ useEffect(() => {
 
           <main className="container mx-auto py-6">
             <section className="sticky top-0 z-50 border-b bg-background/95">
-              <div className="flex items-center gap-2 py-2">
+              <div className="flex flex-nowrap items-center gap-2 py-2 overflow-x-auto max-w-full">
                 <Button size="sm" variant="secondary" onClick={() => addBlock("heading" as BlockType)}>
                   <FileText className="mr-2 h-4 w-4" /> Heading
                 </Button>
