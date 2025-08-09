@@ -5,6 +5,7 @@ export type CourseIndexItem = { id: string; title: string; updatedAt: number };
 const INDEX_KEY = "courses:index";
 const COURSE_KEY = (id: string) => `course:${id}`;
 const LEGACY_KEY = "editor:course";
+const LEGACY_MIGRATED_KEY = "editor:course:migrated";
 
 export function getCoursesIndex(): CourseIndexItem[] {
   try {
@@ -94,6 +95,10 @@ export function exportCourseJSON(course: Course): string {
 
 export function migrateFromLegacy(): string | null {
   try {
+    // Avoid duplicating migrations
+    const already = localStorage.getItem(LEGACY_MIGRATED_KEY);
+    if (already === "1") return null;
+
     const raw = localStorage.getItem(LEGACY_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -101,7 +106,9 @@ export function migrateFromLegacy(): string | null {
     const id = uid();
     const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons } as Course;
     saveCourse(id, course);
-    // Optionally keep legacy; we won't delete it to avoid data loss
+    // Mark as migrated so this runs only once
+    try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {}
+    // We intentionally keep the legacy key to avoid data loss
     return id;
   } catch {
     return null;
