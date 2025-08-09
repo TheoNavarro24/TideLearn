@@ -25,7 +25,7 @@ export function VideoView({ block }: { block: VideoBlock }) {
   if (yt || vm) {
     const src = yt || vm!;
     return (
-      <div className="aspect-video w-full overflow-hidden rounded-md border">
+      <div className="aspect-video w-full max-w-3xl mx-auto overflow-hidden rounded-md border">
         <iframe
           src={src}
           title="Embedded video"
@@ -39,6 +39,8 @@ export function VideoView({ block }: { block: VideoBlock }) {
   }
 
   return (
-    <video controls className="w-full rounded-md border" src={url} preload="metadata" />
+    <div className="w-full max-w-3xl mx-auto">
+      <video controls className="w-full rounded-md border" src={url} preload="metadata" />
+    </div>
   );
 }

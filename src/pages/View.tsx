@@ -185,9 +185,16 @@ export default function View() {
   const idx = currentLesson ? course.lessons.findIndex((l) => l.id === currentLesson.id) : -1;
   const prevLesson = idx > 0 ? course.lessons[idx - 1] : null;
   const nextLesson = idx >= 0 && idx < course.lessons.length - 1 ? course.lessons[idx + 1] : null;
+  const totalLessons = course.lessons.length;
+  const courseProgress = isPaged && idx >= 0 && totalLessons > 0 ? ((idx + 1) / totalLessons) * 100 : 0;
 
   return (
     <div>
+      {isPaged && totalLessons > 1 && (
+        <div className="fixed inset-x-0 top-0 z-50">
+          <Progress value={courseProgress} aria-label={`Course progress ${Math.round(courseProgress)} percent`} className="h-1 rounded-none" />
+        </div>
+      )}
       <header className="border-b bg-hero">
         <div className="container mx-auto py-8">
           <div className="flex items-center justify-between gap-4">
@@ -251,11 +258,6 @@ export default function View() {
                 ))}
               </ul>
             </nav>
-          )}
-          {!isPaged && (
-            <div className="mt-4 h-1 w-full rounded bg-muted">
-              <div className="h-1 rounded bg-primary" style={{ width: `${progress}%` }} />
-            </div>
           )}
         </div>
       </header>
