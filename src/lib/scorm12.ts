@@ -1,8 +1,9 @@
 import JSZip from "jszip";
+import type { Lesson } from "@/types/course";
 
 export interface CourseData {
   title: string;
-  lessons: any[];
+  lessons: Lesson[];
 }
 
 function sanitizeFileName(name: string) {

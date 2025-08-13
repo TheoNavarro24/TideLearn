@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { getSpec } from "@/components/blocks/registry";
 import { Button } from "@/components/ui/button";
@@ -62,16 +62,22 @@ export default function View() {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
+    } catch {
+      /* empty */
+    }
   }, [storageKey]);
   useEffect(() => {
     const handler = (e: Event) => {
-      const anyE = e as CustomEvent<{ blockId: string; correct: boolean }>;
-      const { blockId, correct } = anyE.detail || ({} as any);
+      const evt = e as CustomEvent<{ blockId?: string; correct?: boolean }>;
+      const { blockId, correct } = evt.detail ?? {};
       if (!blockId) return;
       setAnswers((prev) => {
         const next = { ...prev, [blockId]: !!correct };
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch {
+          /* empty */
+        }
         return next;
       });
     };
@@ -84,7 +90,7 @@ export default function View() {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [lastLessonId, setLastLessonId] = useState<string | null>(null);
 
-  const loadProgress = () => {
+  const loadProgress = useCallback(() => {
     try {
       const raw = localStorage.getItem(progressKey);
       if (raw) {
@@ -95,10 +101,12 @@ export default function View() {
         setCompleted(new Set());
         setLastLessonId(null);
       }
-    } catch {}
-  };
+    } catch {
+      /* empty */
+    }
+  }, [progressKey]);
 
-  useEffect(() => { loadProgress(); }, [progressKey]);
+  useEffect(() => { loadProgress(); }, [loadProgress]);
 
   const persistProgress = (nextCompleted: Set<string>, nextLast: string | null) => {
     try {
@@ -106,7 +114,9 @@ export default function View() {
         progressKey,
         JSON.stringify({ completed: Array.from(nextCompleted), lastLessonId: nextLast || undefined })
       );
-    } catch {}
+    } catch {
+      /* empty */
+    }
   };
 
   const toggleComplete = (lessonId: string) => {
@@ -123,7 +133,7 @@ export default function View() {
     const handler = () => loadProgress();
     window.addEventListener("course:progress:changed", handler as EventListener);
     return () => window.removeEventListener("course:progress:changed", handler as EventListener);
-  }, [progressKey]);
+  }, [loadProgress]);
 
   // Update last viewed lesson (resume)
   useEffect(() => {
@@ -137,28 +147,37 @@ export default function View() {
   // SCORM/LMS bridge: messaging (ready/resume/progress)
   useEffect(() => {
     if (!course) return;
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'ready' }, '*'); } catch {}
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "ready" }, "*");
+      }
+    } catch {
+      /* empty */
+    }
   }, [course]);
   useEffect(() => {
     if (!course) return;
     const onMsg = (event: MessageEvent) => {
-      const data: any = (event as any).data;
-      if (!data || typeof data !== 'object') return;
-      if (data.type === 'resume') {
-        const st = (data.state || {}) as { completed?: string[]; lastLessonId?: string };
+      const { data } = event;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "resume") {
+        const st = (data.state || {}) as {
+          completed?: string[];
+          lastLessonId?: string;
+        };
         if (Array.isArray(st.completed)) setCompleted(new Set(st.completed));
         if (st.lastLessonId && course.lessons.some((l) => l.id === st.lastLessonId)) {
           setIsPaged(true);
           setCurrentLessonId(st.lastLessonId);
           const url = new URL(window.location.href);
-          url.searchParams.set('paged', '1');
-          url.searchParams.set('lesson', st.lastLessonId);
-          history.replaceState(null, '', url.toString());
+          url.searchParams.set("paged", "1");
+          url.searchParams.set("lesson", st.lastLessonId);
+          history.replaceState(null, "", url.toString());
         }
       }
     };
-    window.addEventListener('message', onMsg as any);
-    return () => window.removeEventListener('message', onMsg as any);
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, [course]);
   useEffect(() => {
     if (!course) return;
@@ -166,9 +185,14 @@ export default function View() {
     const courseCompleted = total > 0 && completed.size >= total;
     try {
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'progress', completed: Array.from(completed), lastLessonId, courseCompleted }, '*');
+        window.parent.postMessage(
+          { type: "progress", completed: Array.from(completed), lastLessonId, courseCompleted },
+          "*"
+        );
       }
-    } catch {}
+    } catch {
+      /* empty */
+    }
   }, [completed, lastLessonId, course]);
 
   // Scrollspy for active section
@@ -196,11 +220,11 @@ export default function View() {
   // Progress bar based on main scroll
   useEffect(() => {
     const onScroll = () => {
-      const main = document.querySelector("main");
+      const main = document.querySelector("main") as HTMLElement | null;
       if (!main) return;
       const rect = main.getBoundingClientRect();
       const total = main.scrollHeight - window.innerHeight;
-      const scrolled = Math.min(Math.max(window.scrollY - (main as any).offsetTop, 0), total);
+      const scrolled = Math.min(Math.max(window.scrollY - main.offsetTop, 0), total);
       const pct = total > 0 ? (scrolled / total) * 100 : 0;
       setProgress(Math.max(0, Math.min(100, pct)));
     };
@@ -237,6 +261,23 @@ export default function View() {
     };
   }, [isPaged, currentLessonId]);
 
+  const go = useCallback(
+    (dir: "prev" | "next") => {
+      if (!course || !currentLessonId) return;
+      const idx = course.lessons.findIndex((l) => l.id === currentLessonId);
+      const nextIdx = dir === "prev" ? idx - 1 : idx + 1;
+      const next = course.lessons[nextIdx];
+      if (next) {
+        setCurrentLessonId(next.id);
+        const url = new URL(window.location.href);
+        url.searchParams.set("paged", "1");
+        url.searchParams.set("lesson", next.id);
+        history.replaceState(null, "", url.toString());
+      }
+    },
+    [course, currentLessonId]
+  );
+
   // Arrow key navigation in paged mode
   useEffect(() => {
     if (!isPaged) return;
@@ -248,7 +289,7 @@ export default function View() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isPaged, currentLessonId, course]);
+  }, [isPaged, currentLessonId, course, go]);
 
   if (!course) {
     return (
@@ -261,19 +302,6 @@ export default function View() {
     );
   }
 
-  const go = (dir: "prev" | "next") => {
-    if (!course || !currentLessonId) return;
-    const idx = course.lessons.findIndex((l) => l.id === currentLessonId);
-    const nextIdx = dir === "prev" ? idx - 1 : idx + 1;
-    const next = course.lessons[nextIdx];
-    if (next) {
-      setCurrentLessonId(next.id);
-      const url = new URL(window.location.href);
-      url.searchParams.set("paged", "1");
-      url.searchParams.set("lesson", next.id);
-      history.replaceState(null, "", url.toString());
-    }
-  };
 
   const currentLesson = currentLessonId ? course.lessons.find((l) => l.id === currentLessonId) : null;
   const idx = currentLesson ? course.lessons.findIndex((l) => l.id === currentLesson.id) : -1;
@@ -385,14 +413,14 @@ export default function View() {
       <main className="container mx-auto py-8">
         {isPaged ? (
           currentLesson ? (
-            <section key={currentLesson.id} ref={lessonRef as any} className="space-y-6">
+            <section key={currentLesson.id} ref={lessonRef} className="space-y-6">
               <h2 className="text-2xl font-semibold mb-4">{currentLesson.title}</h2>
               {currentLesson.blocks.map((b) => {
-                const spec = getSpec((b as any).type);
-                const ViewComp = spec.View as any;
+                const spec = getSpec(b.type);
+                const ViewComp = spec.View;
                 return (
                   <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
-                    <ViewComp block={b as any} />
+                    <ViewComp block={b} />
                   </article>
                 );
               })}
@@ -429,7 +457,9 @@ export default function View() {
             {course.lessons.map((l, idx) => {
               const isUnlocked = unlocked.has(l.id);
               const nextId = course.lessons[idx + 1]?.id as string | undefined;
-              const quizIds = l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id);
+              const quizIds = l.blocks
+                .filter((b) => ["quiz", "truefalse", "shortanswer"].includes(b.type))
+                .map((b) => b.id);
               const totalChecks = quizIds.length;
               const correctChecks = quizIds.filter((id: string) => answers[id]).length;
               return (
@@ -443,11 +473,11 @@ export default function View() {
                     <>
                       <div className="space-y-6">
                         {l.blocks.map((b) => {
-                          const spec = getSpec((b as any).type);
-                          const ViewComp = spec.View as any;
+                          const spec = getSpec(b.type);
+                          const ViewComp = spec.View;
                           return (
                             <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
-                              <ViewComp block={b as any} />
+                              <ViewComp block={b} />
                             </article>
                           );
                         })}
