@@ -14,6 +14,7 @@ import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFi
 import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import useDeepLinkIntents from "@/hooks/use-deep-link-intents";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -70,29 +71,40 @@ export default function Editor() {
       console.warn("Failed to load autosave", e);
     }
   }, [courseId]);
-// Keep the welcome heading in sync with the course title
-useEffect(() => {
-  setLessons((prev) => {
-    if (!prev.length) return prev;
-    const first = prev[0];
-    const firstBlock: any = first.blocks[0];
-    let changed = false;
-    const nextFirst: Lesson = { ...first };
-    if (first.title !== "Welcome") {
-      nextFirst.title = "Welcome";
-      changed = true;
+
+  const intents = useDeepLinkIntents();
+  useEffect(() => {
+    if (intents?.success && intents.operations.length) {
+      toast({
+        title: "Intents applied",
+        description: intents.operations.join(", "),
+      });
     }
-    if (firstBlock && firstBlock.type === "heading") {
-      const expected = `Welcome to ${courseTitle}`;
-      if (firstBlock.text !== expected) {
-        nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
+  }, [intents]);
+
+  // Keep the welcome heading in sync with the course title
+  useEffect(() => {
+    setLessons((prev) => {
+      if (!prev.length) return prev;
+      const first = prev[0];
+      const firstBlock: any = first.blocks[0];
+      let changed = false;
+      const nextFirst: Lesson = { ...first };
+      if (first.title !== "Welcome") {
+        nextFirst.title = "Welcome";
         changed = true;
       }
-    }
-    if (changed) return [nextFirst, ...prev.slice(1)];
-    return prev;
-  });
-}, [courseTitle]);
+      if (firstBlock && firstBlock.type === "heading") {
+        const expected = `Welcome to ${courseTitle}`;
+        if (firstBlock.text !== expected) {
+          nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
+          changed = true;
+        }
+      }
+      if (changed) return [nextFirst, ...prev.slice(1)];
+      return prev;
+    });
+  }, [courseTitle]);
 
 
   const addLesson = () => {
