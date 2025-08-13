@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
+import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
@@ -40,6 +41,13 @@ export default function Editor() {
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
+  const deepLink = useDeepLinkIntents();
+
+  useEffect(() => {
+    if (deepLink.status !== "idle") {
+      toast({ description: deepLink.summary });
+    }
+  }, [deepLink]);
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
