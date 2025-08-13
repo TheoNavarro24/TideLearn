@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +17,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 // Shared types
-import { Block, Lesson, uid } from "@/types/course";
+import { Block, Lesson, uid, type Course } from "@/types/course";
 import type { BlockType } from "@/types/course";
-import { registry, createBlock, getSpec } from "@/components/blocks/registry";
+import { registry, createBlock, getSpec, type EditorRenderer } from "@/components/blocks/registry";
 
 // uid provided by shared types
 
@@ -28,7 +29,7 @@ const defaultLesson: Lesson = {
   blocks: [
     { id: uid(), type: "heading", text: "Welcome to My Course" },
     { id: uid(), type: "text", text: "This welcome page introduces your course. Use the Table of Contents below to jump to any lesson." },
-    { id: uid(), type: "toc" as any },
+    { id: uid(), type: "toc" },
   ],
 };
 
@@ -39,7 +40,8 @@ export default function Editor() {
   const [quickPickerOpen, setQuickPickerOpen] = useState(false);
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
-  const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
@@ -75,7 +77,7 @@ useEffect(() => {
   setLessons((prev) => {
     if (!prev.length) return prev;
     const first = prev[0];
-    const firstBlock: any = first.blocks[0];
+    const firstBlock = first.blocks[0];
     let changed = false;
     const nextFirst: Lesson = { ...first };
     if (first.title !== "Welcome") {
@@ -154,27 +156,27 @@ useEffect(() => {
       if (l.id !== selectedLesson.id) return l;
       const idx = l.blocks.findIndex((b) => b.id === blockId);
       if (idx < 0) return l;
-      const copy = { ...(l.blocks[idx] as any), id: uid() } as Block;
+        const copy: Block = { ...l.blocks[idx], id: uid() };
       const blocks = [...l.blocks];
       blocks.splice(idx + 1, 0, copy);
       return { ...l, blocks };
     }));
   };
 
-  const courseData = { schemaVersion: 1, title: courseTitle, lessons };
+  const courseData = useMemo<Course>(() => ({ schemaVersion: 1, title: courseTitle, lessons }), [courseTitle, lessons]);
   const compressedHash = useMemo(() => compressToEncodedURIComponent(JSON.stringify(courseData)), [courseData]);
-  const publishUrl = useMemo(() => `${window.location.origin}/view#${compressedHash}`,[compressedHash]);
+  const publishUrl = useMemo(() => `${window.location.origin}/view#${compressedHash}`, [compressedHash]);
   const hashSize = compressedHash.length;
 
   // Autosave with debounce
   const saveTimer = useRef<number | null>(null);
   const saveNow = () => {
     try {
-      if (courseId) {
-        saveCourse(courseId, courseData as any);
-      } else {
-        localStorage.setItem("editor:course", JSON.stringify(courseData));
-      }
+        if (courseId) {
+          saveCourse(courseId, courseData);
+        } else {
+          localStorage.setItem("editor:course", JSON.stringify(courseData));
+        }
       toast({ title: "Saved" });
     } catch (e) {
       toast({ title: "Save failed" });
@@ -185,27 +187,29 @@ useEffect(() => {
     saveTimer.current = window.setTimeout(() => {
       try {
         if (courseId) {
-          saveCourse(courseId, courseData as any);
+          saveCourse(courseId, courseData);
         } else {
           localStorage.setItem("editor:course", JSON.stringify(courseData));
         }
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     }, 500);
     return () => {
-      if (saveTimer.current) window.clearTimeout(saveTimer.current!);
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [courseTitle, lessons, courseId]);
+  }, [courseData, courseId]);
 
   // Keyboard shortcut to open full block picker
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
-        const target = e.target as HTMLElement | null;
-        const isTyping =
-          !!target &&
-          (target.tagName === "INPUT" ||
-            target.tagName === "TEXTAREA" ||
-            (target as any).isContentEditable);
+          const target = e.target as HTMLElement | null;
+          const isTyping =
+            !!target &&
+            (target.tagName === "INPUT" ||
+              target.tagName === "TEXTAREA" ||
+              target.isContentEditable);
         if (!isTyping) {
           e.preventDefault();
           setQuickPickerOpen(true);
@@ -276,7 +280,7 @@ useEffect(() => {
         const indexEntry = zip.file(/index\.html$/i)?.[0] || zip.file(/\.html$/i)?.[0];
         if (!indexEntry) throw new Error("index.html not found");
         const html = await indexEntry.async("text");
-        const m = html.match(/href=\"([^\"]*\/view#[^\"]+)\"/i) || html.match(/src=\"([^\"]*\/view#[^\"]+)\"/i);
+          const m = html.match(/href="([^"]*\/view#[^"]+)"/i) || html.match(/src="([^"]*\/view#[^"]+)"/i);
         if (!m) throw new Error("Course URL not found");
         const url = new URL(m[1], window.location.origin);
         const hash = url.hash?.slice(1);
@@ -307,10 +311,10 @@ useEffect(() => {
     if (!file) return;
     if (/\.json$/i.test(file.name) || file.type.includes("json")) {
       // Simulate JSON import
-      const fakeEvent = { target: { files: [file] } } as any as React.ChangeEvent<HTMLInputElement>;
+      const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
       await handleImportFile(fakeEvent);
     } else if (/\.zip$/i.test(file.name) || file.type.includes("zip")) {
-      const fakeEvent = { target: { files: [file] } } as any as React.ChangeEvent<HTMLInputElement>;
+      const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
       await handleImportScormFile(fakeEvent);
     } else {
       toast({ title: "Unsupported file type" });
@@ -329,7 +333,7 @@ useEffect(() => {
   };
   const exportSCORM12 = async () => {
     try {
-      const blob = await exportScorm12Zip(courseData as any, publishUrl);
+        const blob = await exportScorm12Zip(courseData, publishUrl);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -345,7 +349,7 @@ useEffect(() => {
   };
   const exportStaticZip = async () => {
     try {
-      const blob = await exportStaticWebZip(courseData as any, publishUrl);
+        const blob = await exportStaticWebZip(courseData, publishUrl);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -473,7 +477,7 @@ useEffect(() => {
                             value={`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`}
                           />
                           <div className="mt-2">
-                            <Button variant="secondary" onClick={() => copy(`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
+                              <Button variant="secondary" onClick={() => copy(`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
                           </div>
                         </div>
                       </TabsContent>
@@ -493,7 +497,7 @@ useEffect(() => {
                       <TabsContent value="import" className="space-y-4 mt-4">
                         <div>
                           <label className="text-sm text-muted-foreground">Import mode</label>
-                          <RadioGroup value={importMode} onValueChange={(v) => setImportMode(v as any)} className="mt-2 flex gap-6">
+                            <RadioGroup value={importMode} onValueChange={(v: "merge" | "replace") => setImportMode(v)} className="mt-2 flex gap-6">
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="replace" id="mode-replace" />
                               <Label htmlFor="mode-replace">Replace current course</Label>
@@ -594,7 +598,7 @@ useEffect(() => {
 
               {selectedLesson.blocks.map((b, idx) => {
                 const spec = getSpec(b.type as BlockType);
-                const EditorComp = spec.Editor as any;
+                const EditorComp = spec.Editor as EditorRenderer<Block>;
                 const lastIndex = selectedLesson.blocks.length - 1;
                 return (
                   <div key={b.id} className="space-y-2">
@@ -613,7 +617,7 @@ useEffect(() => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      <EditorComp block={b as any} onChange={(updated: any) => updateBlock(b.id, () => updated as Block)} />
+                        <EditorComp block={b} onChange={(updated: Block) => updateBlock(b.id, () => updated)} />
                     </article>
                     <div className="flex justify-center">
                       <AddBlockMenu onSelect={(t) => insertBlockAt(idx + 1, t)} text="Add block here" />

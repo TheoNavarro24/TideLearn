@@ -1,4 +1,5 @@
 import { FC } from "react";
+import type { LucideIcon } from "lucide-react";
 import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
@@ -38,10 +39,10 @@ export type ViewRenderer<T extends Block> = FC<{ block: T }>;
 export type BlockSpec = {
   type: BlockType;
   label: string;
-  icon: FC<any>;
+  icon: LucideIcon;
   create: () => Block;
-  Editor: EditorRenderer<any>;
-  View: ViewRenderer<any>;
+  Editor: EditorRenderer<Block>;
+  View: ViewRenderer<Block>;
   category: "Text" | "Media" | "Interactive" | "Knowledge";
 };
 

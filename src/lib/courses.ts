@@ -1,4 +1,4 @@
-import { uid, type Course, type Lesson } from "@/types/course";
+import { uid, type Course, type Lesson, type HeadingBlock, type TextBlock, type TocBlock } from "@/types/course";
 
 export type CourseIndexItem = { id: string; title: string; updatedAt: number };
 
@@ -13,14 +13,18 @@ export function getCoursesIndex(): CourseIndexItem[] {
     if (!raw) return [];
     const arr = JSON.parse(raw);
     if (Array.isArray(arr)) return arr;
-  } catch {}
+  } catch {
+    /* empty */
+  }
   return [];
 }
 
 function setCoursesIndex(next: CourseIndexItem[]) {
   try {
     localStorage.setItem(INDEX_KEY, JSON.stringify(next));
-  } catch {}
+  } catch {
+    /* empty */
+  }
 }
 
 export function loadCourse(id: string): Course | null {
@@ -36,7 +40,9 @@ export function loadCourse(id: string): Course | null {
 export function saveCourse(id: string, course: Course) {
   try {
     localStorage.setItem(COURSE_KEY(id), JSON.stringify(course));
-  } catch {}
+  } catch {
+    /* empty */
+  }
   const index = getCoursesIndex();
   const exists = index.find((i) => i.id === id);
   const item: CourseIndexItem = { id, title: course.title || "Untitled Course", updatedAt: Date.now() };
@@ -45,7 +51,9 @@ export function saveCourse(id: string, course: Course) {
 }
 
 export function deleteCourse(id: string) {
-  try { localStorage.removeItem(COURSE_KEY(id)); } catch {}
+  try { localStorage.removeItem(COURSE_KEY(id)); } catch {
+    /* empty */
+  }
   const next = getCoursesIndex().filter((i) => i.id !== id);
   setCoursesIndex(next);
 }
@@ -78,12 +86,12 @@ export function createNewCourse(title = "New Course"): { id: string; course: Cou
     id: uid(),
     title: "Welcome",
     blocks: [
-      { id: uid(), type: "heading", text: `Welcome to ${title}` } as any,
-      { id: uid(), type: "text", text: "Write a short course description here." } as any,
-      { id: uid(), type: "toc" } as any,
+      { id: uid(), type: "heading", text: `Welcome to ${title}` } as HeadingBlock,
+      { id: uid(), type: "text", text: "Write a short course description here." } as TextBlock,
+      { id: uid(), type: "toc" } as TocBlock,
     ],
   };
-  const course: Course = { schemaVersion: 1, title, lessons: [welcome] } as Course;
+  const course: Course = { schemaVersion: 1, title, lessons: [welcome] };
   const id = uid();
   saveCourse(id, course);
   return { id, course };
@@ -104,10 +112,12 @@ export function migrateFromLegacy(): string | null {
     const parsed = JSON.parse(raw);
     if (!parsed?.lessons) return null;
     const id = uid();
-    const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons } as Course;
+    const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons };
     saveCourse(id, course);
     // Mark as migrated so this runs only once
-    try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {}
+    try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {
+      /* empty */
+    }
     // We intentionally keep the legacy key to avoid data loss
     return id;
   } catch {
