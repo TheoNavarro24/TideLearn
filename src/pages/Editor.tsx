@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,8 @@ export default function Editor() {
   const [quickPickerOpen, setQuickPickerOpen] = useState(false);
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
-  const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
+  const [search] = useSearchParams();
+  const courseId = search.get("courseId");
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
