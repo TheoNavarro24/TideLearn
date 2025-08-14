@@ -6,10 +6,10 @@ export function createSeedCourse(): Course {
     title: 'Seed Course',
     lessons: [
       {
-        id: 'lesson-1',
+        id: '00000000-0000-0000-0000-000000000001',
         title: 'Lesson 1',
         blocks: [
-          { id: 'block-1', type: 'text', text: 'Hello world' } satisfies TextBlock,
+          { id: '00000000-0000-0000-0000-000000000101', type: 'text', text: 'Hello world' } satisfies TextBlock,
         ],
       },
     ],

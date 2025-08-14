@@ -1,52 +1,76 @@
-import { describe, it, expect } from 'vitest';
-import { applyPatch, type PatchOp } from './engine';
-import { createSeedCourse } from '../seed/course';
+import { describe, expect, it } from "vitest";
+import { applyPatch, type ApplyPatchResult } from "./engine";
+import type { Patch } from "./types";
+import { createSeedCourse } from "../seed/course";
 
-// Tests ensure deterministic behaviour using the same seed course for each case.
-
-describe('patch engine', () => {
-  it('handles add, replace and remove operations', () => {
+describe("patch engine", () => {
+  it("handles all operation types", () => {
     const seed = createSeedCourse();
-    const ops: PatchOp[] = [
-      { op: 'add', path: ['lessons', 0, 'blocks', 1], value: { id: 'block-2', type: 'text', text: 'New' } },
-      { op: 'replace', path: ['lessons', 0, 'title'], value: 'Updated Lesson' },
-      { op: 'remove', path: ['lessons', 0, 'blocks', 0] },
-    ];
-    const result = applyPatch(seed, ops);
+    const patch: Patch = {
+      ops: [
+        {
+          type: "upsertLesson",
+          lesson: { id: "00000000-0000-0000-0000-000000000002", title: "Lesson 2", blocks: [] },
+        },
+        {
+          type: "appendBlocks",
+          lessonId: "00000000-0000-0000-0000-000000000001",
+          blocks: [{ id: "00000000-0000-0000-0000-000000000102", type: "text", text: "New" }],
+        },
+        {
+          type: "updateBlock",
+          lessonId: "00000000-0000-0000-0000-000000000001",
+          block: { id: "00000000-0000-0000-0000-000000000102", type: "text", text: "Updated" },
+        },
+        { type: "removeBlock", lessonId: "00000000-0000-0000-0000-000000000001", blockId: "00000000-0000-0000-0000-000000000101" },
+      ],
+    };
+    const result = applyPatch(seed, patch);
     expect(result.ok).toBe(true);
-    const course = result.value;
-    expect(course.lessons[0].title).toBe('Updated Lesson');
-    expect(course.lessons[0].blocks).toHaveLength(1);
-    expect(course.lessons[0].blocks[0].id).toBe('block-2');
+    if (result.ok) {
+      expect(result.report).toMatchObject({
+        upsertedLessons: 1,
+        appendedBlocks: 1,
+        updatedBlocks: 1,
+        removedBlocks: 1,
+        warnings: [],
+      });
+      const lesson1 = result.course.lessons.find((l) => l.id === "00000000-0000-0000-0000-000000000001");
+      expect(lesson1?.blocks).toHaveLength(1);
+      expect(lesson1?.blocks[0].id).toBe("00000000-0000-0000-0000-000000000102");
+      const lesson2 = result.course.lessons.find((l) => l.id === "00000000-0000-0000-0000-000000000002");
+      expect(lesson2).toBeTruthy();
+    }
   });
 
-  it('rolls back on invalid operation', () => {
+  it("rolls back on unknown op type", () => {
     const seed = createSeedCourse();
     const snapshot = JSON.parse(JSON.stringify(seed));
-    const ops: PatchOp[] = [
-      { op: 'replace', path: ['lessons', 0, 'title'], value: 'Updated Lesson' },
-      // Invalid path - there is only one lesson
-      { op: 'remove', path: ['lessons', 1] },
-    ];
-    const result = applyPatch(seed, ops);
+    const patch = { ops: [{ type: "badOp" }] } as unknown as Patch;
+    const result: ApplyPatchResult = applyPatch(seed, patch);
     expect(result.ok).toBe(false);
-    expect(result.value).toEqual(snapshot);
+    expect(result.course).toEqual(snapshot);
     expect(seed).toEqual(snapshot); // original untouched
   });
 
-  it('preserves ids of existing items and uses provided ids for new ones', () => {
+  it("preserves original course ids", () => {
     const seed = createSeedCourse();
-    const ops: PatchOp[] = [
-      { op: 'add', path: ['lessons', 0, 'blocks', 1], value: { id: 'block-2', type: 'text', text: 'New' } },
-      { op: 'replace', path: ['lessons', 0, 'title'], value: 'Updated Lesson' },
-    ];
-    const result = applyPatch(seed, ops);
+    const snapshot = JSON.parse(JSON.stringify(seed));
+    const patch: Patch = {
+      ops: [
+        {
+          type: "appendBlocks",
+          lessonId: "00000000-0000-0000-0000-000000000001",
+          blocks: [{ id: "00000000-0000-0000-0000-000000000102", type: "text", text: "New" }],
+        },
+      ],
+    };
+    const result = applyPatch(seed, patch);
     expect(result.ok).toBe(true);
-    const course = result.value;
-    // Existing IDs remain the same
-    expect(course.lessons[0].id).toBe('lesson-1');
-    expect(course.lessons[0].blocks[0].id).toBe('block-1');
-    // Newly inserted block keeps provided id
-    expect(course.lessons[0].blocks[1].id).toBe('block-2');
+    if (result.ok) {
+      expect(result.course.lessons[0].id).toBe("00000000-0000-0000-0000-000000000001");
+      expect(result.course.lessons[0].blocks[1].id).toBe("00000000-0000-0000-0000-000000000102");
+    }
+    expect(seed).toEqual(snapshot);
   });
 });

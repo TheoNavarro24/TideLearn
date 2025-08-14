@@ -1,24 +1,35 @@
-import type { BlockType, Course } from '@/types/course';
-import { factories } from '@/types/course';
+import { factories, type Course } from "@/types/course";
+import { z } from "zod";
 
-const blockTypes = new Set<BlockType>(Object.keys(factories) as BlockType[]);
+const blockSchema = z
+  .object({
+    id: z.string().uuid(),
+    type: z
+      .string()
+      .refine((t) => t in factories, {
+        message: "Unknown block type",
+      }),
+  })
+  .passthrough();
 
-export function validateCourse(data: unknown): Course {
-  if (!data || typeof data !== 'object') throw new Error('Course must be an object');
-  const course = data as Record<string, unknown>;
-  if ((course as any).schemaVersion !== 1) throw new Error('Unsupported schema version');
-  if (!Array.isArray((course as any).lessons)) throw new Error('Lessons must be array');
+const lessonSchema = z
+  .object({
+    id: z.string().uuid(),
+    title: z.string(),
+    blocks: z.array(blockSchema),
+  })
+  .passthrough();
 
-  for (const lesson of (course as any).lessons as Array<Record<string, unknown>>) {
-    if (!lesson || typeof lesson !== 'object') throw new Error('Invalid lesson');
-    if (typeof lesson.id !== 'string' || typeof lesson.title !== 'string') throw new Error('Invalid lesson');
-    if (!Array.isArray(lesson.blocks)) throw new Error('Invalid blocks');
-    for (const block of lesson.blocks as Array<Record<string, unknown>>) {
-      if (!block || typeof block !== 'object') throw new Error('Invalid block');
-      if (typeof block.type !== 'string') throw new Error('Invalid block');
-      if (!blockTypes.has(block.type as BlockType)) throw new Error('Unknown block type');
-    }
-  }
+const courseSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    title: z.string(),
+    lessons: z.array(lessonSchema),
+  })
+  .passthrough();
 
-  return course as Course;
+export function validateCourse(course: unknown): asserts course is Course {
+  courseSchema.parse(course);
 }
+
+export { blockSchema, lessonSchema, courseSchema };

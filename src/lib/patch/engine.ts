@@ -1,69 +1,104 @@
-export type Path = Array<string | number>;
+import type { Course } from "@/types/course";
+import type { Patch, PatchOp } from "./types";
 
-export type PatchOp =
-  | { op: 'add'; path: Path; value: unknown }
-  | { op: 'remove'; path: Path }
-  | { op: 'replace'; path: Path; value: unknown };
-function resolveParent(target: unknown, path: Path) {
-  if (path.length === 0) throw new Error('empty path');
-  let obj: any = target as any;
-  for (let i = 0; i < path.length - 1; i++) {
-    const key = path[i];
-    obj = obj[key as any];
-    if (obj === undefined) throw new Error('invalid path');
-  }
-  return { parent: obj, key: path[path.length - 1] };
-}
+export type PatchReport = {
+  upsertedLessons: number;
+  appendedBlocks: number;
+  updatedBlocks: number;
+  removedBlocks: number;
+  warnings: string[];
+};
 
-function applyOne(target: unknown, op: PatchOp) {
-  const { parent, key } = resolveParent(target, op.path);
-  switch (op.op) {
-    case 'add': {
-      if (Array.isArray(parent)) {
-        if (typeof key !== 'number' || key < 0 || key > parent.length) throw new Error('invalid index');
-        parent.splice(key, 0, op.value);
-      } else {
-        (parent as any)[key] = op.value;
-      }
-      break;
-    }
-    case 'remove': {
-      if (Array.isArray(parent)) {
-        if (typeof key !== 'number' || key < 0 || key >= parent.length) throw new Error('invalid index');
-        parent.splice(key, 1);
-      } else {
-        if (!Object.prototype.hasOwnProperty.call(parent, key)) throw new Error('missing key');
-        delete (parent as any)[key];
-      }
-      break;
-    }
-    case 'replace': {
-      if (Array.isArray(parent)) {
-        if (typeof key !== 'number' || key < 0 || key >= parent.length) throw new Error('invalid index');
-        parent[key] = op.value;
-      } else {
-        if (!Object.prototype.hasOwnProperty.call(parent, key)) throw new Error('missing key');
-        (parent as any)[key] = op.value;
-      }
-      break;
-    }
-    default:
-      // Exhaustiveness check
-      const _never: never = op;
-      throw new Error('Unknown op ' + (_never as any));
-  }
-}
+type ApplyPatchOk = { ok: true; course: Course; report: PatchReport };
+type ApplyPatchErr = { ok: false; course: Course; error: string; report: PatchReport };
+export type ApplyPatchResult = ApplyPatchOk | ApplyPatchErr;
 
-/**
- * Apply an array of patch operations. If any operation fails,
- * the original object is returned and `ok` is false.
- */
-export function applyPatch<T>(source: T, ops: PatchOp[]): { ok: true; value: T } | { ok: false; value: T } {
-  const working: T = structuredClone(source);
+export function applyPatch(course: Course, patch: Patch): ApplyPatchResult {
+  const working: Course = JSON.parse(JSON.stringify(course));
+  const report: PatchReport = {
+    upsertedLessons: 0,
+    appendedBlocks: 0,
+    updatedBlocks: 0,
+    removedBlocks: 0,
+    warnings: [],
+  };
+
   try {
-    for (const op of ops) applyOne(working, op);
-    return { ok: true, value: working };
-  } catch {
-    return { ok: false, value: source };
+    for (const op of patch.ops) {
+      handleOp(working, op, report);
+    }
+    return { ok: true, course: working, report };
+  } catch (err) {
+    return {
+      ok: false,
+      course,
+      error: err instanceof Error ? err.message : String(err),
+      report,
+    };
+  }
+}
+
+function handleOp(course: Course, op: PatchOp, report: PatchReport) {
+  switch (op.type) {
+    case "upsertLesson": {
+      const index = course.lessons.findIndex((l) => l.id === op.lesson.id);
+      if (index >= 0) {
+        course.lessons[index] = op.lesson;
+      } else {
+        course.lessons.push(op.lesson);
+      }
+      report.upsertedLessons++;
+      return;
+    }
+    case "appendBlocks": {
+      const lesson = course.lessons.find((l) => l.id === op.lessonId);
+      if (!lesson) {
+        report.warnings.push(`appendBlocks: lesson ${op.lessonId} not found`);
+        return;
+      }
+      for (const block of op.blocks) {
+        if (lesson.blocks.some((b) => b.id === block.id)) {
+          report.warnings.push(`appendBlocks: block ${block.id} already exists in lesson ${op.lessonId}`);
+        } else {
+          lesson.blocks.push(block);
+          report.appendedBlocks++;
+        }
+      }
+      return;
+    }
+    case "updateBlock": {
+      const lesson = course.lessons.find((l) => l.id === op.lessonId);
+      if (!lesson) {
+        report.warnings.push(`updateBlock: lesson ${op.lessonId} not found`);
+        return;
+      }
+      const index = lesson.blocks.findIndex((b) => b.id === op.block.id);
+      if (index < 0) {
+        report.warnings.push(`updateBlock: block ${op.block.id} not found in lesson ${op.lessonId}`);
+        return;
+      }
+      lesson.blocks[index] = op.block;
+      report.updatedBlocks++;
+      return;
+    }
+    case "removeBlock": {
+      const lesson = course.lessons.find((l) => l.id === op.lessonId);
+      if (!lesson) {
+        report.warnings.push(`removeBlock: lesson ${op.lessonId} not found`);
+        return;
+      }
+      const index = lesson.blocks.findIndex((b) => b.id === op.blockId);
+      if (index < 0) {
+        report.warnings.push(`removeBlock: block ${op.blockId} not found in lesson ${op.lessonId}`);
+        return;
+      }
+      lesson.blocks.splice(index, 1);
+      report.removedBlocks++;
+      return;
+    }
+    default: {
+      const _exhaust: never = op;
+      throw new Error(`Unknown op type: ${(op as { type: string }).type}`);
+    }
   }
 }
