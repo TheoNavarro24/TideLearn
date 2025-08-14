@@ -11,6 +11,8 @@ export default function Courses() {
   const [courses, setCourses] = useState(getCoursesIndex());
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const importRef = useRef<HTMLInputElement>(null);
 
   const refresh = () => setCourses(getCoursesIndex());
@@ -20,6 +22,19 @@ export default function Courses() {
     const migrated = migrateFromLegacy();
     if (migrated) refresh();
   }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const filteredCourses = useMemo(
+    () =>
+      courses.filter((c) =>
+        c.title.toLowerCase().includes(debouncedSearch.toLowerCase())
+      ),
+    [courses, debouncedSearch]
+  );
 
   const onCreate = () => {
     setCreating(true);
@@ -84,28 +99,39 @@ export default function Courses() {
 
       <Separator className="my-6" />
 
+      <div className="mb-6">
+        <Input
+          placeholder="Search courses"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {courses.length === 0 && (
+        {courses.length === 0 ? (
           <p className="text-muted-foreground">No courses yet. Create one above.</p>
+        ) : filteredCourses.length === 0 ? (
+          <p className="text-muted-foreground">No courses match your search.</p>
+        ) : (
+          filteredCourses.map((c) => (
+            <Card key={c.id} className="flex flex-col">
+              <CardHeader>
+                <CardTitle>
+                  <EditableTitle title={c.title} onSave={(t) => onRename(c.id, t)} />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Updated {new Date(c.updatedAt).toLocaleString()}</p>
+              </CardContent>
+              <CardFooter className="mt-auto flex gap-2">
+                <Button onClick={() => onOpen(c.id)}>Open</Button>
+                <Button variant="secondary" onClick={() => onDuplicate(c.id)}>Duplicate</Button>
+                <Button variant="outline" onClick={() => onExport(c.id)}>Export</Button>
+                <Button variant="destructive" onClick={() => onDelete(c.id)}>Delete</Button>
+              </CardFooter>
+            </Card>
+          ))
         )}
-        {courses.map((c) => (
-          <Card key={c.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle>
-                <EditableTitle title={c.title} onSave={(t) => onRename(c.id, t)} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Updated {new Date(c.updatedAt).toLocaleString()}</p>
-            </CardContent>
-            <CardFooter className="mt-auto flex gap-2">
-              <Button onClick={() => onOpen(c.id)}>Open</Button>
-              <Button variant="secondary" onClick={() => onDuplicate(c.id)}>Duplicate</Button>
-              <Button variant="outline" onClick={() => onExport(c.id)}>Export</Button>
-              <Button variant="destructive" onClick={() => onDelete(c.id)}>Delete</Button>
-            </CardFooter>
-          </Card>
-        ))}
       </section>
     </main>
   );
