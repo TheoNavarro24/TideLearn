@@ -1,8 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy } from "@/lib/courses";
 
@@ -14,6 +22,7 @@ export default function Courses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const importRef = useRef<HTMLInputElement>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const refresh = () => setCourses(getCoursesIndex());
 
@@ -47,7 +56,15 @@ export default function Courses() {
   };
 
   const onOpen = (id: string) => navigate(`/editor?courseId=${id}`);
-  const onDelete = (id: string) => { if (confirm("Delete this course?")) { deleteCourse(id); refresh(); } };
+  const onDelete = (id: string) => setDeleteId(id);
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteCourse(deleteId);
+      refresh();
+      setDeleteId(null);
+    }
+  };
+  const cancelDelete = () => setDeleteId(null);
   const onDuplicate = (id: string) => { const nid = duplicateCourse(id); if (nid) { refresh(); navigate(`/editor?courseId=${nid}`); } };
   const onExport = (id: string) => {
     const c = loadCourse(id);
@@ -133,6 +150,18 @@ export default function Courses() {
           ))
         )}
       </section>
+      <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) setDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this course?</DialogTitle>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="secondary" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
