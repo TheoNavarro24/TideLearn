@@ -8,6 +8,34 @@ import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
 import { courseSchema, type Block, type Lesson, type Course } from "@/types/course";
 
+interface QuizAnsweredDetail {
+  blockId: string;
+  correct: boolean;
+}
+
+type QuizAnsweredEvent = CustomEvent<QuizAnsweredDetail>;
+
+interface ResumeState {
+  completed?: string[];
+  lastLessonId?: string;
+}
+
+interface ResumeMessage {
+  type: "resume";
+  state?: ResumeState;
+}
+
+interface ReadyMessage {
+  type: "ready";
+}
+
+interface ProgressMessage {
+  type: "progress";
+  completed: string[];
+  lastLessonId: string | null;
+  courseCompleted: boolean;
+}
+
 export default function View() {
   const [course, setCourse] = useState<Course | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,17 +105,20 @@ export default function View() {
   }, [storageKey]);
   useEffect(() => {
     const handler = (e: Event) => {
-      const anyE = e as CustomEvent<{ blockId: string; correct: boolean }>;
-      const { blockId, correct } = anyE.detail || ({} as any);
+      const detail = (e as QuizAnsweredEvent).detail;
+      const blockId = detail?.blockId;
+      const correct = detail?.correct;
       if (!blockId) return;
       setAnswers((prev) => {
         const next = { ...prev, [blockId]: !!correct };
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch {}
         return next;
       });
     };
-    window.addEventListener("quiz:answered", handler as EventListener);
-    return () => window.removeEventListener("quiz:answered", handler as EventListener);
+    window.addEventListener("quiz:answered", handler);
+    return () => window.removeEventListener("quiz:answered", handler);
   }, [storageKey]);
 
   // Persistent course progress (completed lessons + resume)
@@ -148,28 +179,33 @@ export default function View() {
   // SCORM/LMS bridge: messaging (ready/resume/progress)
   useEffect(() => {
     if (!course) return;
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'ready' }, '*'); } catch {}
+    try {
+      if (window.parent && window.parent !== window) {
+        const msg: ReadyMessage = { type: "ready" };
+        window.parent.postMessage(msg, "*");
+      }
+    } catch {}
   }, [course]);
   useEffect(() => {
     if (!course) return;
-    const onMsg = (event: MessageEvent) => {
-      const data: any = (event as any).data;
-      if (!data || typeof data !== 'object') return;
-      if (data.type === 'resume') {
-        const st = (data.state || {}) as { completed?: string[]; lastLessonId?: string };
+    const onMsg = (event: MessageEvent<ResumeMessage>) => {
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "resume") {
+        const st = data.state || {};
         if (Array.isArray(st.completed)) setCompleted(new Set(st.completed));
         if (st.lastLessonId && course.lessons.some((l) => l.id === st.lastLessonId)) {
           setIsPaged(true);
           setCurrentLessonId(st.lastLessonId);
           const url = new URL(window.location.href);
-          url.searchParams.set('paged', '1');
-          url.searchParams.set('lesson', st.lastLessonId);
-          history.replaceState(null, '', url.toString());
+          url.searchParams.set("paged", "1");
+          url.searchParams.set("lesson", st.lastLessonId);
+          history.replaceState(null, "", url.toString());
         }
       }
     };
-    window.addEventListener('message', onMsg as any);
-    return () => window.removeEventListener('message', onMsg as any);
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, [course]);
   useEffect(() => {
     if (!course) return;
@@ -177,7 +213,13 @@ export default function View() {
     const courseCompleted = total > 0 && completed.size >= total;
     try {
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'progress', completed: Array.from(completed), lastLessonId, courseCompleted }, '*');
+        const msg: ProgressMessage = {
+          type: "progress",
+          completed: Array.from(completed),
+          lastLessonId,
+          courseCompleted,
+        };
+        window.parent.postMessage(msg, "*");
       }
     } catch {}
   }, [completed, lastLessonId, course]);
