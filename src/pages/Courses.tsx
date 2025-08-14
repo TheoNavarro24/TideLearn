@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy } from "@/lib/courses";
+import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy, saveCourse } from "@/lib/courses";
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ export default function Courses() {
       if (!data?.lessons) throw new Error("Invalid");
       const { id } = createNewCourse(data.title || "Imported Course");
       // overwrite the content of the created course with imported data
-      localStorage.setItem(`course:${id}`, JSON.stringify({ schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons }));
+      saveCourse(id, { schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons });
       refresh();
       navigate(`/editor?courseId=${id}`);
     } catch (e) {
