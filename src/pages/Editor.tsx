@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 // Shared types
-import { Block, Lesson, uid } from "@/types/course";
+import { Block, Course, Lesson, uid } from "@/types/course";
 import type { BlockType } from "@/types/course";
 import { registry, createBlock, getSpec } from "@/components/blocks/registry";
 
@@ -28,7 +28,7 @@ const defaultLesson: Lesson = {
   blocks: [
     { id: uid(), type: "heading", text: "Welcome to My Course" },
     { id: uid(), type: "text", text: "This welcome page introduces your course. Use the Table of Contents below to jump to any lesson." },
-    { id: uid(), type: "toc" as any },
+    { id: uid(), type: "toc" },
   ],
 };
 
@@ -75,7 +75,7 @@ useEffect(() => {
   setLessons((prev) => {
     if (!prev.length) return prev;
     const first = prev[0];
-    const firstBlock: any = first.blocks[0];
+    const firstBlock: Block | undefined = first.blocks[0];
     let changed = false;
     const nextFirst: Lesson = { ...first };
     if (first.title !== "Welcome") {
@@ -154,14 +154,14 @@ useEffect(() => {
       if (l.id !== selectedLesson.id) return l;
       const idx = l.blocks.findIndex((b) => b.id === blockId);
       if (idx < 0) return l;
-      const copy = { ...(l.blocks[idx] as any), id: uid() } as Block;
+      const copy: Block = { ...l.blocks[idx], id: uid() };
       const blocks = [...l.blocks];
       blocks.splice(idx + 1, 0, copy);
       return { ...l, blocks };
     }));
   };
 
-  const courseData = { schemaVersion: 1, title: courseTitle, lessons };
+  const courseData: Course = { schemaVersion: 1, title: courseTitle, lessons };
   const compressedHash = useMemo(() => compressToEncodedURIComponent(JSON.stringify(courseData)), [courseData]);
   const publishUrl = useMemo(() => `${window.location.origin}/view#${compressedHash}`,[compressedHash]);
   const hashSize = compressedHash.length;
@@ -171,7 +171,7 @@ useEffect(() => {
   const saveNow = () => {
     try {
       if (courseId) {
-        saveCourse(courseId, courseData as any);
+        saveCourse(courseId, courseData);
       } else {
         localStorage.setItem("editor:course", JSON.stringify(courseData));
       }
@@ -185,7 +185,7 @@ useEffect(() => {
     saveTimer.current = window.setTimeout(() => {
       try {
         if (courseId) {
-          saveCourse(courseId, courseData as any);
+          saveCourse(courseId, courseData);
         } else {
           localStorage.setItem("editor:course", JSON.stringify(courseData));
         }
@@ -202,10 +202,10 @@ useEffect(() => {
       if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
         const target = e.target as HTMLElement | null;
         const isTyping =
-          !!target &&
+          target !== null &&
           (target.tagName === "INPUT" ||
             target.tagName === "TEXTAREA" ||
-            (target as any).isContentEditable);
+            target.isContentEditable);
         if (!isTyping) {
           e.preventDefault();
           setQuickPickerOpen(true);
@@ -329,7 +329,7 @@ useEffect(() => {
   };
   const exportSCORM12 = async () => {
     try {
-      const blob = await exportScorm12Zip(courseData as any, publishUrl);
+      const blob = await exportScorm12Zip(courseData, publishUrl);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -345,7 +345,7 @@ useEffect(() => {
   };
   const exportStaticZip = async () => {
     try {
-      const blob = await exportStaticWebZip(courseData as any, publishUrl);
+      const blob = await exportStaticWebZip(courseData, publishUrl);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
