@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFi
 import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -32,6 +35,36 @@ const defaultLesson: Lesson = {
   ],
 };
 
+function SortableLesson({
+  lesson,
+  isSelected,
+  onSelect,
+}: {
+  lesson: Lesson;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+  };
+
+  return (
+    <SidebarMenuItem ref={setNodeRef} style={style}>
+      <SidebarMenuButton asChild {...attributes} {...listeners}>
+        <button
+          className={`w-full text-left ${isSelected ? "bg-muted text-primary" : "hover:bg-muted/60"}`}
+          onClick={onSelect}
+        >
+          <span className="truncate">{lesson.title}</span>
+        </button>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
 export default function Editor() {
   const [courseTitle, setCourseTitle] = useState("My Course");
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
@@ -40,6 +73,19 @@ export default function Editor() {
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
+
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setLessons(prev => {
+        const oldIndex = prev.findIndex(l => l.id === active.id);
+        const newIndex = prev.findIndex(l => l.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  };
 
   const selectedLesson = useMemo(
     () => lessons.find(l => l.id === selectedLessonId)!,
@@ -394,20 +440,20 @@ useEffect(() => {
             <SidebarGroup>
               <SidebarGroupLabel>Main</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {lessons.map((l) => (
-                    <SidebarMenuItem key={l.id}>
-                      <SidebarMenuButton asChild>
-                        <button
-                          className={`w-full text-left ${selectedLessonId === l.id ? "bg-muted text-primary" : "hover:bg-muted/60"}`}
-                          onClick={() => setSelectedLessonId(l.id)}
-                        >
-                          <span className="truncate">{l.title}</span>
-                        </button>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
+                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                  <SidebarMenu>
+                    <SortableContext items={lessons} strategy={verticalListSortingStrategy}>
+                      {lessons.map((l) => (
+                        <SortableLesson
+                          key={l.id}
+                          lesson={l}
+                          isSelected={selectedLessonId === l.id}
+                          onSelect={() => setSelectedLessonId(l.id)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </SidebarMenu>
+                </DndContext>
                 <div className="p-2">
                   <Button variant="secondary" className="w-full" onClick={addLesson}>
                     <Plus /> Add lesson
