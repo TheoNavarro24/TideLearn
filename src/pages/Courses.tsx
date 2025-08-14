@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy } from "@/lib/courses";
+import { setItem } from "@/lib/storage";
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ export default function Courses() {
       if (!data?.lessons) throw new Error("Invalid");
       const { id } = createNewCourse(data.title || "Imported Course");
       // overwrite the content of the created course with imported data
-      localStorage.setItem(`course:${id}`, JSON.stringify({ schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons }));
+      setItem(`course:${id}`, JSON.stringify({ schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons }));
       refresh();
       navigate(`/editor?courseId=${id}`);
     } catch (e) {

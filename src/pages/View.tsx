@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { getSpec } from "@/components/blocks/registry";
+import { getItem, setItem } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +61,7 @@ export default function View() {
   const storageKey = useMemo(() => "quizAnswers:" + window.location.hash.slice(1), []);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(storageKey);
+      const raw = getItem(storageKey);
       if (raw) setAnswers(JSON.parse(raw));
     } catch {}
   }, [storageKey]);
@@ -71,7 +72,7 @@ export default function View() {
       if (!blockId) return;
       setAnswers((prev) => {
         const next = { ...prev, [blockId]: !!correct };
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        setItem(storageKey, JSON.stringify(next));
         return next;
       });
     };
@@ -86,7 +87,7 @@ export default function View() {
 
   const loadProgress = () => {
     try {
-      const raw = localStorage.getItem(progressKey);
+      const raw = getItem(progressKey);
       if (raw) {
         const p = JSON.parse(raw) as { completed?: string[]; lastLessonId?: string };
         setCompleted(new Set(p.completed || []));
@@ -102,7 +103,7 @@ export default function View() {
 
   const persistProgress = (nextCompleted: Set<string>, nextLast: string | null) => {
     try {
-      localStorage.setItem(
+      setItem(
         progressKey,
         JSON.stringify({ completed: Array.from(nextCompleted), lastLessonId: nextLast || undefined })
       );

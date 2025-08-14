@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse } from "@/lib/courses";
+import { getItem, setItem } from "@/lib/storage";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFileName } from "@/lib/scorm12";
 import JSZip from "jszip";
@@ -58,7 +59,7 @@ export default function Editor() {
         }
         return;
       }
-      const raw = localStorage.getItem("editor:course");
+      const raw = getItem("editor:course");
       if (!raw) return;
       const saved = JSON.parse(raw);
       if (saved?.lessons?.length) {
@@ -173,7 +174,7 @@ useEffect(() => {
       if (courseId) {
         saveCourse(courseId, courseData as any);
       } else {
-        localStorage.setItem("editor:course", JSON.stringify(courseData));
+        setItem("editor:course", JSON.stringify(courseData));
       }
       toast({ title: "Saved" });
     } catch (e) {
@@ -187,7 +188,7 @@ useEffect(() => {
         if (courseId) {
           saveCourse(courseId, courseData as any);
         } else {
-          localStorage.setItem("editor:course", JSON.stringify(courseData));
+          setItem("editor:course", JSON.stringify(courseData));
         }
       } catch {}
     }, 500);

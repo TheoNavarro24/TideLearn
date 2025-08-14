@@ -1,4 +1,5 @@
 import { uid, type Course, type Lesson } from "@/types/course";
+import { getItem, setItem, removeItem } from "./storage";
 
 export type CourseIndexItem = { id: string; title: string; updatedAt: number };
 
@@ -8,9 +9,9 @@ const LEGACY_KEY = "editor:course";
 const LEGACY_MIGRATED_KEY = "editor:course:migrated";
 
 export function getCoursesIndex(): CourseIndexItem[] {
+  const raw = getItem(INDEX_KEY);
+  if (!raw) return [];
   try {
-    const raw = localStorage.getItem(INDEX_KEY);
-    if (!raw) return [];
     const arr = JSON.parse(raw);
     if (Array.isArray(arr)) return arr;
   } catch {}
@@ -18,15 +19,13 @@ export function getCoursesIndex(): CourseIndexItem[] {
 }
 
 function setCoursesIndex(next: CourseIndexItem[]) {
-  try {
-    localStorage.setItem(INDEX_KEY, JSON.stringify(next));
-  } catch {}
+  setItem(INDEX_KEY, JSON.stringify(next));
 }
 
 export function loadCourse(id: string): Course | null {
+  const raw = getItem(COURSE_KEY(id));
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(COURSE_KEY(id));
-    if (!raw) return null;
     return JSON.parse(raw) as Course;
   } catch {
     return null;
@@ -34,9 +33,7 @@ export function loadCourse(id: string): Course | null {
 }
 
 export function saveCourse(id: string, course: Course) {
-  try {
-    localStorage.setItem(COURSE_KEY(id), JSON.stringify(course));
-  } catch {}
+  setItem(COURSE_KEY(id), JSON.stringify(course));
   const index = getCoursesIndex();
   const exists = index.find((i) => i.id === id);
   const item: CourseIndexItem = { id, title: course.title || "Untitled Course", updatedAt: Date.now() };
@@ -45,7 +42,7 @@ export function saveCourse(id: string, course: Course) {
 }
 
 export function deleteCourse(id: string) {
-  try { localStorage.removeItem(COURSE_KEY(id)); } catch {}
+  removeItem(COURSE_KEY(id));
   const next = getCoursesIndex().filter((i) => i.id !== id);
   setCoursesIndex(next);
 }
@@ -96,10 +93,10 @@ export function exportCourseJSON(course: Course): string {
 export function migrateFromLegacy(): string | null {
   try {
     // Avoid duplicating migrations
-    const already = localStorage.getItem(LEGACY_MIGRATED_KEY);
+    const already = getItem(LEGACY_MIGRATED_KEY);
     if (already === "1") return null;
 
-    const raw = localStorage.getItem(LEGACY_KEY);
+    const raw = getItem(LEGACY_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed?.lessons) return null;
@@ -107,7 +104,7 @@ export function migrateFromLegacy(): string | null {
     const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons } as Course;
     saveCourse(id, course);
     // Mark as migrated so this runs only once
-    try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {}
+    setItem(LEGACY_MIGRATED_KEY, "1");
     // We intentionally keep the legacy key to avoid data loss
     return id;
   } catch {
