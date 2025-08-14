@@ -9,6 +9,13 @@ export type QuizBlock = {
   correctIndex: number;
 };
 
+export type CodeBlock = {
+  id: string;
+  type: "code";
+  language: string;
+  code: string;
+};
+
 // New richer blocks
 export type ListBlock = {
   id: string;
@@ -86,6 +93,7 @@ export type Block =
   | TextBlock
   | ImageBlock
   | QuizBlock
+  | CodeBlock
   | TrueFalseBlock
   | ShortAnswerBlock
   | ListBlock
@@ -109,6 +117,7 @@ export function uid() {
 export const factories = {
   heading: (): HeadingBlock => ({ id: uid(), type: "heading", text: "New Heading" }),
   text: (): TextBlock => ({ id: uid(), type: "text", text: "New paragraph..." }),
+  code: (): CodeBlock => ({ id: uid(), type: "code", language: "typescript", code: "// code" }),
   image: (): ImageBlock => ({ id: uid(), type: "image", src: "", alt: "" }),
   quiz: (): QuizBlock => ({
     id: uid(),

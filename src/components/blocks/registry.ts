@@ -1,7 +1,8 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
+import { CodeView } from "./view/Code";
 import { ImageView } from "./view/Image";
 import { QuizView } from "./view/Quiz";
 import { ListView } from "./view/List";
@@ -16,6 +17,7 @@ import { TrueFalseView } from "./view/TrueFalse";
 import { ShortAnswerView } from "./view/ShortAnswer";
 import { HeadingForm } from "./editor/HeadingForm";
 import { TextForm } from "./editor/TextForm";
+import { CodeForm } from "./editor/CodeForm";
 import { ImageForm } from "./editor/ImageForm";
 import { QuizForm } from "./editor/QuizForm";
 import { ListForm } from "./editor/ListForm";
@@ -30,7 +32,7 @@ import { TrueFalseForm } from "./editor/TrueFalseForm";
 import { ShortAnswerForm } from "./editor/ShortAnswerForm";
 import { TocForm } from "./editor/TocForm";
 import { TocView } from "./view/Toc";
-import { FileText, Type, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3 } from "lucide-react";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3 } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -62,6 +64,15 @@ export const registry: BlockSpec[] = [
     create: factories.text,
     Editor: TextForm as EditorRenderer<TextBlock>,
     View: TextView as ViewRenderer<TextBlock>,
+    category: "Text",
+  },
+  {
+    type: "code",
+    label: "Code",
+    icon: Code,
+    create: factories.code,
+    Editor: CodeForm as EditorRenderer<CodeBlock>,
+    View: CodeView as ViewRenderer<CodeBlock>,
     category: "Text",
   },
   {
