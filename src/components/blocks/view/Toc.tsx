@@ -1,23 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { ChevronDown, CheckCircle2, Circle } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import type { Course, TocBlock } from "@/types/course";
 
 export function TocView({ block }: { block: TocBlock }) {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [course, setCourse] = useState<Course | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const currentHash = location.hash.slice(1);
   useEffect(() => {
     try {
-      const hash = window.location.hash.slice(1);
+      const hash = currentHash;
       if (!hash) return;
       const json = decompressFromEncodedURIComponent(hash);
       if (json) setCourse(JSON.parse(json));
-    } catch {}
-  }, []);
+    } catch {
+      /* ignored */
+    }
+  }, [currentHash]);
 
-  const progressKey = useMemo(() => "courseProgress:" + window.location.hash.slice(1), []);
+  const progressKey = useMemo(() => "courseProgress:" + currentHash, [currentHash]);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   useEffect(() => {
     try {
@@ -28,7 +34,9 @@ export function TocView({ block }: { block: TocBlock }) {
       } else {
         setCompleted(new Set());
       }
-    } catch {}
+    } catch {
+      /* ignored */
+    }
   }, [progressKey]);
   useEffect(() => {
     const handler = () => {
@@ -40,7 +48,9 @@ export function TocView({ block }: { block: TocBlock }) {
         } else {
           setCompleted(new Set());
         }
-      } catch {}
+      } catch {
+        /* ignored */
+      }
     };
     window.addEventListener("course:progress:changed", handler as EventListener);
     return () => window.removeEventListener("course:progress:changed", handler as EventListener);
@@ -50,7 +60,11 @@ export function TocView({ block }: { block: TocBlock }) {
     setCompleted((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem(progressKey, JSON.stringify({ completed: Array.from(next) })); } catch {}
+      try {
+        localStorage.setItem(progressKey, JSON.stringify({ completed: Array.from(next) }));
+      } catch {
+        /* ignored */
+      }
       window.dispatchEvent(new Event("course:progress:changed"));
       return next;
     });
@@ -59,21 +73,14 @@ export function TocView({ block }: { block: TocBlock }) {
 
   const lessons = useMemo(() => course?.lessons ?? [], [course]);
 
-  const paged = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    const p = params.get("paged");
-    // Default to paged view unless explicitly disabled (?paged=0)
-    if (p === "0") return false;
-    return true;
-  }, []);
-  const currentHash = useMemo(() => window.location.hash.slice(1), []);
+  const paged = searchParams.get("paged") !== "0";
+  const currentLesson = searchParams.get("lesson");
 
   // Active lesson highlighting
   useEffect(() => {
     if (!lessons.length) return;
     if (paged) {
-      const sp = new URLSearchParams(window.location.search);
-      const id = sp.get("lesson") ?? lessons[0]?.id ?? null;
+      const id = currentLesson ?? lessons[0]?.id ?? null;
       setActiveId(id);
       return;
     }
@@ -82,16 +89,21 @@ export function TocView({ block }: { block: TocBlock }) {
     const io = new IntersectionObserver((entries) => {
       let vis: string | null = null;
       for (const e of entries) {
-        if (e.isIntersecting) { vis = (e.target as HTMLElement).id; break; }
+        if (e.isIntersecting) {
+          vis = (e.target as HTMLElement).id;
+          break;
+        }
       }
-      if (vis && vis !== activeId) setActiveId(vis);
+      if (vis) {
+        setActiveId((prev) => (vis !== prev ? vis : prev));
+      }
     }, { threshold: 0.5 });
     ids.forEach((id) => {
       const el = document.getElementById(id);
       if (el) io.observe(el);
     });
     return () => io.disconnect();
-  }, [lessons, paged]);
+  }, [lessons, paged, currentLesson]);
 
   if (!lessons.length) {
     return <div className="text-sm text-muted-foreground">Table of Contents will appear in the viewer.</div>;
@@ -110,7 +122,7 @@ export function TocView({ block }: { block: TocBlock }) {
               <ul className="space-y-2">
                 {lessons.map((l) => {
                   const href = paged
-                    ? `?${(() => { const sp = new URLSearchParams(window.location.search); sp.set("paged","1"); sp.set("lesson", l.id); return sp.toString(); })()}#${currentHash}`
+                    ? `?${(() => { const sp = new URLSearchParams(searchParams); sp.set("paged","1"); sp.set("lesson", l.id); return sp.toString(); })()}#${currentHash}`
                     : `#${currentHash}`;
                   const isActive = activeId === l.id;
                   const isDone = completed.has(l.id);

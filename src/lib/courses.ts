@@ -1,4 +1,11 @@
-import { uid, type Course, type Lesson } from "@/types/course";
+import {
+  uid,
+  type Course,
+  type Lesson,
+  type HeadingBlock,
+  type TextBlock,
+  type TocBlock,
+} from "@/types/course";
 
 export type CourseIndexItem = { id: string; title: string; updatedAt: number };
 
@@ -78,12 +85,12 @@ export function createNewCourse(title = "New Course"): { id: string; course: Cou
     id: uid(),
     title: "Welcome",
     blocks: [
-      { id: uid(), type: "heading", text: `Welcome to ${title}` } as any,
-      { id: uid(), type: "text", text: "Write a short course description here." } as any,
-      { id: uid(), type: "toc" } as any,
+      { id: uid(), type: "heading", text: `Welcome to ${title}` } as HeadingBlock,
+      { id: uid(), type: "text", text: "Write a short course description here." } as TextBlock,
+      { id: uid(), type: "toc" } as TocBlock,
     ],
   };
-  const course: Course = { schemaVersion: 1, title, lessons: [welcome] } as Course;
+  const course: Course = { schemaVersion: 1, title, lessons: [welcome] };
   const id = uid();
   saveCourse(id, course);
   return { id, course };
@@ -104,7 +111,11 @@ export function migrateFromLegacy(): string | null {
     const parsed = JSON.parse(raw);
     if (!parsed?.lessons) return null;
     const id = uid();
-    const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons } as Course;
+    const course: Course = {
+      schemaVersion: 1,
+      title: parsed.title || "Imported Course",
+      lessons: parsed.lessons as Lesson[],
+    };
     saveCourse(id, course);
     // Mark as migrated so this runs only once
     try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {}

@@ -1,0 +1,150 @@
+openapi: 3.1.0
+info:
+  title: Rise on Go Actions API
+  version: v1
+servers:
+  - url: https://rise-on-go.supabase.co/functions/v1
+    description: Supabase Edge Functions deployment
+paths:
+  /compress:
+    post:
+      summary: Compress a course into a URL-safe string
+      operationId: compressCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+            examples:
+              sample:
+                summary: Example course to compress
+                value:
+                  schemaVersion: 1
+                  title: Demo Course
+                  lessons:
+                    - id: intro
+                      title: Introduction
+                      blocks:
+                        - id: b1
+                          type: text
+                          text: Welcome to the course!
+      responses:
+        '200':
+          description: Compressed representation
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [compressed]
+                properties:
+                  compressed:
+                    type: string
+                    description: URL-safe compressed string
+              examples:
+                sample:
+                  summary: Example compressed payload
+                  value:
+                    compressed: "N4IgLgTgpgTghgUwDQgE4QFwAYGEA0IAZATwAcBDAWwwH0A7AcwAUAlhAOyTQA=="
+  /links:
+    post:
+      summary: Generate shareable links for a course
+      operationId: generateLinks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+            examples:
+              sample:
+                summary: Example course for link generation
+                value:
+                  schemaVersion: 1
+                  title: Demo Course
+                  lessons:
+                    - id: intro
+                      title: Introduction
+                      blocks:
+                        - id: b1
+                          type: text
+                          text: Welcome to the course!
+      responses:
+        '200':
+          description: Generated links
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [previewUrl, publishUrl]
+                properties:
+                  previewUrl:
+                    type: string
+                    format: uri
+                    description: Temporary link for previewing the course
+                  publishUrl:
+                    type: string
+                    format: uri
+                    description: Public link for sharing the course
+              examples:
+                sample:
+                  summary: Example set of generated links
+                  value:
+                    previewUrl: https://rise-on-go.vercel.app/view#N4IgLgTgpgTghgUwDQgE4QFwAYGEA0IAZATwAcBDAWwwH0A7AcwAUAlhAOyTQA==
+                    publishUrl: https://rise-on-go.vercel.app/view#N4IgLgTgpgTghgUwDQgE4QFwAYGEA0IAZATwAcBDAWwwH0A7AcwAUAlhAOyTQA==
+components:
+  schemas:
+    Course:
+      type: object
+      required:
+        - schemaVersion
+        - title
+        - lessons
+      properties:
+        schemaVersion:
+          type: integer
+          enum: [1]
+          description: Version of the course schema
+        title:
+          type: string
+          description: Title of the course
+        lessons:
+          type: array
+          description: Ordered list of lessons
+          items:
+            type: object
+            required: [id, title, blocks]
+            properties:
+              id:
+                type: string
+                description: Unique identifier for the lesson
+              title:
+                type: string
+                description: Display title of the lesson
+              blocks:
+                type: array
+                description: Content blocks for the lesson
+                items:
+                  type: object
+                  required: [id, type]
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                    text:
+                      type: string
+                      description: Text content (for text blocks)
+                    src:
+                      type: string
+                      description: Source URL for media blocks
+      example:
+        schemaVersion: 1
+        title: Demo Course
+        lessons:
+          - id: intro
+            title: Introduction
+            blocks:
+              - id: b1
+                type: text
+                text: Welcome to the course!

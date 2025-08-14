@@ -1,17 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy } from "@/lib/courses";
+import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy, saveCourse } from "@/lib/courses";
 
 export default function Courses() {
   const navigate = useNavigate();
   const [courses, setCourses] = useState(getCoursesIndex());
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const importRef = useRef<HTMLInputElement>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const refresh = () => setCourses(getCoursesIndex());
 
@@ -20,6 +31,19 @@ export default function Courses() {
     const migrated = migrateFromLegacy();
     if (migrated) refresh();
   }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const filteredCourses = useMemo(
+    () =>
+      courses.filter((c) =>
+        c.title.toLowerCase().includes(debouncedSearch.toLowerCase())
+      ),
+    [courses, debouncedSearch]
+  );
 
   const onCreate = () => {
     setCreating(true);
@@ -32,7 +56,15 @@ export default function Courses() {
   };
 
   const onOpen = (id: string) => navigate(`/editor?courseId=${id}`);
-  const onDelete = (id: string) => { if (confirm("Delete this course?")) { deleteCourse(id); refresh(); } };
+  const onDelete = (id: string) => setDeleteId(id);
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteCourse(deleteId);
+      refresh();
+      setDeleteId(null);
+    }
+  };
+  const cancelDelete = () => setDeleteId(null);
   const onDuplicate = (id: string) => { const nid = duplicateCourse(id); if (nid) { refresh(); navigate(`/editor?courseId=${nid}`); } };
   const onExport = (id: string) => {
     const c = loadCourse(id);
@@ -52,7 +84,7 @@ export default function Courses() {
       if (!data?.lessons) throw new Error("Invalid");
       const { id } = createNewCourse(data.title || "Imported Course");
       // overwrite the content of the created course with imported data
-      localStorage.setItem(`course:${id}`, JSON.stringify({ schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons }));
+      saveCourse(id, { schemaVersion: 1, title: data.title || "Imported Course", lessons: data.lessons });
       refresh();
       navigate(`/editor?courseId=${id}`);
     } catch (e) {
@@ -84,29 +116,52 @@ export default function Courses() {
 
       <Separator className="my-6" />
 
+      <div className="mb-6">
+        <Input
+          placeholder="Search courses"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {courses.length === 0 && (
+        {courses.length === 0 ? (
           <p className="text-muted-foreground">No courses yet. Create one above.</p>
+        ) : filteredCourses.length === 0 ? (
+          <p className="text-muted-foreground">No courses match your search.</p>
+        ) : (
+          filteredCourses.map((c) => (
+            <Card key={c.id} className="flex flex-col">
+              <CardHeader>
+                <CardTitle>
+                  <EditableTitle title={c.title} onSave={(t) => onRename(c.id, t)} />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Updated {new Date(c.updatedAt).toLocaleString()}</p>
+              </CardContent>
+              <CardFooter className="mt-auto flex gap-2">
+                <Button onClick={() => onOpen(c.id)}>Open</Button>
+                <Button variant="secondary" onClick={() => onDuplicate(c.id)}>Duplicate</Button>
+                <Button variant="outline" onClick={() => onExport(c.id)}>Export</Button>
+                <Button variant="destructive" onClick={() => onDelete(c.id)}>Delete</Button>
+              </CardFooter>
+            </Card>
+          ))
         )}
-        {courses.map((c) => (
-          <Card key={c.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle>
-                <EditableTitle title={c.title} onSave={(t) => onRename(c.id, t)} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Updated {new Date(c.updatedAt).toLocaleString()}</p>
-            </CardContent>
-            <CardFooter className="mt-auto flex gap-2">
-              <Button onClick={() => onOpen(c.id)}>Open</Button>
-              <Button variant="secondary" onClick={() => onDuplicate(c.id)}>Duplicate</Button>
-              <Button variant="outline" onClick={() => onExport(c.id)}>Export</Button>
-              <Button variant="destructive" onClick={() => onDelete(c.id)}>Delete</Button>
-            </CardFooter>
-          </Card>
-        ))}
       </section>
+      <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) setDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this course?</DialogTitle>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="secondary" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
