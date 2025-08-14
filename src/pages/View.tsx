@@ -62,7 +62,9 @@ export default function View() {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   }, [storageKey]);
   useEffect(() => {
     const handler = (e: Event) => {
@@ -71,7 +73,11 @@ export default function View() {
       if (!blockId) return;
       setAnswers((prev) => {
         const next = { ...prev, [blockId]: !!correct };
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch (error) {
+          console.error(error);
+        }
         return next;
       });
     };
@@ -95,7 +101,9 @@ export default function View() {
         setCompleted(new Set());
         setLastLessonId(null);
       }
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => { loadProgress(); }, [progressKey]);
@@ -106,7 +114,9 @@ export default function View() {
         progressKey,
         JSON.stringify({ completed: Array.from(nextCompleted), lastLessonId: nextLast || undefined })
       );
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const toggleComplete = (lessonId: string) => {
@@ -137,7 +147,11 @@ export default function View() {
   // SCORM/LMS bridge: messaging (ready/resume/progress)
   useEffect(() => {
     if (!course) return;
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'ready' }, '*'); } catch {}
+    try {
+      if (window.parent && window.parent !== window) window.parent.postMessage({ type: "ready" }, "*");
+    } catch {
+      /* best effort only: parent window may be cross-origin */
+    }
   }, [course]);
   useEffect(() => {
     if (!course) return;
@@ -166,9 +180,11 @@ export default function View() {
     const courseCompleted = total > 0 && completed.size >= total;
     try {
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'progress', completed: Array.from(completed), lastLessonId, courseCompleted }, '*');
+        window.parent.postMessage({ type: "progress", completed: Array.from(completed), lastLessonId, courseCompleted }, "*");
       }
-    } catch {}
+    } catch {
+      /* best effort only: parent window may be cross-origin */
+    }
   }, [completed, lastLessonId, course]);
 
   // Scrollspy for active section

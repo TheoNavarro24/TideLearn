@@ -13,14 +13,18 @@ export function getCoursesIndex(): CourseIndexItem[] {
     if (!raw) return [];
     const arr = JSON.parse(raw);
     if (Array.isArray(arr)) return arr;
-  } catch {}
+  } catch (error) {
+    console.error(error);
+  }
   return [];
 }
 
 function setCoursesIndex(next: CourseIndexItem[]) {
   try {
     localStorage.setItem(INDEX_KEY, JSON.stringify(next));
-  } catch {}
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export function loadCourse(id: string): Course | null {
@@ -36,7 +40,9 @@ export function loadCourse(id: string): Course | null {
 export function saveCourse(id: string, course: Course) {
   try {
     localStorage.setItem(COURSE_KEY(id), JSON.stringify(course));
-  } catch {}
+  } catch (error) {
+    console.error(error);
+  }
   const index = getCoursesIndex();
   const exists = index.find((i) => i.id === id);
   const item: CourseIndexItem = { id, title: course.title || "Untitled Course", updatedAt: Date.now() };
@@ -45,7 +51,11 @@ export function saveCourse(id: string, course: Course) {
 }
 
 export function deleteCourse(id: string) {
-  try { localStorage.removeItem(COURSE_KEY(id)); } catch {}
+  try {
+    localStorage.removeItem(COURSE_KEY(id));
+  } catch (error) {
+    console.error(error);
+  }
   const next = getCoursesIndex().filter((i) => i.id !== id);
   setCoursesIndex(next);
 }
@@ -107,7 +117,11 @@ export function migrateFromLegacy(): string | null {
     const course: Course = { schemaVersion: 1, title: parsed.title || "Imported Course", lessons: parsed.lessons } as Course;
     saveCourse(id, course);
     // Mark as migrated so this runs only once
-    try { localStorage.setItem(LEGACY_MIGRATED_KEY, "1"); } catch {}
+    try {
+      localStorage.setItem(LEGACY_MIGRATED_KEY, "1");
+    } catch (error) {
+      console.error(error);
+    }
     // We intentionally keep the legacy key to avoid data loss
     return id;
   } catch {

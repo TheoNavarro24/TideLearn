@@ -14,7 +14,9 @@ export function TocView({ block }: { block: TocBlock }) {
       if (!hash) return;
       const json = decompressFromEncodedURIComponent(hash);
       if (json) setCourse(JSON.parse(json));
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   }, []);
 
   const progressKey = useMemo(() => "courseProgress:" + window.location.hash.slice(1), []);
@@ -28,7 +30,9 @@ export function TocView({ block }: { block: TocBlock }) {
       } else {
         setCompleted(new Set());
       }
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   }, [progressKey]);
   useEffect(() => {
     const handler = () => {
@@ -40,7 +44,9 @@ export function TocView({ block }: { block: TocBlock }) {
         } else {
           setCompleted(new Set());
         }
-      } catch {}
+      } catch (error) {
+        console.error(error);
+      }
     };
     window.addEventListener("course:progress:changed", handler as EventListener);
     return () => window.removeEventListener("course:progress:changed", handler as EventListener);
@@ -50,7 +56,11 @@ export function TocView({ block }: { block: TocBlock }) {
     setCompleted((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem(progressKey, JSON.stringify({ completed: Array.from(next) })); } catch {}
+      try {
+        localStorage.setItem(progressKey, JSON.stringify({ completed: Array.from(next) }));
+      } catch (error) {
+        console.error(error);
+      }
       window.dispatchEvent(new Event("course:progress:changed"));
       return next;
     });

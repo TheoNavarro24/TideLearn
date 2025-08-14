@@ -189,7 +189,9 @@ useEffect(() => {
         } else {
           localStorage.setItem("editor:course", JSON.stringify(courseData));
         }
-      } catch {}
+      } catch (error) {
+        console.error(error);
+      }
     }, 500);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current!);
