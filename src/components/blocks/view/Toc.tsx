@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { ChevronDown, CheckCircle2, Circle } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { getItem, setItem } from "@/lib/storage";
 import type { Course, TocBlock } from "@/types/course";
 
 export function TocView({ block }: { block: TocBlock }) {
@@ -21,7 +22,7 @@ export function TocView({ block }: { block: TocBlock }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(progressKey);
+      const raw = getItem(progressKey);
       if (raw) {
         const p = JSON.parse(raw) as { completed?: string[] };
         setCompleted(new Set(p.completed || []));
@@ -33,7 +34,7 @@ export function TocView({ block }: { block: TocBlock }) {
   useEffect(() => {
     const handler = () => {
       try {
-        const raw = localStorage.getItem(progressKey);
+        const raw = getItem(progressKey);
         if (raw) {
           const p = JSON.parse(raw) as { completed?: string[] };
           setCompleted(new Set(p.completed || []));
@@ -50,7 +51,7 @@ export function TocView({ block }: { block: TocBlock }) {
     setCompleted((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem(progressKey, JSON.stringify({ completed: Array.from(next) })); } catch {}
+      setItem(progressKey, JSON.stringify({ completed: Array.from(next) }));
       window.dispatchEvent(new Event("course:progress:changed"));
       return next;
     });
