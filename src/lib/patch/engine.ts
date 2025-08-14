@@ -65,6 +65,6 @@ export function applyPatch<T>(source: T, ops: PatchOp[]): { ok: true; value: T }
     for (const op of ops) applyOne(working as any, op);
     return { ok: true, value: working };
   } catch {
-    return { ok: false, value: structuredClone(source) };
+    return { ok: false, value: source };
   }
 }

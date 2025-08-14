@@ -1,22 +1,7 @@
 import type { BlockType, Course } from '@/types/course';
+import { factories } from '@/types/course';
 
-const blockTypes = new Set<BlockType>([
-  'heading',
-  'text',
-  'image',
-  'quiz',
-  'truefalse',
-  'shortanswer',
-  'list',
-  'quote',
-  'accordion',
-  'tabs',
-  'divider',
-  'toc',
-  'callout',
-  'video',
-  'audio',
-]);
+const blockTypes = new Set<BlockType>(Object.keys(factories) as BlockType[]);
 
 export function validateCourse(data: any): Course {
   if (!data || typeof data !== 'object') throw new Error('Course must be an object');
