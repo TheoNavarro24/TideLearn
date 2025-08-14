@@ -1,13 +1,12 @@
 export type Path = Array<string | number>;
 
 export type PatchOp =
-  | { op: 'add'; path: Path; value: any }
+  | { op: 'add'; path: Path; value: unknown }
   | { op: 'remove'; path: Path }
-  | { op: 'replace'; path: Path; value: any };
-
-function resolveParent(target: any, path: Path) {
+  | { op: 'replace'; path: Path; value: unknown };
+function resolveParent(target: unknown, path: Path) {
   if (path.length === 0) throw new Error('empty path');
-  let obj = target;
+  let obj: any = target as any;
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
     obj = obj[key as any];
@@ -16,7 +15,7 @@ function resolveParent(target: any, path: Path) {
   return { parent: obj, key: path[path.length - 1] };
 }
 
-function applyOne(target: any, op: PatchOp) {
+function applyOne(target: unknown, op: PatchOp) {
   const { parent, key } = resolveParent(target, op.path);
   switch (op.op) {
     case 'add': {
@@ -33,7 +32,7 @@ function applyOne(target: any, op: PatchOp) {
         if (typeof key !== 'number' || key < 0 || key >= parent.length) throw new Error('invalid index');
         parent.splice(key, 1);
       } else {
-        if (!(key in parent)) throw new Error('missing key');
+        if (!Object.prototype.hasOwnProperty.call(parent, key)) throw new Error('missing key');
         delete (parent as any)[key];
       }
       break;
@@ -43,7 +42,7 @@ function applyOne(target: any, op: PatchOp) {
         if (typeof key !== 'number' || key < 0 || key >= parent.length) throw new Error('invalid index');
         parent[key] = op.value;
       } else {
-        if (!(key in parent)) throw new Error('missing key');
+        if (!Object.prototype.hasOwnProperty.call(parent, key)) throw new Error('missing key');
         (parent as any)[key] = op.value;
       }
       break;
@@ -62,7 +61,7 @@ function applyOne(target: any, op: PatchOp) {
 export function applyPatch<T>(source: T, ops: PatchOp[]): { ok: true; value: T } | { ok: false; value: T } {
   const working: T = structuredClone(source);
   try {
-    for (const op of ops) applyOne(working as any, op);
+    for (const op of ops) applyOne(working, op);
     return { ok: true, value: working };
   } catch {
     return { ok: false, value: source };
