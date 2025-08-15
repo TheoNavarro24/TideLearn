@@ -1,13 +1,28 @@
 import hero from "@/assets/hero-rise.jpg";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <div className="min-h-screen bg-hero">
       <header className="container mx-auto py-6 flex items-center justify-between">
         <a href="/" className="text-lg font-semibold text-gradient">Rise-like Builder</a>
-        <nav className="text-sm">
+        <nav className="flex items-center gap-4 text-sm">
           <a href="/courses" className="hover:underline">Course Manager</a>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground">Welcome, {user.email}</span>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <a href="/auth">
+              <Button variant="outline" size="sm">Sign In</Button>
+            </a>
+          )}
         </nav>
       </header>
 
