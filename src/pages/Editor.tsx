@@ -15,7 +15,6 @@ import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFi
 import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import useDeepLinkIntents from "@/hooks/use-deep-link-intents";
 
 // Shared types
 import { Block, Lesson, uid } from "@/types/course";
@@ -80,15 +79,11 @@ export default function Editor() {
     }
   }, [courseId]);
 
-  const intents = useDeepLinkIntents();
   useEffect(() => {
-    if (intents?.success && intents.operations.length) {
-      toast({
-        title: "Intents applied",
-        description: intents.operations.join(", "),
-      });
+    if (deepLink.status !== "idle") {
+      toast({ description: deepLink.summary });
     }
-  }, [intents]);
+  }, [deepLink]);
 
   // Keep the welcome heading in sync with the course title
   useEffect(() => {

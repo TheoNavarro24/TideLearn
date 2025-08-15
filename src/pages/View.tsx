@@ -49,7 +49,7 @@ export default function View() {
         const parsed = JSON.parse(json);
         const result = courseSchema.safeParse(parsed);
         if (result.success) {
-          setCourse(result.data);
+          setCourse(result.data as Course);
         } else {
           console.error("Invalid course data", result.error);
           setError("Invalid course data");
