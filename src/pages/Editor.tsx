@@ -79,12 +79,6 @@ export default function Editor() {
     }
   }, [courseId]);
 
-  useEffect(() => {
-    if (deepLink.status !== "idle") {
-      toast({ description: deepLink.summary });
-    }
-  }, [deepLink]);
-
   // Keep the welcome heading in sync with the course title
   useEffect(() => {
     setLessons((prev) => {
