@@ -176,6 +176,10 @@ export async function loadCourseFromCloud(id: string): Promise<Course | null> {
     .select("content")
     .eq("id", id)
     .single();
-  if (error || !data) return null;
+  if (error) {
+    console.error(`[loadCourseFromCloud] Failed to load course ${id}:`, error);
+    return null;
+  }
+  if (!data) return null;
   return data.content as unknown as Course;
 }

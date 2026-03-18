@@ -181,7 +181,14 @@ export default function Editor() {
 
   const courseData = { schemaVersion: 1, title: courseTitle, lessons };
   const compressedHash = useMemo(() => compressToEncodedURIComponent(JSON.stringify(courseData)), [courseData]);
-  const publishUrl = useMemo(() => `${window.location.origin}/view#${compressedHash}`,[compressedHash]);
+  const publishUrl = useMemo(() => {
+    // When the user is logged in and has a courseId, use a clean /view?id= URL
+    if (user && courseId) {
+      return `${window.location.origin}/view?id=${courseId}`;
+    }
+    // Fallback: compress course data into the URL hash (works without login)
+    return `${window.location.origin}/view#${compressedHash}`;
+  }, [user, courseId, compressedHash]);
   const hashSize = compressedHash.length;
 
   // Autosave with debounce

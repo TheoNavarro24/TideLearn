@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
+import { loadCourseFromCloud } from "@/lib/courses";
 import { getSpec } from "@/components/blocks/registry";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -44,24 +45,44 @@ export default function View() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
-    try {
-      const json = decompressFromEncodedURIComponent(hash);
-      if (json) {
-        const parsed = JSON.parse(json);
-        const result = courseSchema.safeParse(parsed);
-        if (result.success) {
-          setCourse(result.data as Course);
-        } else {
-          console.error("Invalid course data", result.error);
-          setError("Invalid course data");
+    async function loadCourse() {
+      // Option 1: load by course ID (clean URL, requires Supabase)
+      const params = new URLSearchParams(window.location.search);
+      const courseId = params.get("id");
+      if (courseId) {
+        const course = await loadCourseFromCloud(courseId);
+        if (course) {
+          const result = courseSchema.safeParse(course);
+          if (result.success) {
+            setCourse(result.data as Course);
+            return;
+          }
         }
+        setError("Course not found");
+        return;
       }
-    } catch (e) {
-      console.error("Failed to parse course", e);
-      setError("Failed to parse course");
+
+      // Option 2: load from URL hash (legacy / anonymous sharing)
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+      try {
+        const json = decompressFromEncodedURIComponent(hash);
+        if (json) {
+          const parsed = JSON.parse(json);
+          const result = courseSchema.safeParse(parsed);
+          if (result.success) {
+            setCourse(result.data as Course);
+          } else {
+            console.error("Invalid course data", result.error);
+            setError("Invalid course data");
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse course", e);
+        setError("Failed to parse course");
+      }
     }
+    loadCourse();
   }, []);
 
   const flatNav = useMemo(() => course?.lessons.map((l) => ({ id: l.id, title: l.title })) ?? [], [course]);
@@ -99,7 +120,11 @@ export default function View() {
 
   const currentHash = useMemo(() => window.location.hash.slice(1), []);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
-  const storageKey = useMemo(() => "quizAnswers:" + window.location.hash.slice(1), []);
+  const storageKey = useMemo(() => {
+    const p = new URLSearchParams(window.location.search);
+    const id = p.get("id");
+    return "quizAnswers:" + (id ? `id:${id}` : window.location.hash.slice(1));
+  }, []);
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -125,7 +150,11 @@ export default function View() {
   }, [storageKey]);
 
   // Persistent course progress (completed lessons + resume)
-  const progressKey = useMemo(() => "courseProgress:" + window.location.hash.slice(1), []);
+  const progressKey = useMemo(() => {
+    const p = new URLSearchParams(window.location.search);
+    const id = p.get("id");
+    return "courseProgress:" + (id ? `id:${id}` : window.location.hash.slice(1));
+  }, []);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [lastLessonId, setLastLessonId] = useState<string | null>(null);
 
