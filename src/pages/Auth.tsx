@@ -47,6 +47,7 @@ export default function Auth() {
       if (isSignUp) {
         if (password !== confirmPassword) {
           toast({ title: "Error", description: "Passwords don't match", variant: "destructive" });
+          setLoading(false);
           return;
         }
 
@@ -415,11 +416,7 @@ export default function Auth() {
                 transition: "opacity 0.15s",
               }}
             >
-              {loading
-                ? "Signing in..."
-                : isSignUp
-                ? "Create account →"
-                : "Sign in →"}
+              {loading ? (isSignUp ? "Creating account..." : "Signing in...") : isSignUp ? "Create account →" : "Sign in →"}
             </button>
           </form>
         </div>
