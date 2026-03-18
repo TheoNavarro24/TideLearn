@@ -2,12 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourseFromCloud } from "@/lib/courses";
 import { getSpec } from "@/components/blocks/registry";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 
-import { courseSchema, type Block, type Lesson, type Course } from "@/types/course";
+import { courseSchema, type Course } from "@/types/course";
 
 interface QuizAnsweredDetail {
   blockId: string;
@@ -35,9 +31,26 @@ interface ProgressMessage {
   completed: string[];
   lastLessonId: string | null;
   courseCompleted: boolean;
-  score: number | null;        // 0–100 percentage, null if no quizzes
+  score: number | null;
   totalQuestions: number;
   correctAnswers: number;
+}
+
+// Pulse-ring keyframe injected once
+const pulseStyle = `
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(20,184,166,0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(20,184,166,0.1); }
+}
+`;
+if (typeof document !== "undefined") {
+  const styleId = "rockpool-pulse-ring";
+  if (!document.getElementById(styleId)) {
+    const s = document.createElement("style");
+    s.id = styleId;
+    s.textContent = pulseStyle;
+    document.head.appendChild(s);
+  }
 }
 
 export default function View() {
@@ -101,6 +114,7 @@ export default function View() {
   const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
+
   useEffect(() => {
     if (!course) return;
     if (gateEnabled) {
@@ -111,10 +125,10 @@ export default function View() {
     if (isPaged) {
       const paramLesson = params.get("lesson");
       const first = course.lessons[0]?.id ?? null;
-      const target = course.lessons.some((l)=>l.id===paramLesson) ? (paramLesson as string) : first;
+      const target = course.lessons.some((l) => l.id === paramLesson) ? (paramLesson as string) : first;
       setCurrentLessonId(target);
       const url = new URL(window.location.href);
-      if (target) { url.searchParams.set("lesson", target); url.searchParams.set("paged","1"); history.replaceState(null, "", url.toString()); }
+      if (target) { url.searchParams.set("lesson", target); url.searchParams.set("paged", "1"); history.replaceState(null, "", url.toString()); }
     }
   }, [course, gateEnabled, isPaged, params]);
 
@@ -125,12 +139,14 @@ export default function View() {
     const id = p.get("id");
     return "quizAnswers:" + (id ? `id:${id}` : window.location.hash.slice(1));
   }, []);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) setAnswers(JSON.parse(raw));
     } catch {}
   }, [storageKey]);
+
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as QuizAnsweredEvent).detail;
@@ -218,6 +234,7 @@ export default function View() {
       }
     } catch {}
   }, [course]);
+
   useEffect(() => {
     if (!course) return;
     const onMsg = (event: MessageEvent<ResumeMessage>) => {
@@ -239,12 +256,12 @@ export default function View() {
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, [course]);
+
   useEffect(() => {
     if (!course) return;
     const total = course.lessons.length || 0;
     const courseCompleted = total > 0 && completed.size >= total;
 
-    // Calculate score across all quiz/truefalse/shortanswer blocks
     const allQuizIds: string[] = [];
     for (const lesson of course.lessons) {
       for (const block of lesson.blocks) {
@@ -300,7 +317,6 @@ export default function View() {
     const onScroll = () => {
       const main = document.querySelector("main");
       if (!main) return;
-      const rect = main.getBoundingClientRect();
       const total = main.scrollHeight - window.innerHeight;
       const scrolled = Math.min(Math.max(window.scrollY - (main as any).offsetTop, 0), total);
       const pct = total > 0 ? (scrolled / total) * 100 : 0;
@@ -352,27 +368,31 @@ export default function View() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isPaged, currentLessonId, course]);
 
+  // ── Error / no-course states ──────────────────────────────────────────────
+
   if (error) {
     return (
-      <main className="min-h-screen container mx-auto flex items-center justify-center">
-        <article className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">Invalid course data</h1>
-          <p className="text-muted-foreground">{error}</p>
-        </article>
+      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Invalid course data</h1>
+          <p style={{ color: "#64748b" }}>{error}</p>
+        </div>
       </main>
     );
   }
 
   if (!course) {
     return (
-      <main className="min-h-screen container mx-auto flex items-center justify-center">
-        <article className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">No course data</h1>
-          <p className="text-muted-foreground">Provide a valid course URL with data in the hash segment.</p>
-        </article>
+      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>No course data</h1>
+          <p style={{ color: "#64748b" }}>Provide a valid course URL with data in the hash segment.</p>
+        </div>
       </main>
     );
   }
+
+  // ── Computed values ───────────────────────────────────────────────────────
 
   const go = (dir: "prev" | "next") => {
     if (!course || !currentLessonId) return;
@@ -397,199 +417,543 @@ export default function View() {
   const canResume = !!(lastLessonId && course.lessons.some((l) => l.id === lastLessonId));
   const isCourseCompleted = totalLessons > 0 && completed.size >= totalLessons;
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  const getDotStyle = (lessonId: string, isCurrent: boolean): React.CSSProperties => {
+    if (completed.has(lessonId)) {
+      return { width: 8, height: 8, borderRadius: "50%", background: "#14b8a6", flexShrink: 0 };
+    }
+    if (isCurrent) {
+      return {
+        width: 8, height: 8, borderRadius: "50%", background: "#14b8a6", flexShrink: 0,
+        boxShadow: "0 0 0 3px rgba(20,184,166,0.25)",
+        animation: "pulse-ring 1.8s ease-in-out infinite",
+      };
+    }
+    return { width: 8, height: 8, borderRadius: "50%", border: "1.5px solid #b2d8d0", background: "transparent", flexShrink: 0 };
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
-    <div>
-      {isPaged && totalLessons > 1 && (
-        <div className="fixed inset-x-0 top-0 z-50">
-          <Progress value={courseProgress} aria-label={`Course progress ${Math.round(courseProgress)} percent`} className="h-1 rounded-none" />
+    <div style={{ fontFamily: "Inter, sans-serif", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+      {/* Progress stripe — very top */}
+      <div style={{ height: 3, background: "#e0fdf4", flexShrink: 0 }}
+           aria-label={`Course progress ${Math.round(courseProgress)} percent`}
+           role="progressbar"
+           aria-valuenow={Math.round(courseProgress)}
+           aria-valuemin={0}
+           aria-valuemax={100}>
+        <div style={{
+          height: "100%",
+          width: `${courseProgress}%`,
+          background: "linear-gradient(90deg, #14b8a6, #0891b2)",
+          borderRadius: "0 2px 2px 0",
+          transition: "width 0.3s ease",
+        }} />
+      </div>
+
+      {/* Topbar */}
+      <header style={{
+        height: 48,
+        background: "#0f1f1d",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 20px",
+        flexShrink: 0,
+        position: "relative",
+      }}>
+        {/* Left: logo */}
+        <a href="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 7,
+            background: "linear-gradient(135deg, #14b8a6, #0891b2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, lineHeight: 1, flexShrink: 0,
+          }}>🌊</div>
+          <span style={{ color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: "-0.02em" }}>TideLearn</span>
+        </a>
+
+        {/* Center: course title (absolute) */}
+        <div style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "#fff",
+          fontSize: 13,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          opacity: 0.9,
+          maxWidth: "calc(100% - 300px)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}>
+          {course.title}
         </div>
-      )}
-      <header className="border-b bg-hero">
-        <div className="container mx-auto py-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold text-gradient leading-tight">{course.title}</h1>
-              {isCourseCompleted && (
-                <Badge variant="secondary" aria-live="polite" className="inline-flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Completed
-                </Badge>
-              )}
-            </div>
-            <div role="group" aria-label="View mode" className="inline-flex items-center gap-2">
-              {canResume && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    if (!lastLessonId) return;
-                    setIsPaged(true);
-                    setCurrentLessonId(lastLessonId);
-                    const url = new URL(window.location.href);
-                    url.searchParams.set("paged", "1");
-                    url.searchParams.set("lesson", lastLessonId);
-                    history.replaceState(null, "", url.toString());
-                  }}
-                >
-                  <PlayCircle className="mr-2 h-4 w-4" /> Resume
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant={isPaged ? "default" : "secondary"}
-                aria-pressed={isPaged}
+
+        {/* Right: view-mode toggle + exit */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Subtle paged/view-all toggle */}
+          <div role="group" aria-label="View mode" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {canResume && (
+              <button
+                style={{
+                  background: "none", border: "none", color: "#94a3b8",
+                  fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
+                  fontFamily: "Inter, sans-serif",
+                }}
                 onClick={() => {
-                  if (isPaged) return;
+                  if (!lastLessonId) return;
                   setIsPaged(true);
+                  setCurrentLessonId(lastLessonId);
                   const url = new URL(window.location.href);
                   url.searchParams.set("paged", "1");
-                  const target = currentLessonId ?? course.lessons[0]?.id ?? "";
-                  if (target) url.searchParams.set("lesson", target);
+                  url.searchParams.set("lesson", lastLessonId);
                   history.replaceState(null, "", url.toString());
                 }}
               >
-                Paged
-              </Button>
-              <Button
-                size="sm"
-                variant={!isPaged ? "default" : "secondary"}
-                aria-pressed={!isPaged}
-                onClick={() => {
-                  if (!isPaged) return;
-                  setIsPaged(false);
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("paged", "0");
-                  url.searchParams.delete("lesson");
-                  history.replaceState(null, "", url.toString());
-                }}
-              >
-                View All
-              </Button>
-            </div>
+                Resume
+              </button>
+            )}
+            <button
+              aria-pressed={isPaged}
+              style={{
+                background: "none", border: "none",
+                color: isPaged ? "#14b8a6" : "#64748b",
+                fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
+                fontFamily: "Inter, sans-serif",
+                fontWeight: isPaged ? 600 : 400,
+              }}
+              onClick={() => {
+                if (isPaged) return;
+                setIsPaged(true);
+                const url = new URL(window.location.href);
+                url.searchParams.set("paged", "1");
+                const target = currentLessonId ?? course.lessons[0]?.id ?? "";
+                if (target) url.searchParams.set("lesson", target);
+                history.replaceState(null, "", url.toString());
+              }}
+            >
+              Paged
+            </button>
+            <button
+              aria-pressed={!isPaged}
+              style={{
+                background: "none", border: "none",
+                color: !isPaged ? "#14b8a6" : "#64748b",
+                fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
+                fontFamily: "Inter, sans-serif",
+                fontWeight: !isPaged ? 600 : 400,
+              }}
+              onClick={() => {
+                if (!isPaged) return;
+                setIsPaged(false);
+                const url = new URL(window.location.href);
+                url.searchParams.set("paged", "0");
+                url.searchParams.delete("lesson");
+                history.replaceState(null, "", url.toString());
+              }}
+            >
+              View All
+            </button>
           </div>
-          {isPaged && currentLesson && (
-            <div className="mt-4">
-              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Lesson progress</span>
-                <span aria-live="polite">{Math.round(lessonProgress)}%</span>
-              </div>
-              <Progress value={lessonProgress} aria-label={`Lesson progress ${Math.round(lessonProgress)} percent`} />
-            </div>
-          )}
-          {flatNav.length > 1 && !isPaged && (
-            <nav className="mt-3 text-sm text-muted-foreground">
-              <ul className="flex flex-wrap gap-3">
-                {flatNav.map((l) => (
-                  <li key={l.id}>
-                    <a
-                      className={l.id === activeId ? "text-primary font-medium" : "hover:text-foreground"}
-                      href={`#${currentHash}`}
-                      onClick={(e) => { e.preventDefault(); document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
-                    >
-                      {l.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
+
+          <a
+            href="/courses"
+            style={{
+              background: "none", border: "none", color: "#14b8a6",
+              fontSize: 13, fontWeight: 500, cursor: "pointer",
+              padding: "5px 10px", borderRadius: 6, textDecoration: "none",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            Exit
+          </a>
         </div>
       </header>
 
-      <main className="container mx-auto py-8">
-        {isPaged ? (
-          currentLesson ? (
-            <section key={currentLesson.id} ref={lessonRef as any} className="space-y-6">
-              <h2 className="text-2xl font-semibold mb-4">{currentLesson.title}</h2>
-              {currentLesson.blocks.map((b) => {
-                const spec = getSpec((b as any).type);
-                const ViewComp = spec.View as any;
-                return (
-                  <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
-                    <ViewComp block={b as any} />
-                  </article>
-                );
-              })}
-              <div className="mt-6 flex items-center justify-between">
-                <div>
-                  <Button
-                    size="sm"
-                    variant={completed.has(currentLesson.id) ? "secondary" : "outline"}
-                    aria-pressed={completed.has(currentLesson.id)}
-                    onClick={() => toggleComplete(currentLesson.id)}
-                  >
-                    {completed.has(currentLesson.id) ? (
-                      <>
-                        <CheckCircle2 className="mr-2 h-4 w-4" /> Completed
-                      </>
-                    ) : (
-                      <>
-                        <Circle className="mr-2 h-4 w-4" /> Mark complete
-                      </>
-                    )}
-                  </Button>
+      {/* Main layout: sidebar + reading area */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+
+        {/* Sidebar */}
+        <nav style={{
+          width: 200,
+          flexShrink: 0,
+          background: "#f8fffe",
+          borderRight: "1px solid #e0fdf4",
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+          padding: "20px 0",
+        }}>
+          <div style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#14b8a6",
+            padding: "0 16px 10px",
+          }}>
+            Lessons
+          </div>
+
+          {flatNav.map((l, i) => {
+            const isActive = isPaged ? l.id === currentLessonId : l.id === activeId;
+            const isCurrent = l.id === currentLessonId;
+
+            return (
+              <div
+                key={l.id}
+                onClick={() => {
+                  if (isPaged) {
+                    setCurrentLessonId(l.id);
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("paged", "1");
+                    url.searchParams.set("lesson", l.id);
+                    history.replaceState(null, "", url.toString());
+                  } else {
+                    document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  padding: "8px 16px 8px 12px",
+                  cursor: "pointer",
+                  borderLeft: isActive ? "3px solid #14b8a6" : "3px solid transparent",
+                  background: isActive ? "#f0fdfb" : "transparent",
+                  transition: "background 0.12s",
+                  position: "relative",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "#f0fdfb";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent";
+                }}
+              >
+                {/* Dot */}
+                <div style={{ flexShrink: 0, width: 16, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 3 }}>
+                  <div style={getDotStyle(l.id, isCurrent)} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="secondary" disabled={!prevLesson} onClick={() => go("prev")}>Previous</Button>
-                  <Button disabled={!nextLesson} onClick={() => go("next")}>Next</Button>
+                {/* Number */}
+                <div style={{
+                  fontSize: 9,
+                  fontWeight: 600,
+                  color: isActive ? "#0d9488" : "#94a3b8",
+                  flexShrink: 0,
+                  paddingTop: 1,
+                }}>
+                  {i + 1}
+                </div>
+                {/* Title */}
+                <div style={{
+                  fontSize: 12,
+                  lineHeight: 1.45,
+                  color: isActive ? "#0d9488" : "#475569",
+                  fontWeight: isActive ? 600 : 400,
+                }}>
+                  {l.title}
                 </div>
               </div>
-            </section>
-          ) : (
-            <p className="text-muted-foreground">Select a lesson to begin.</p>
-          )
-        ) : (
-          <div className="space-y-12">
-            {course.lessons.map((l, idx) => {
-              const isUnlocked = unlocked.has(l.id);
-              const nextId = course.lessons[idx + 1]?.id as string | undefined;
-              const quizIds = l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id);
-              const totalChecks = quizIds.length;
-              const correctChecks = quizIds.filter((id: string) => answers[id]).length;
-              return (
-                <section key={l.id} id={l.id} className="scroll-mt-24">
-                  <h2 className="text-2xl font-semibold mb-4">{l.title}</h2>
-                  {gateEnabled && !isUnlocked ? (
-                    <article className="rounded-md border p-6 text-center">
-                      <p className="text-muted-foreground">This section is locked. Continue the previous section to unlock.</p>
-                    </article>
-                  ) : (
-                    <>
-                      <div className="space-y-6">
-                        {l.blocks.map((b) => {
-                          const spec = getSpec((b as any).type);
-                          const ViewComp = spec.View as any;
-                          return (
-                            <article key={b.id} className="prose prose-slate max-w-none dark:prose-invert">
-                              <ViewComp block={b as any} />
-                            </article>
-                          );
-                        })}
-                      </div>
-                      {gateEnabled && nextId && !unlocked.has(nextId) && (
-                        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          {gateQuiz && (
-                            <p className="text-sm text-muted-foreground">
-                              Checks: {correctChecks}/{totalChecks} correct {totalChecks > 0 && correctChecks < totalChecks ? "— answer all to continue" : ""}
-                            </p>
-                          )}
-                          <div className="flex justify-end">
-                            <Button
-                              disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
-                              onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })}
-                            >
-                              Continue
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+            );
+          })}
+        </nav>
+
+        {/* Reading area */}
+        <main style={{
+          flex: 1,
+          overflowY: "auto",
+          background: "#fff",
+          display: "flex",
+          justifyContent: "center",
+        }}>
+          <div style={{ width: "100%", maxWidth: 680, padding: "40px 64px 120px" }}>
+
+            {isPaged ? (
+              currentLesson ? (
+                <section key={currentLesson.id} ref={lessonRef as React.RefObject<HTMLElement>}>
+                  {/* Lesson breadcrumb */}
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#0d9488",
+                    marginBottom: 12,
+                  }}>
+                    Lesson {idx + 1}
+                  </div>
+
+                  {/* Lesson title */}
+                  <h1 style={{
+                    fontFamily: "Lora, serif",
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: "#0d2926",
+                    lineHeight: 1.3,
+                    marginBottom: 32,
+                    letterSpacing: "-0.01em",
+                  }}>
+                    {currentLesson.title}
+                  </h1>
+
+                  {/* Blocks */}
+                  {currentLesson.blocks.map((b) => {
+                    const spec = getSpec((b as any).type);
+                    const ViewComp = spec.View as any;
+                    return (
+                      <article key={b.id}>
+                        <ViewComp block={b as any} />
+                      </article>
+                    );
+                  })}
+
+                  {/* Mark complete toggle */}
+                  <div style={{ marginTop: 32, display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      aria-pressed={completed.has(currentLesson.id)}
+                      onClick={() => toggleComplete(currentLesson.id)}
+                      style={{
+                        background: completed.has(currentLesson.id)
+                          ? "linear-gradient(135deg, #14b8a6, #0891b2)"
+                          : "none",
+                        border: completed.has(currentLesson.id) ? "none" : "1.5px solid #e0fdf4",
+                        color: completed.has(currentLesson.id) ? "#fff" : "#64748b",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        fontFamily: "Inter, sans-serif",
+                      }}
+                    >
+                      {completed.has(currentLesson.id) ? "✓ Completed" : "Mark complete"}
+                    </button>
+                  </div>
                 </section>
-              );
-            })}
+              ) : (
+                <p style={{ color: "#64748b" }}>Select a lesson to begin.</p>
+              )
+            ) : (
+              /* View All mode */
+              <div>
+                {course.lessons.map((l, lessonIdx) => {
+                  const isUnlocked = unlocked.has(l.id);
+                  const nextId = course.lessons[lessonIdx + 1]?.id as string | undefined;
+                  const quizIds = l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id);
+                  const totalChecks = quizIds.length;
+                  const correctChecks = quizIds.filter((id: string) => answers[id]).length;
+
+                  return (
+                    <section key={l.id} id={l.id} style={{ marginBottom: 64, scrollMarginTop: 96 }}>
+                      {/* Lesson breadcrumb */}
+                      <div style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: "#0d9488",
+                        marginBottom: 12,
+                      }}>
+                        Lesson {lessonIdx + 1}
+                      </div>
+
+                      {/* Lesson title */}
+                      <h2 style={{
+                        fontFamily: "Lora, serif",
+                        fontSize: 28,
+                        fontWeight: 700,
+                        color: "#0d2926",
+                        lineHeight: 1.3,
+                        marginBottom: 32,
+                        letterSpacing: "-0.01em",
+                      }}>
+                        {l.title}
+                      </h2>
+
+                      {gateEnabled && !isUnlocked ? (
+                        <div style={{
+                          borderRadius: 8,
+                          border: "1px solid #e0fdf4",
+                          padding: 24,
+                          textAlign: "center",
+                          background: "#f8fffe",
+                        }}>
+                          <p style={{ color: "#64748b", fontSize: 14 }}>This section is locked. Continue the previous section to unlock.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            {l.blocks.map((b) => {
+                              const spec = getSpec((b as any).type);
+                              const ViewComp = spec.View as any;
+                              return (
+                                <article key={b.id}>
+                                  <ViewComp block={b as any} />
+                                </article>
+                              );
+                            })}
+                          </div>
+
+                          {gateEnabled && nextId && !unlocked.has(nextId) && (
+                            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                              {gateQuiz && (
+                                <p style={{ fontSize: 13, color: "#64748b" }}>
+                                  Checks: {correctChecks}/{totalChecks} correct{totalChecks > 0 && correctChecks < totalChecks ? " — answer all to continue" : ""}
+                                </p>
+                              )}
+                              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                <button
+                                  disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
+                                  onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })}
+                                  style={{
+                                    background: "linear-gradient(135deg, #14b8a6, #0891b2)",
+                                    border: "none",
+                                    color: "#fff",
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    cursor: (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "not-allowed" : "pointer",
+                                    padding: "8px 18px",
+                                    borderRadius: 8,
+                                    fontFamily: "Inter, sans-serif",
+                                    opacity: (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? 0.5 : 1,
+                                  }}
+                                >
+                                  Continue
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+
           </div>
-        )}
-      </main>
+        </main>
+      </div>
+
+      {/* Bottom nav — fixed, only shown in paged mode */}
+      {isPaged && (
+        <nav style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 56,
+          background: "#fff",
+          borderTop: "1px solid #e0fdf4",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          zIndex: 100,
+        }}>
+          {/* Previous */}
+          <button
+            disabled={!prevLesson}
+            onClick={() => go("prev")}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 13,
+              fontWeight: 500,
+              color: prevLesson ? "#64748b" : "#cbd5e1",
+              cursor: prevLesson ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 12px",
+              borderRadius: 8,
+              fontFamily: "Inter, sans-serif",
+              transition: "background 0.12s, color 0.12s",
+            }}
+            onMouseEnter={(e) => {
+              if (prevLesson) {
+                (e.currentTarget as HTMLButtonElement).style.background = "#f0fdfb";
+                (e.currentTarget as HTMLButtonElement).style.color = "#0d9488";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (prevLesson) {
+                (e.currentTarget as HTMLButtonElement).style.background = "none";
+                (e.currentTarget as HTMLButtonElement).style.color = "#64748b";
+              }
+            }}
+          >
+            ← Previous lesson
+          </button>
+
+          {/* Counter */}
+          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+            {isCourseCompleted
+              ? "Course complete ✓"
+              : `Lesson ${idx + 1} of ${totalLessons}`}
+          </span>
+
+          {/* Next */}
+          {isCourseCompleted && !nextLesson ? (
+            <button
+              disabled
+              style={{
+                background: "linear-gradient(135deg, #14b8a6, #0891b2)",
+                border: "none",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#fff",
+                cursor: "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 18px",
+                borderRadius: 8,
+                fontFamily: "Inter, sans-serif",
+                opacity: 0.75,
+              }}
+            >
+              Completed ✓
+            </button>
+          ) : (
+            <button
+              disabled={!nextLesson}
+              onClick={() => go("next")}
+              style={{
+                background: nextLesson
+                  ? "linear-gradient(135deg, #14b8a6, #0891b2)"
+                  : "#e2e8f0",
+                border: "none",
+                fontSize: 13,
+                fontWeight: 600,
+                color: nextLesson ? "#fff" : "#94a3b8",
+                cursor: nextLesson ? "pointer" : "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 18px",
+                borderRadius: 8,
+                fontFamily: "Inter, sans-serif",
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (nextLesson) (e.currentTarget as HTMLButtonElement).style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                if (nextLesson) (e.currentTarget as HTMLButtonElement).style.opacity = "1";
+              }}
+            >
+              Next lesson →
+            </button>
+          )}
+        </nav>
+      )}
+
     </div>
   );
 }
