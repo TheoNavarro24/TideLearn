@@ -349,6 +349,7 @@ interface CardProps {
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   onExport: (id: string) => void;
+  onExportScorm: (id: string) => void;
   openDropdownId: string | null;
   setOpenDropdownId: (id: string | null) => void;
 }
@@ -359,6 +360,7 @@ function CourseCard({
   onDelete,
   onDuplicate,
   onExport,
+  onExportScorm,
   openDropdownId,
   setOpenDropdownId,
 }: CardProps) {
@@ -578,15 +580,20 @@ function CourseCard({
                   }}
                 />
                 <DropItem
+                  icon="📦"
+                  label="Export SCORM"
+                  onClick={() => {
+                    setOpenDropdownId(null);
+                    onExportScorm(course.id);
+                  }}
+                />
+                <DropItem
                   icon="🔗"
                   label="Copy share link"
                   onClick={() => {
                     setOpenDropdownId(null);
-                    const key = `tl_course_${course.id}`;
-                    const raw = localStorage.getItem(key) ?? "";
-                    const hash = btoa(raw).slice(0, 32);
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/editor?courseId=${course.id}&h=${hash}`
+                      `${window.location.origin}/view?id=${course.id}`
                     );
                   }}
                 />
@@ -782,6 +789,25 @@ export default function Courses() {
     a.remove();
     URL.revokeObjectURL(url);
   };
+  const onExportScorm = async (id: string) => {
+    const c = loadCourse(id);
+    if (!c) return;
+    try {
+      const viewUrl = `${window.location.origin}/view?id=${id}`;
+      const { exportScorm12Zip, buildScormFileName } = await import("@/lib/scorm12");
+      const blob = await exportScorm12Zip(c as any, viewUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = buildScormFileName(c.title || "course");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("SCORM export failed:", e);
+    }
+  };
 
   const importJSON = async (file: File) => {
     try {
@@ -961,6 +987,7 @@ export default function Courses() {
                   onDelete={onDelete}
                   onDuplicate={onDuplicate}
                   onExport={onExport}
+                  onExportScorm={onExportScorm}
                   openDropdownId={openDropdownId}
                   setOpenDropdownId={setOpenDropdownId}
                 />

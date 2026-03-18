@@ -45,6 +45,7 @@ export default function Editor() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [showImportSection, setShowImportSection] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
   const deepLink = useDeepLinkIntents();
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +197,7 @@ export default function Editor() {
   // Autosave with debounce
   const saveTimer = useRef<number | null>(null);
   const saveNow = async () => {
+    setIsSaving(true);
     try {
       if (courseId) {
         saveCourse(courseId, courseData as any);
@@ -208,10 +210,13 @@ export default function Editor() {
       toast({ title: "Saved" });
     } catch (e) {
       toast({ title: "Save failed" });
+    } finally {
+      setIsSaving(false);
     }
   };
   useEffect(() => {
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    setIsSaving(true);
     saveTimer.current = window.setTimeout(async () => {
       try {
         if (courseId) {
@@ -224,6 +229,8 @@ export default function Editor() {
         }
       } catch (e) {
         console.error("Autosave failed:", e);
+      } finally {
+        setIsSaving(false);
       }
     }, 1000);
     return () => {
@@ -267,7 +274,7 @@ export default function Editor() {
   // Focus search when picker opens
   useEffect(() => {
     if (pickerState && pickerSearchRef.current) {
-      setTimeout(() => pickerSearchRef.current?.focus(), 50);
+      requestAnimationFrame(() => pickerSearchRef.current?.focus());
     }
   }, [pickerState]);
 
@@ -497,8 +504,14 @@ export default function Editor() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
           {/* Saved indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--teal-bright)" }} />
-            <span style={{ fontSize: 11, color: "rgba(94,234,212,0.4)", fontWeight: 500 }}>Saved</span>
+            <div style={{
+              width: 5, height: 5, borderRadius: "50%",
+              background: isSaving ? "rgba(94,234,212,0.4)" : "var(--teal-bright)",
+              transition: "background 0.2s",
+            }} />
+            <span style={{ fontSize: 11, color: "rgba(94,234,212,0.4)", fontWeight: 500 }}>
+              {isSaving ? "Saving…" : "Saved"}
+            </span>
           </div>
 
           {/* Preview button */}
