@@ -9,7 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
 import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
-import { loadCourse, saveCourse } from "@/lib/courses";
+import { loadCourse, saveCourse, saveCourseToCloud, loadCourseFromCloud } from "@/lib/courses";
+import { useAuth } from "@/components/auth/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFileName } from "@/lib/scorm12";
 import JSZip from "jszip";
@@ -34,6 +35,7 @@ const defaultLesson: Lesson = {
 };
 
 export default function Editor() {
+  const { user } = useAuth();
   const [courseTitle, setCourseTitle] = useState("My Course");
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
@@ -56,9 +58,13 @@ export default function Editor() {
 
   // Load course by id if provided, else legacy autosave
   useEffect(() => {
-    try {
+    async function loadInitialCourse() {
       if (courseId) {
-        const loaded = loadCourse(courseId);
+        let loaded = loadCourse(courseId); // try localStorage first
+        if (!loaded && user) {
+          loaded = await loadCourseFromCloud(courseId); // fallback to cloud
+          if (loaded) saveCourse(courseId, loaded); // cache locally
+        }
         if (loaded?.lessons?.length) {
           setCourseTitle(loaded.title || "My Course");
           setLessons(loaded.lessons);
@@ -68,16 +74,19 @@ export default function Editor() {
       }
       const raw = localStorage.getItem("editor:course");
       if (!raw) return;
-      const saved = JSON.parse(raw);
-      if (saved?.lessons?.length) {
-        setCourseTitle(saved.title || "My Course");
-        setLessons(saved.lessons);
-        setSelectedLessonId(saved.lessons[0]?.id ?? defaultLesson.id);
+      try {
+        const saved = JSON.parse(raw);
+        if (saved?.lessons?.length) {
+          setCourseTitle(saved.title || "My Course");
+          setLessons(saved.lessons);
+          setSelectedLessonId(saved.lessons[0]?.id ?? defaultLesson.id);
+        }
+      } catch (e) {
+        console.warn("Failed to load autosave", e);
       }
-    } catch (e) {
-      console.warn("Failed to load autosave", e);
     }
-  }, [courseId]);
+    loadInitialCourse();
+  }, [courseId, user]);
 
   // Keep the welcome heading in sync with the course title
   useEffect(() => {
@@ -177,10 +186,13 @@ export default function Editor() {
 
   // Autosave with debounce
   const saveTimer = useRef<number | null>(null);
-  const saveNow = () => {
+  const saveNow = async () => {
     try {
       if (courseId) {
-        saveCourse(courseId, courseData as any);
+        saveCourse(courseId, courseData as any); // always save locally
+        if (user) {
+          await saveCourseToCloud(courseId, courseData as any, user.id);
+        }
       } else {
         localStorage.setItem("editor:course", JSON.stringify(courseData));
       }
@@ -191,19 +203,24 @@ export default function Editor() {
   };
   useEffect(() => {
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
+    saveTimer.current = window.setTimeout(async () => {
       try {
         if (courseId) {
           saveCourse(courseId, courseData as any);
+          if (user) {
+            await saveCourseToCloud(courseId, courseData as any, user.id);
+          }
         } else {
           localStorage.setItem("editor:course", JSON.stringify(courseData));
         }
-      } catch {}
-    }, 500);
+      } catch (e) {
+        console.error("Autosave failed:", e);
+      }
+    }, 1000);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current!);
     };
-  }, [courseTitle, lessons, courseId]);
+  }, [courseTitle, lessons, courseId, user]);
 
   // Keyboard shortcut to open full block picker
   useEffect(() => {

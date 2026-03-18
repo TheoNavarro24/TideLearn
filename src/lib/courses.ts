@@ -6,6 +6,7 @@ import {
   type TextBlock,
   type TocBlock,
 } from "@/types/course";
+import { supabase } from "@/integrations/supabase/client";
 
 export type CourseIndexItem = { id: string; title: string; updatedAt: number };
 
@@ -124,4 +125,57 @@ export function migrateFromLegacy(): string | null {
   } catch {
     return null;
   }
+}
+
+/** Load all courses for the current logged-in user from Supabase */
+export async function loadCoursesFromCloud(): Promise<CourseIndexItem[]> {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id, title, updated_at")
+    .order("updated_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map((row) => ({
+    id: row.id,
+    title: row.title,
+    updatedAt: new Date(row.updated_at).getTime(),
+  }));
+}
+
+/** Save or update a course in Supabase.
+ *  is_public defaults to true so that share links work for anyone,
+ *  including visitors who are not logged in.
+ */
+export async function saveCourseToCloud(
+  id: string,
+  course: Course,
+  userId: string
+): Promise<void> {
+  const { error } = await supabase.from("courses").upsert({
+    id,
+    user_id: userId,
+    title: course.title || "Untitled Course",
+    content: course as unknown as import("@/integrations/supabase/types").Json,
+    is_public: true,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+}
+
+/** Delete a course from Supabase */
+export async function deleteCourseFromCloud(id: string): Promise<void> {
+  const { error } = await supabase.from("courses").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/** Load a single course from Supabase.
+ *  Works for unauthenticated visitors as long as is_public = true (RLS policy allows it).
+ */
+export async function loadCourseFromCloud(id: string): Promise<Course | null> {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("content")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return data.content as unknown as Course;
 }

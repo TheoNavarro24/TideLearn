@@ -12,10 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy, saveCourse } from "@/lib/courses";
+import { getCoursesIndex, createNewCourse, deleteCourse, duplicateCourse, exportCourseJSON, renameCourse, loadCourse, migrateFromLegacy, saveCourse, loadCoursesFromCloud, deleteCourseFromCloud } from "@/lib/courses";
+import { useAuth } from "@/components/auth/AuthContext";
 
 export default function Courses() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [courses, setCourses] = useState(getCoursesIndex());
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -31,6 +33,18 @@ export default function Courses() {
     const migrated = migrateFromLegacy();
     if (migrated) refresh();
   }, []);
+
+  useEffect(() => {
+    async function loadCourses() {
+      if (user) {
+        const cloudCourses = await loadCoursesFromCloud();
+        setCourses(cloudCourses);
+      } else {
+        setCourses(getCoursesIndex());
+      }
+    }
+    loadCourses();
+  }, [user]);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
@@ -57,9 +71,16 @@ export default function Courses() {
 
   const onOpen = (id: string) => navigate(`/editor?courseId=${id}`);
   const onDelete = (id: string) => setDeleteId(id);
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteId) {
       deleteCourse(deleteId);
+      if (user) {
+        try {
+          await deleteCourseFromCloud(deleteId);
+        } catch (e) {
+          console.error("Failed to delete from cloud:", e);
+        }
+      }
       refresh();
       setDeleteId(null);
     }
