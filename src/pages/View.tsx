@@ -799,6 +799,29 @@ export default function View() {
                             })}
                           </div>
 
+                          {/* Mark complete toggle */}
+                          <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
+                            <button
+                              aria-pressed={completed.has(l.id)}
+                              onClick={() => toggleComplete(l.id)}
+                              style={{
+                                background: completed.has(l.id)
+                                  ? "linear-gradient(135deg, #14b8a6, #0891b2)"
+                                  : "none",
+                                border: completed.has(l.id) ? "none" : "1.5px solid #e0fdf4",
+                                color: completed.has(l.id) ? "#fff" : "#64748b",
+                                fontSize: 13,
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                padding: "8px 16px",
+                                borderRadius: 8,
+                                fontFamily: "Inter, sans-serif",
+                              }}
+                            >
+                              {completed.has(l.id) ? "✓ Completed" : "Mark complete"}
+                            </button>
+                          </div>
+
                           {gateEnabled && nextId && !unlocked.has(nextId) && (
                             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
                               {gateQuiz && (
