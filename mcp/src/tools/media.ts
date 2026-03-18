@@ -1,20 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { withAuth, ok, err, getStorageClient } from "../lib/supabase.js";
+import { getMimeType, SUPPORTED_EXTENSIONS } from "../lib/mime.js";
 import * as fs from "fs";
 import * as path from "path";
-
-const ALLOWED_TYPES: Record<string, string> = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  gif: "image/gif",
-  mp3: "audio/mpeg",
-  wav: "audio/wav",
-  mp4: "video/mp4",
-  webm: "video/webm",
-};
 
 const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
@@ -40,10 +29,9 @@ export function registerMediaTools(server: McpServer) {
         }
 
         // Validate type
-        const ext = path.extname(file_path).toLowerCase().slice(1);
-        const contentType = ALLOWED_TYPES[ext];
+        const contentType = getMimeType(file_path);
         if (!contentType) {
-          return err("unsupported_file_type", `File type .${ext} is not supported. Allowed: ${Object.keys(ALLOWED_TYPES).join(", ")}`);
+          return err("unsupported_type", `Unsupported file type. Supported extensions: ${SUPPORTED_EXTENSIONS.join(", ")}`);
         }
 
         // Upload to Supabase Storage
