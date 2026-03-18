@@ -10,44 +10,44 @@ All colors MUST be HSL.
   :root {
     /* ── shadcn semantic tokens (remapped to Rockpool palette) ── */
     --background:             0 0% 100%;
-    --foreground:             176 57% 11%;   /* #0d2926 */
+    --foreground:             174 52% 11%;   /* #0d2926 */
 
     --card:                   0 0% 100%;
-    --card-foreground:        176 57% 11%;
+    --card-foreground:        174 52% 11%;
 
     --popover:                0 0% 100%;
-    --popover-foreground:     176 57% 11%;
+    --popover-foreground:     174 52% 11%;
 
-    --primary:                173 84% 32%;   /* #0d9488 (teal-primary) */
+    --primary:                175 84% 32%;   /* #0d9488 (teal-primary) */
     --primary-foreground:     0 0% 100%;
 
     --secondary:              171 76% 97%;   /* #f0fdfb (surface-tint) */
-    --secondary-foreground:   176 57% 11%;
+    --secondary-foreground:   174 52% 11%;
 
     --muted:                  171 76% 97%;   /* #f0fdfb */
     --muted-foreground:       215 20% 65%;   /* #94a3b8 */
 
     --accent:                 171 76% 97%;
-    --accent-foreground:      176 57% 11%;
+    --accent-foreground:      174 52% 11%;
 
     --destructive:            0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border:                 153 94% 93%;   /* #e0fdf4 (border-subtle) */
-    --input:                  174 75% 89%;   /* #d1faf4 (border-mid) */
-    --ring:                   174 72% 40%;   /* #14b8a6 (teal-bright) */
+    --border:                 153 100% 93%;   /* #e0fdf4 (border-subtle) */
+    --input:                  174 82% 89%;   /* #d1faf4 (border-mid) */
+    --ring:                   173 80% 40%;   /* #14b8a6 (teal-bright) */
 
-    --radius: 0.5rem;
+    --radius: 0.5rem;   /* 8px — use --radius-* tokens for finer control */
 
     /* shadcn sidebar tokens */
-    --sidebar-background:          170 38% 20%;   /* #1e4a44 (ocean-mid) */
+    --sidebar-background:          172 42% 20%;   /* #1e4a44 (ocean-mid) */
     --sidebar-foreground:          166 94% 90%;   /* #ccfbf1 */
-    --sidebar-primary:             174 72% 40%;   /* #14b8a6 */
+    --sidebar-primary:             173 80% 40%;   /* #14b8a6 */
     --sidebar-primary-foreground:  0 0% 100%;
     --sidebar-accent:              170 38% 23%;
     --sidebar-accent-foreground:   166 94% 90%;
     --sidebar-border:              170 80% 35%;
-    --sidebar-ring:                174 72% 40%;
+    --sidebar-ring:                173 80% 40%;
 
     /* ── Rockpool custom properties ── */
 
@@ -106,6 +106,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
