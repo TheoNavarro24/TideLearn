@@ -86,7 +86,7 @@ export default function Editor() {
       }
     }
     loadInitialCourse();
-  }, [courseId, user]);
+  }, [courseId, user?.id]);
 
   // Keep the welcome heading in sync with the course title
   useEffect(() => {

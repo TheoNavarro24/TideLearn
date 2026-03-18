@@ -81,7 +81,7 @@ export default function Courses() {
           console.error("Failed to delete from cloud:", e);
         }
       }
-      refresh();
+      setCourses(prev => prev.filter(c => c.id !== deleteId));
       setDeleteId(null);
     }
   };
