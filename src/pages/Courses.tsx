@@ -14,7 +14,6 @@ import {
   deleteCourse,
   duplicateCourse,
   exportCourseJSON,
-  renameCourse,
   loadCourse,
   migrateFromLegacy,
   saveCourse,
@@ -367,8 +366,8 @@ function CourseCard({
   const dropRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
 
-  const lessonCount = Array.isArray((course as CourseIndex & { lessons?: unknown[] }).lessons)
-    ? (course as CourseIndex & { lessons?: unknown[] }).lessons!.length
+  const lessonCount = Array.isArray(course.lessons)
+    ? course.lessons.length
     : 0;
 
   const updatedLabel = (() => {
@@ -783,12 +782,6 @@ export default function Courses() {
     a.remove();
     URL.revokeObjectURL(url);
   };
-  // onRename kept for potential future use but not called from cards
-  const onRename = (id: string, title: string) => {
-    renameCourse(id, title);
-    refresh();
-  };
-  void onRename; // suppress unused warning
 
   const importJSON = async (file: File) => {
     try {
@@ -953,6 +946,10 @@ export default function Courses() {
               >
                 or import an existing JSON file
               </button>
+            </div>
+          ) : filteredCourses.length === 0 ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "#94a3b8", fontSize: 14 }}>
+              No courses match your search.
             </div>
           ) : (
             <div style={S.grid}>
