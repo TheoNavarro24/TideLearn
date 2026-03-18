@@ -6,25 +6,6 @@ import { uid } from "../lib/uid.js";
 
 export function registerLessonTools(server: McpServer) {
   server.tool(
-    "list_lessons",
-    "List all lessons in a course with their positions",
-    { course_id: z.string().uuid() },
-    async ({ course_id }) =>
-      withAuth(async (client, userId) => {
-        const { data, error } = await client
-          .from("courses")
-          .select("content")
-          .eq("id", course_id)
-          .eq("user_id", userId)
-          .single();
-
-        if (error || !data) return err("course_not_found", `No course with id ${course_id}`);
-        const lessons = (data.content as any).lessons ?? [];
-        return ok(lessons.map((l: any, i: number) => ({ id: l.id, title: l.title, position: i + 1 })));
-      })
-  );
-
-  server.tool(
     "add_lesson",
     "Add a new lesson to a course",
     {
@@ -48,47 +29,47 @@ export function registerLessonTools(server: McpServer) {
   );
 
   server.tool(
-    "update_lesson_title",
-    "Rename a lesson",
+    "update_lesson",
+    "Update a lesson's title, position, or both. At least one of title or position must be provided. Returns an error if lesson_id is not found.",
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
-      title: z.string().min(1),
+      title: z.string().optional(),
+      position: z.number().int().positive().optional(),
     },
-    async ({ course_id, lesson_id, title }) =>
+    async ({ course_id, lesson_id, title, position }) =>
       withAuth(async (client, userId) => {
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id === lesson_id ? { ...l, title } : l
-          ),
-        }));
-        if (mutError) return err(mutError, "Failed to update lesson");
-        return ok({ message: "Lesson title updated" });
-      })
-  );
+        if (title === undefined && position === undefined) {
+          return err("missing_fields", "At least one of title or position must be provided");
+        }
 
-  server.tool(
-    "reorder_lesson",
-    "Move a lesson to a new position (1-based, splice semantics)",
-    {
-      course_id: z.string().uuid(),
-      lesson_id: z.string().uuid(),
-      new_position: z.number().int().positive(),
-    },
-    async ({ course_id, lesson_id, new_position }) =>
-      withAuth(async (client, userId) => {
+        let lessonNotFound = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const lessons = [...course.lessons];
-          const fromIdx = lessons.findIndex((l) => l.id === lesson_id);
-          if (fromIdx === -1) return course;
-          const [lesson] = lessons.splice(fromIdx, 1);
-          const toIdx = Math.min(new_position - 1, lessons.length);
-          lessons.splice(toIdx, 0, lesson);
+          const idx = lessons.findIndex((l) => l.id === lesson_id);
+          if (idx === -1) {
+            lessonNotFound = true;
+            return course;
+          }
+
+          let lesson = { ...lessons[idx] };
+          if (title !== undefined) {
+            lesson = { ...lesson, title };
+          }
+          lessons[idx] = lesson;
+
+          if (position !== undefined) {
+            lessons.splice(idx, 1);
+            const toIdx = Math.min(position - 1, lessons.length);
+            lessons.splice(toIdx, 0, lesson);
+          }
+
           return { ...course, lessons };
         });
-        if (mutError) return err(mutError, "Failed to reorder lesson");
-        return ok({ message: "Lesson reordered" });
+
+        if (lessonNotFound) return err("lesson_not_found", `Lesson not found in course: ${lesson_id}`);
+        if (mutError) return err(mutError, "Failed to update lesson");
+        return ok({ updated: true });
       })
   );
 
