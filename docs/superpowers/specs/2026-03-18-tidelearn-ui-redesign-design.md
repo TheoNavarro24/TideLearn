@@ -54,11 +54,64 @@ Define as CSS custom properties in `src/index.css`. Replace all violet/purple HS
   --text-body:        #334155;   /* body copy */
   --text-muted:       #94a3b8;   /* meta, timestamps */
   --text-on-dark:     #ccfbf1;   /* body text on dark surfaces */
-  --text-on-dark-dim: rgba(209,250,229,0.6);  /* muted text on dark */
+  --text-on-dark-dim: rgba(204,251,241,0.6);  /* muted text on dark (teal-100 @ 60%) */
 }
 ```
 
-### 2.2 Typography
+### 2.2 shadcn Semantic Token Remapping
+
+The existing `src/index.css` uses shadcn's HSL-variable system. Every shadcn component reads `hsl(var(--primary))`, `hsl(var(--border))`, `hsl(var(--ring))`, etc. These tokens **must be preserved** and remapped to Rockpool-equivalent HSL values — they are not removed. The Rockpool custom properties from §2.1 are added alongside them.
+
+Replace the `:root` block in `src/index.css` with both sets of tokens:
+
+```css
+:root {
+  /* ── shadcn semantic tokens (remapped to Rockpool palette) ── */
+  --background:             0 0% 100%;
+  --foreground:             176 57% 11%;   /* #0d2926 */
+
+  --card:                   0 0% 100%;
+  --card-foreground:        176 57% 11%;
+
+  --popover:                0 0% 100%;
+  --popover-foreground:     176 57% 11%;
+
+  --primary:                173 84% 32%;   /* #0d9488 (teal-primary) */
+  --primary-foreground:     0 0% 100%;
+
+  --secondary:              168 94% 95%;   /* #f0fdfb (surface-tint) */
+  --secondary-foreground:   176 57% 11%;
+
+  --muted:                  168 94% 95%;   /* #f0fdfb */
+  --muted-foreground:       215 16% 57%;   /* #94a3b8 */
+
+  --accent:                 168 94% 95%;
+  --accent-foreground:      176 57% 11%;
+
+  --destructive:            0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border:                 153 94% 93%;   /* #e0fdf4 (border-subtle) */
+  --input:                  174 75% 89%;   /* #d1faf4 (border-mid) */
+  --ring:                   174 72% 40%;   /* #14b8a6 (teal-bright) */
+
+  --radius: 0.5rem;   /* 8px — use --radius-* tokens for finer control */
+
+  /* shadcn sidebar tokens (app uses custom sidebar, these are kept for compatibility) */
+  --sidebar-background:          170 38% 20%;   /* #1e4a44 (ocean-mid) */
+  --sidebar-foreground:          166 94% 90%;   /* #ccfbf1 */
+  --sidebar-primary:             174 72% 40%;   /* #14b8a6 */
+  --sidebar-primary-foreground:  0 0% 100%;
+  --sidebar-accent:              170 38% 23%;
+  --sidebar-accent-foreground:   166 94% 90%;
+  --sidebar-border:              170 80% 35%;
+  --sidebar-ring:                174 72% 40%;
+}
+```
+
+> **Note:** The `.dark` block from the original file should be removed — this app does not support a dark mode toggle (§8). Dark surfaces are implemented by explicit `--ocean-*` token usage, not via CSS class toggle.
+
+### 2.4 Typography
 
 Two typefaces throughout:
 
@@ -80,7 +133,7 @@ Two typefaces throughout:
 - Label / chip: Inter 10–11px / 700 / uppercase / ls 0.08em
 - Meta: Inter 11px / 500 / `--text-muted`
 
-### 2.3 Radius & Shadow
+### 2.5 Radius & Shadow
 
 ```css
 --radius-sm:  6px;   /* buttons, chips, inputs */
@@ -152,7 +205,7 @@ background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(13,148,136,0.18) 0%,
 - 3px teal gradient stripe at top
 - Logo: 🌊 mark + "TideLearn"
 - Headline: Lora 22px 700 white "Welcome back"
-- Subtitle: 13px `rgba(148,210,204,0.6)`
+- Subtitle: 13px `var(--text-on-dark-dim)` (muted teal on dark)
 - Google OAuth button: dark glass style (`rgba(255,255,255,0.06)` bg, white text, Google SVG icon)
 - Divider: "or email"
 - Email + password inputs: dark glass (`rgba(255,255,255,0.05)` bg, `rgba(255,255,255,0.1)` border, white text, teal focus border)
@@ -242,14 +295,15 @@ Each card:
     - Block content (type-specific, see §4)
   - **Block controls**: appear on block hover, positioned `right: -40px`, column of 26px square buttons (↑ ↓ ⧉ ✕). Danger (delete) gets red on hover.
 
-**Block picker popup** (opens from active add-block row):
+**Block picker popup** (opens from active add-block row; implemented as the `AddBlockMenu` component defined inline in `src/pages/Editor.tsx` ~line 395 — currently a simple dropdown, needs full redesign to match this spec):
 - White card, `--radius-md`, `var(--shadow-popup)`, 420px wide
 - Search input at top
-- 4 category sections with labels + 4-column grid:
-  - **Text**: Heading, Text, List, Quote, Callout, Code, Divider, Contents
-  - **Media**: Image, Video, Audio
-  - **Interactive**: Accordion, Tabs
-  - **Knowledge Check**: True/False, Multiple Choice, Short Answer
+- 4 category sections with labels + 4-column grid (labels match registry `category` strings):
+  - **Text** (`"Text"`): Heading, Text, List, Quote, Callout, Code, Divider, Contents (ToC)
+  - **Media** (`"Media"`): Image, Video, Audio
+  - **Interactive** (`"Interactive"`): Accordion, Tabs
+  - **Knowledge** (`"Knowledge"`): True/False, Multiple Choice (block type `quiz`), Short Answer
+- "Multiple Choice" is the display label for the `quiz` block type — aligns with the registry entry `{ type: "quiz", label: "Quiz (simple)" }` which should be relabelled to "Multiple Choice" for consistency with this UI
 - Each tile: 34px icon area (category-tinted bg: green/blue/purple/amber), 10px label, hover/selected teal state
 
 ---
@@ -291,7 +345,7 @@ Each card:
 
 ### 3.6 Publish Modal
 
-**Reference mockup:** `fullpage-publish-v2.html`
+**Reference mockup:** `fullpage-publish-v2.html` (approved). Note: `fullpage-publish-modal.html` also exists in the brainstorm folder — it is an earlier draft; use `fullpage-publish-v2.html` only.
 
 Triggered by "↗ Publish" button in editor topbar. Modal overlay (`rgba(7,22,18,0.7)` + editor blurred behind).
 
@@ -336,7 +390,8 @@ All blocks render identically in editor canvas and learner view (author sees exa
 These shadcn components need CSS variable overrides to pick up the Rockpool palette:
 
 - **Button**: `variant="default"` → teal gradient; `variant="outline"` → teal border + text; `variant="ghost"` → transparent + teal hover
-- **Input**: teal focus ring (`--teal-bright`)
+- **Input**: teal focus ring (`--teal-bright`), `--border-mid` border
+- **Textarea**: teal focus ring (`--teal-bright`), `--border-mid` border (same treatment as Input — used in block editor forms)
 - **Card**: `--border-subtle` border, `--radius-lg`
 - **Badge**: teal bg tint + teal text
 - **Dialog**: `--radius-xl`, `--shadow-modal`, teal top stripe
@@ -362,7 +417,7 @@ These shadcn components need CSS variable overrides to pick up the Rockpool pale
 | File | Change type | Notes |
 |------|-------------|-------|
 | `src/index.css` | Full rewrite | Replace violet HSL tokens with Rockpool CSS custom properties |
-| `index.html` | Add fonts | Lora + Inter from Google Fonts |
+| `index.html` | Add fonts + meta | Lora + Inter Google Fonts link; update `<title>` and OG tags (currently reference "Lovable" — should say "TideLearn") |
 | `src/pages/Index.tsx` | Full rewrite | Immersive dark landing page |
 | `src/pages/Auth.tsx` | Full rewrite | Dark frosted glass auth card |
 | `src/pages/Courses.tsx` | Full rewrite | Sidebar app layout + card redesign + empty state |
