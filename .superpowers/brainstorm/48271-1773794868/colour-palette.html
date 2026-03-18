@@ -1,0 +1,93 @@
+<h2>Which colour mood feels right for TideLearn?</h2>
+<p class="subtitle">All three use ocean blues and teals — they differ in personality. Click to select.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="deep-ocean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0a1628 0%, #0d2d4a 40%, #0e4d6b 100%); padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#0891b2;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;">T</div>
+        <span style="color:#7dd3fc;font-weight:600;font-size:14px;">TideLearn</span>
+      </div>
+      <div style="height:28px;background:linear-gradient(90deg,#0891b2,#0e7490);border-radius:6px;width:70%;"></div>
+      <div style="display:flex;gap:6px;">
+        <div style="height:14px;background:#164e63;border-radius:4px;flex:1;"></div>
+        <div style="height:14px;background:#164e63;border-radius:4px;flex:2;"></div>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:6px;">
+        <div style="padding:5px 12px;background:#0891b2;border-radius:6px;font-size:11px;color:white;font-weight:600;">Start</div>
+        <div style="padding:5px 12px;border:1px solid #0891b2;border-radius:6px;font-size:11px;color:#7dd3fc;">Browse</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Deep Ocean</h3>
+      <p>Dark navy background, cyan-teal accents. Professional, immersive — like deep water. Bold and focused.</p>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0a1628;border:1px solid #333;" title="Navy"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0891b2;" title="Cyan-600"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#7dd3fc;" title="Sky-300"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0e4d6b;" title="Deep teal"></span>
+        <span style="font-size:12px;color:#888;align-self:center;">Dark mode primary</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="coastal-light" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #f0fdff 0%, #e0f7fa 40%, #b2ebf2 100%); padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div style="width:36px;height:36px;border-radius:8px;background:#0e7490;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;">T</div>
+        <span style="color:#0e7490;font-weight:600;font-size:14px;">TideLearn</span>
+      </div>
+      <div style="height:28px;background:linear-gradient(90deg,#0e7490,#0891b2);border-radius:6px;width:70%;"></div>
+      <div style="display:flex;gap:6px;">
+        <div style="height:14px;background:#cffafe;border-radius:4px;flex:1;border:1px solid #a5f3fc;"></div>
+        <div style="height:14px;background:#cffafe;border-radius:4px;flex:2;border:1px solid #a5f3fc;"></div>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:6px;">
+        <div style="padding:5px 12px;background:#0e7490;border-radius:6px;font-size:11px;color:white;font-weight:600;">Start</div>
+        <div style="padding:5px 12px;border:1px solid #0e7490;border-radius:6px;font-size:11px;color:#0e7490;">Browse</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Coastal Light</h3>
+      <p>Bright white/cyan background, deep teal accents. Clean and airy — like a sunlit shoreline. Friendly and accessible.</p>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#f0fdff;border:1px solid #ccc;" title="Cyan-50"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0e7490;" title="Cyan-700"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0891b2;" title="Cyan-600"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#164e63;" title="Cyan-900"></span>
+        <span style="font-size:12px;color:#888;align-self:center;">Light mode primary</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="twilight-tide" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0f172a 0%, #0c2340 40%, #134e4a 100%); padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#14b8a6,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;">T</div>
+        <span style="background:linear-gradient(90deg,#14b8a6,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-size:14px;">TideLearn</span>
+      </div>
+      <div style="height:28px;background:linear-gradient(90deg,#14b8a6,#0ea5e9);border-radius:6px;width:70%;"></div>
+      <div style="display:flex;gap:6px;">
+        <div style="height:14px;background:#0f3d3a;border-radius:4px;flex:1;"></div>
+        <div style="height:14px;background:#0f3d3a;border-radius:4px;flex:2;"></div>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:6px;">
+        <div style="padding:5px 12px;background:linear-gradient(90deg,#14b8a6,#0ea5e9);border-radius:6px;font-size:11px;color:white;font-weight:600;">Start</div>
+        <div style="padding:5px 12px;border:1px solid #14b8a6;border-radius:6px;font-size:11px;color:#5eead4;">Browse</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Twilight Tide</h3>
+      <p>Dark slate background, teal-to-blue gradient accents. Rich and dynamic — like the horizon at dusk. Modern and vibrant.</p>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0f172a;" title="Slate-900"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#14b8a6;" title="Teal-500"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#0ea5e9;" title="Sky-500"></span>
+        <span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:#134e4a;" title="Teal-900"></span>
+        <span style="font-size:12px;color:#888;align-self:center;">Gradient primary</span>
+      </div>
+    </div>
+  </div>
+
+</div>

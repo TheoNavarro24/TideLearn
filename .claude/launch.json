@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "TideLearn Dev Server",
+      "runtimeExecutable": "/Users/theonavarro/.nvm/versions/node/v24.14.0/bin/node",
+      "runtimeArgs": ["node_modules/.bin/vite", "--port", "8080"],
+      "port": 8080
+    },
+    {
+      "name": "TideLearn Preview (built)",
+      "runtimeExecutable": "/Users/theonavarro/.nvm/versions/node/v24.14.0/bin/node",
+      "runtimeArgs": ["node_modules/.bin/vite", "preview", "--port", "4173"],
+      "port": 4173
+    },
+    {
+      "name": "Brainstorm Files",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "52234", "--directory", ".superpowers/brainstorm/48271-1773794868"],
+      "port": 52234
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+<h2>Courses page — three colour themes</h2>
+<p class="subtitle">Same layout, different palette. Click a card to select your favourite.</p>
+
+<div class="cards">
+
+  <!-- DEEP OCEAN -->
+  <div class="card" data-choice="deep-ocean" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0;">
+      <div style="background:#0d2d4a;min-height:260px;font-family:system-ui,sans-serif;font-size:12px;">
+        <!-- Nav -->
+        <div style="background:#091e33;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #0e4d6b;">
+          <span style="color:#7dd3fc;font-weight:700;font-size:13px;">🌊 TideLearn</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="color:#94a3b8;font-size:11px;">My Courses</span>
+            <span style="color:#94a3b8;font-size:11px;">theo@example.com</span>
+            <span style="background:#0e4d6b;color:#7dd3fc;padding:3px 8px;border-radius:4px;font-size:10px;">Sign Out</span>
+          </div>
+        </div>
+        <!-- Header -->
+        <div style="padding:14px 16px 8px;">
+          <div style="color:#e2e8f0;font-size:15px;font-weight:700;">Your Courses</div>
+          <div style="color:#64748b;font-size:11px;margin-top:2px;">Create, open, and manage courses.</div>
+        </div>
+        <!-- Action bar -->
+        <div style="padding:0 16px 10px;display:flex;gap:8px;align-items:center;">
+          <div style="background:#091e33;border:1px solid #0e4d6b;border-radius:5px;padding:5px 10px;color:#94a3b8;font-size:10px;flex:1;">New course title…</div>
+          <div style="background:#0891b2;color:white;padding:5px 10px;border-radius:5px;font-size:10px;font-weight:600;">New Course</div>
+          <div style="background:#0e4d6b;color:#7dd3fc;padding:5px 10px;border-radius:5px;font-size:10px;">Import JSON</div>
+        </div>
+        <!-- Search -->
+        <div style="padding:0 16px 10px;">
+          <div style="background:#091e33;border:1px solid #0e4d6b;border-radius:5px;padding:5px 10px;color:#64748b;font-size:10px;">🔍 Search courses…</div>
+        </div>
+        <!-- Cards grid -->
+        <div style="padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:#091e33;border:1px solid #0e4d6b;border-radius:6px;padding:10px;">
+            <div style="color:#e2e8f0;font-size:11px;font-weight:600;margin-bottom:4px;">Safety Onboarding</div>
+            <div style="color:#64748b;font-size:10px;margin-bottom:8px;">Updated 2 hours ago</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:#0891b2;color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#0e4d6b;color:#7dd3fc;padding:2px 7px;border-radius:4px;font-size:9px;">Duplicate</span>
+              <span style="background:#1e1b4b;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+          <div style="background:#091e33;border:1px solid #0e4d6b;border-radius:6px;padding:10px;">
+            <div style="color:#e2e8f0;font-size:11px;font-weight:600;margin-bottom:4px;">Product Training Q1</div>
+            <div style="color:#64748b;font-size:10px;margin-bottom:8px;">Updated yesterday</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:#0891b2;color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#0e4d6b;color:#7dd3fc;padding:2px 7px;border-radius:4px;font-size:9px;">Duplicate</span>
+              <span style="background:#1e1b4b;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Deep Ocean</h3>
+      <p>Dark navy + cyan. High contrast, immersive feel.</p>
+    </div>
+  </div>
+
+  <!-- COASTAL LIGHT -->
+  <div class="card" data-choice="coastal-light" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0;">
+      <div style="background:#f0fdff;min-height:260px;font-family:system-ui,sans-serif;font-size:12px;">
+        <!-- Nav -->
+        <div style="background:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #a5f3fc;">
+          <span style="color:#0e7490;font-weight:700;font-size:13px;">🌊 TideLearn</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="color:#64748b;font-size:11px;">My Courses</span>
+            <span style="color:#64748b;font-size:11px;">theo@example.com</span>
+            <span style="border:1px solid #0e7490;color:#0e7490;padding:3px 8px;border-radius:4px;font-size:10px;">Sign Out</span>
+          </div>
+        </div>
+        <!-- Header -->
+        <div style="padding:14px 16px 8px;">
+          <div style="color:#0f172a;font-size:15px;font-weight:700;">Your Courses</div>
+          <div style="color:#64748b;font-size:11px;margin-top:2px;">Create, open, and manage courses.</div>
+        </div>
+        <!-- Action bar -->
+        <div style="padding:0 16px 10px;display:flex;gap:8px;align-items:center;">
+          <div style="background:white;border:1px solid #a5f3fc;border-radius:5px;padding:5px 10px;color:#94a3b8;font-size:10px;flex:1;">New course title…</div>
+          <div style="background:#0e7490;color:white;padding:5px 10px;border-radius:5px;font-size:10px;font-weight:600;">New Course</div>
+          <div style="background:#cffafe;color:#0e7490;padding:5px 10px;border-radius:5px;font-size:10px;border:1px solid #a5f3fc;">Import JSON</div>
+        </div>
+        <!-- Search -->
+        <div style="padding:0 16px 10px;">
+          <div style="background:white;border:1px solid #a5f3fc;border-radius:5px;padding:5px 10px;color:#94a3b8;font-size:10px;">🔍 Search courses…</div>
+        </div>
+        <!-- Cards grid -->
+        <div style="padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:white;border:1px solid #a5f3fc;border-radius:6px;padding:10px;box-shadow:0 1px 4px rgba(14,116,144,0.08);">
+            <div style="color:#0f172a;font-size:11px;font-weight:600;margin-bottom:4px;">Safety Onboarding</div>
+            <div style="color:#64748b;font-size:10px;margin-bottom:8px;">Updated 2 hours ago</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:#0e7490;color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#cffafe;color:#0e7490;padding:2px 7px;border-radius:4px;font-size:9px;border:1px solid #a5f3fc;">Duplicate</span>
+              <span style="background:#fef2f2;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+          <div style="background:white;border:1px solid #a5f3fc;border-radius:6px;padding:10px;box-shadow:0 1px 4px rgba(14,116,144,0.08);">
+            <div style="color:#0f172a;font-size:11px;font-weight:600;margin-bottom:4px;">Product Training Q1</div>
+            <div style="color:#64748b;font-size:10px;margin-bottom:8px;">Updated yesterday</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:#0e7490;color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#cffafe;color:#0e7490;padding:2px 7px;border-radius:4px;font-size:9px;border:1px solid #a5f3fc;">Duplicate</span>
+              <span style="background:#fef2f2;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Coastal Light</h3>
+      <p>White + deep teal. Clean, airy, professional.</p>
+    </div>
+  </div>
+
+  <!-- TWILIGHT TIDE -->
+  <div class="card" data-choice="twilight-tide" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0;">
+      <div style="background:#0f172a;min-height:260px;font-family:system-ui,sans-serif;font-size:12px;">
+        <!-- Nav -->
+        <div style="background:#0a0f1e;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3a3a;">
+          <span style="background:linear-gradient(90deg,#14b8a6,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-size:13px;">🌊 TideLearn</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="color:#64748b;font-size:11px;">My Courses</span>
+            <span style="color:#64748b;font-size:11px;">theo@example.com</span>
+            <span style="border:1px solid #14b8a6;color:#5eead4;padding:3px 8px;border-radius:4px;font-size:10px;">Sign Out</span>
+          </div>
+        </div>
+        <!-- Header -->
+        <div style="padding:14px 16px 8px;">
+          <div style="color:#f1f5f9;font-size:15px;font-weight:700;">Your Courses</div>
+          <div style="color:#64748b;font-size:11px;margin-top:2px;">Create, open, and manage courses.</div>
+        </div>
+        <!-- Action bar -->
+        <div style="padding:0 16px 10px;display:flex;gap:8px;align-items:center;">
+          <div style="background:#0a0f1e;border:1px solid #1a3a3a;border-radius:5px;padding:5px 10px;color:#475569;font-size:10px;flex:1;">New course title…</div>
+          <div style="background:linear-gradient(90deg,#14b8a6,#0ea5e9);color:white;padding:5px 10px;border-radius:5px;font-size:10px;font-weight:600;">New Course</div>
+          <div style="background:#0a2020;color:#5eead4;padding:5px 10px;border-radius:5px;font-size:10px;border:1px solid #14b8a6;">Import JSON</div>
+        </div>
+        <!-- Search -->
+        <div style="padding:0 16px 10px;">
+          <div style="background:#0a0f1e;border:1px solid #1a3a3a;border-radius:5px;padding:5px 10px;color:#475569;font-size:10px;">🔍 Search courses…</div>
+        </div>
+        <!-- Cards grid -->
+        <div style="padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:#0a0f1e;border:1px solid #1a3a3a;border-radius:6px;padding:10px;">
+            <div style="color:#f1f5f9;font-size:11px;font-weight:600;margin-bottom:4px;">Safety Onboarding</div>
+            <div style="color:#475569;font-size:10px;margin-bottom:8px;">Updated 2 hours ago</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:linear-gradient(90deg,#14b8a6,#0ea5e9);color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#0a2020;color:#5eead4;padding:2px 7px;border-radius:4px;font-size:9px;border:1px solid #14b8a6;">Duplicate</span>
+              <span style="background:#1a0a0a;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+          <div style="background:#0a0f1e;border:1px solid #1a3a3a;border-radius:6px;padding:10px;">
+            <div style="color:#f1f5f9;font-size:11px;font-weight:600;margin-bottom:4px;">Product Training Q1</div>
+            <div style="color:#475569;font-size:10px;margin-bottom:8px;">Updated yesterday</div>
+            <div style="display:flex;gap:4px;">
+              <span style="background:linear-gradient(90deg,#14b8a6,#0ea5e9);color:white;padding:2px 7px;border-radius:4px;font-size:9px;">Open</span>
+              <span style="background:#0a2020;color:#5eead4;padding:2px 7px;border-radius:4px;font-size:9px;border:1px solid #14b8a6;">Duplicate</span>
+              <span style="background:#1a0a0a;color:#ef4444;padding:2px 7px;border-radius:4px;font-size:9px;">Delete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Twilight Tide</h3>
+      <p>Dark slate + teal-to-blue gradient. Rich, modern, vibrant.</p>
+    </div>
+  </div>
+
+</div>

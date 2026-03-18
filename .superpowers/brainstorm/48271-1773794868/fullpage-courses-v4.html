@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — Courses v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:#ffffff; color:#0f172a; }
+
+/* ── NAV ── */
+.nav {
+  background: #0a1f1c;
+  padding: 0 48px;
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo { font-size: 17px; font-weight: 800; color: white; letter-spacing: -0.04em; display:flex; align-items:center; gap:9px; }
+.nav-logo-mark { width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#14b8a6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:15px; }
+.nav-right { display:flex; gap:20px; align-items:center; }
+.nav-link { color:#5eead4; font-size:13px; text-decoration:none; font-weight:500; opacity:0.6; }
+.nav-link.active { opacity:1; }
+.nav-user { font-size:12px; color:#2d4a47; }
+.nav-signout { border:1px solid rgba(94,234,212,0.2); color:#5eead4; padding:5px 13px; border-radius:5px; font-size:12px; font-weight:600; background:transparent; cursor:pointer; font-family:inherit; }
+
+/* ── PAGE HEADER — clean, dark text on white ── */
+.page-header {
+  padding: 48px 48px 32px;
+  border-bottom: 1px solid #f0fdf4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f2e2b;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+.page-header p { font-size: 14px; color: #94a3b8; }
+.header-actions { display:flex; gap:10px; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #0d9488, #0891b2);
+  color: white;
+  padding: 10px 22px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-secondary {
+  background: white;
+  color: #0d9488;
+  padding: 10px 18px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #99f6e4;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── CONTENT ── */
+.content { max-width: 1200px; margin: 0 auto; padding: 32px 48px 80px; }
+
+/* New course row */
+.new-course-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.new-course-input {
+  flex: 1;
+  max-width: 420px;
+  border: 1.5px solid #e0fdf4;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+  background: #fafffe;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.new-course-input:focus { border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20,184,166,0.1); }
+.new-course-input::placeholder { color: #94a3b8; }
+
+/* Search + filter bar */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.search-wrap { position: relative; }
+.search-input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 9px 14px 9px 36px;
+  font-size: 13px;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+  width: 280px;
+  background: white;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: #14b8a6; }
+.search-input::placeholder { color: #94a3b8; }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color: #94a3b8; font-size:13px; }
+
+.courses-count { font-size:13px; color:#94a3b8; margin-left:auto; }
+.courses-count strong { color: #0f2e2b; }
+
+/* ── GRID ── */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.course-card {
+  background: white;
+  border: 1.5px solid #e0fdf4;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 16px rgba(13,148,136,0.05);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.course-card:hover {
+  border-color: #14b8a6;
+  box-shadow: 0 4px 20px rgba(13,148,136,0.15);
+  transform: translateY(-3px);
+}
+.course-stripe { height: 3px; background: linear-gradient(90deg, #14b8a6, #06b6d4, #0891b2); }
+.course-body { padding: 22px 24px 20px; }
+.course-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f2e2b;
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+.course-meta { font-size: 12px; color: #94a3b8; margin-bottom: 22px; }
+.course-actions { display:flex; gap:7px; }
+
+.cbtn { padding:7px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; border:1.5px solid transparent; transition: all 0.15s; }
+.cbtn-open { background:linear-gradient(135deg,#0d9488,#0891b2); color:white; border:none; }
+.cbtn-dupe { background:#f0fdfb; color:#0d9488; border-color:#99f6e4; }
+.cbtn-export { background:white; color:#64748b; border-color:#e2e8f0; }
+.cbtn-delete { background:#fff5f5; color:#ef4444; border-color:#fecaca; }
+.cbtn:hover { opacity:0.85; }
+
+/* New course card */
+.new-card {
+  border: 2px dashed #99f6e4;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 144px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafffe;
+}
+.new-card:hover { border-color: #14b8a6; background: #f0fdfb; }
+.new-card-inner { text-align:center; }
+.new-card-plus { font-size:24px; color:#14b8a6; margin-bottom:6px; line-height:1; }
+.new-card-label { font-size:13px; font-weight:600; color:#0d9488; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">🌊</div>
+    TideLearn
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/courses" class="nav-link active">My Courses</a>
+    <span class="nav-user">theo@example.com</span>
+    <button class="nav-signout">Sign Out</button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div style="border-bottom: 1px solid #f0fdf4;">
+  <div class="page-header">
+    <div>
+      <h1>Your Courses</h1>
+      <p>Create, open, and manage your courses.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary">Import JSON</button>
+      <button class="btn-primary">+ New Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <div class="new-course-row">
+    <input class="new-course-input" placeholder="Course title — e.g. Fire Safety Induction 2026…" />
+    <button class="btn-primary">Create →</button>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" placeholder="Search courses…" />
+    </div>
+    <span class="courses-count"><strong>3</strong> courses</span>
+  </div>
+
+  <div class="courses-grid">
+
+    <div class="course-card">
+      <div class="course-stripe"></div>
+      <div class="course-body">
+        <div class="course-title">Fire Safety Induction</div>
+        <div class="course-meta">Updated 2 hours ago</div>
+        <div class="course-actions">
+          <button class="cbtn cbtn-open">Open</button>
+          <button class="cbtn cbtn-dupe">Duplicate</button>
+          <button class="cbtn cbtn-export">Export</button>
+          <button class="cbtn cbtn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card">
+      <div class="course-stripe"></div>
+      <div class="course-body">
+        <div class="course-title">Product Knowledge Q1</div>
+        <div class="course-meta">Updated yesterday</div>
+        <div class="course-actions">
+          <button class="cbtn cbtn-open">Open</button>
+          <button class="cbtn cbtn-dupe">Duplicate</button>
+          <button class="cbtn cbtn-export">Export</button>
+          <button class="cbtn cbtn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="course-card">
+      <div class="course-stripe"></div>
+      <div class="course-body">
+        <div class="course-title">New Starter Onboarding</div>
+        <div class="course-meta">Updated 3 days ago</div>
+        <div class="course-actions">
+          <button class="cbtn cbtn-open">Open</button>
+          <button class="cbtn cbtn-dupe">Duplicate</button>
+          <button class="cbtn cbtn-export">Export</button>
+          <button class="cbtn cbtn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="new-card">
+      <div class="new-card-inner">
+        <div class="new-card-plus">＋</div>
+        <div class="new-card-label">New Course</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

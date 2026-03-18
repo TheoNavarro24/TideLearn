@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — Editor v1</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body { font-family:'Inter',system-ui,sans-serif; background:#0e2d29; display:flex; flex-direction:column; overflow:hidden; }
+
+/* ══ SHELL ══ */
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+
+/* ══ TOPBAR ══ */
+.topbar {
+  grid-column: 1 / -1;
+  background: #0f1f1d;
+  border-bottom: 1px solid rgba(20,184,166,0.15);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+  z-index: 10;
+}
+
+.topbar-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(94,234,212,0.5);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.topbar-back:hover { color: #5eead4; }
+.topbar-back-icon { font-size: 10px; }
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(20,184,166,0.15);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+.course-title-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  font-family: inherit;
+  min-width: 0;
+  letter-spacing: -0.01em;
+}
+.course-title-input::placeholder { color: rgba(94,234,212,0.3); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.save-indicator {
+  font-size: 11px;
+  color: rgba(94,234,212,0.4);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.save-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #14b8a6;
+  box-shadow: 0 0 6px rgba(20,184,166,0.6);
+}
+
+.btn-preview {
+  background: rgba(20,184,166,0.1);
+  color: #5eead4;
+  padding: 6px 13px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(20,184,166,0.2);
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-publish {
+  background: linear-gradient(135deg, #0d9488, #0891b2);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: -0.01em;
+}
+
+/* ══ SIDEBAR ══ */
+.sidebar {
+  background: #1e4a44;
+  border-right: 1px solid rgba(20,184,166,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(20,184,166,0.12);
+  flex-shrink: 0;
+}
+.sidebar-section-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: rgba(94,234,212,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+/* Lesson list */
+.lesson-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+.lesson-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(209,250,229,0.6);
+  margin-bottom: 1px;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+.lesson-item:hover { background: rgba(20,184,166,0.1); color: #ccfbf1; }
+.lesson-item.active {
+  background: rgba(20,184,166,0.18);
+  color: #ccfbf1;
+  font-weight: 600;
+}
+.lesson-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(94,234,212,0.4);
+  width: 16px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.lesson-item.active .lesson-num { color: #14b8a6; }
+.lesson-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lesson-block-count {
+  font-size: 10px;
+  color: rgba(94,234,212,0.3);
+  flex-shrink: 0;
+}
+.lesson-item.active .lesson-block-count { color: rgba(94,234,212,0.5); }
+
+/* Add lesson button */
+.add-lesson-btn {
+  margin: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1.5px dashed rgba(20,184,166,0.25);
+  background: transparent;
+  color: rgba(94,234,212,0.45);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.add-lesson-btn:hover {
+  border-color: rgba(20,184,166,0.5);
+  color: #5eead4;
+  background: rgba(20,184,166,0.06);
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(20,184,166,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(209,250,229,0.45);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+}
+.sidebar-footer-btn:hover { background: rgba(20,184,166,0.08); color: rgba(209,250,229,0.7); }
+
+/* ══ CANVAS ══ */
+.canvas-wrap {
+  background: #f5fffe;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Lesson header in canvas */
+.canvas-lesson-header {
+  background: white;
+  border-bottom: 1px solid #e0fdf4;
+  padding: 16px 32px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.lesson-title-input {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0d2926;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  flex: 1;
+  letter-spacing: -0.02em;
+}
+.lesson-title-input::placeholder { color: #c4d9d6; }
+.lesson-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* Block canvas */
+.canvas {
+  flex: 1;
+  padding: 24px 0 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Add block row — the Rise-style divider */
+.add-block-row {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  position: relative;
+}
+.add-block-row:hover, .add-block-row.show { opacity: 1; }
+.add-block-line { flex: 1; height: 1px; background: #d1faf4; }
+.add-block-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: white;
+  border: 1.5px solid #99f6e4;
+  color: #0d9488;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.1);
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.add-block-btn:hover {
+  background: #f0fdfb;
+  box-shadow: 0 4px 12px rgba(13,148,136,0.15);
+}
+
+/* Block item */
+.block-item {
+  width: 100%;
+  max-width: 720px;
+  position: relative;
+  margin-bottom: 2px;
+}
+.block-item:hover .block-controls { opacity: 1; }
+
+/* Block controls — hover reveal */
+.block-controls {
+  position: absolute;
+  right: -48px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.block-ctrl {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  background: white;
+  border: 1px solid #e0fdf4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  color: #94a3b8;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.block-ctrl:hover { border-color: #5eead4; color: #0d9488; }
+.block-ctrl.danger:hover { border-color: #fca5a5; color: #ef4444; }
+
+/* Block content */
+.block-card {
+  background: white;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 18px 22px;
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.block-card:hover {
+  border-color: #d1faf4;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.06);
+}
+.block-card.focused {
+  border-color: #5eead4;
+  box-shadow: 0 0 0 3px rgba(20,184,166,0.08);
+}
+
+/* Block type chip */
+.block-type-chip {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #14b8a6;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Heading block */
+.block-heading-input {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0d2926;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.block-heading-input::placeholder { color: #c4d9d6; }
+
+/* Text block */
+.block-text-input {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #334155;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  resize: none;
+  min-height: 72px;
+}
+.block-text-input::placeholder { color: #c4d9d6; }
+
+/* Quiz block */
+.quiz-block { }
+.quiz-question {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0d2926;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 7px;
+  border: 1.5px solid #e0fdf4;
+  background: #f8fffe;
+  font-size: 13.5px;
+  color: #334155;
+}
+.quiz-option.correct {
+  border-color: #14b8a6;
+  background: #f0fdfb;
+  color: #0d2926;
+  font-weight: 600;
+}
+.quiz-radio {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid #d1faf4;
+  flex-shrink: 0;
+}
+.quiz-option.correct .quiz-radio {
+  border-color: #14b8a6;
+  background: #14b8a6;
+}
+.quiz-correct-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #0d9488;
+  background: #ccfbf1;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Image block */
+.image-block {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  border: 2px dashed #99f6e4;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 8px;
+}
+.image-block-icon { font-size: 28px; color: #99f6e4; }
+.image-block-label { font-size: 12px; font-weight: 600; color: #0d9488; }
+.image-block-hint { font-size: 11px; color: #94a3b8; }
+
+/* Block picker popup */
+.block-picker-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #d1faf4;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.14), 0 4px 16px rgba(13,148,136,0.08);
+  padding: 12px;
+  width: 340px;
+  z-index: 50;
+}
+.picker-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  background: #f8fffe;
+}
+.picker-item:hover {
+  background: #e8fdf8;
+  border-color: #99f6e4;
+}
+.picker-icon { font-size: 20px; line-height: 1; }
+.picker-label { font-size: 10.5px; font-weight: 600; color: #334155; text-align: center; line-height: 1.2; }
+
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="topbar">
+    <button class="topbar-back">
+      <span class="topbar-back-icon">←</span>
+      My Courses
+    </button>
+    <div class="topbar-divider"></div>
+    <input class="course-title-input" value="Fire Safety Induction" placeholder="Course title…" />
+    <div class="topbar-right">
+      <div class="save-indicator">
+        <div class="save-dot"></div>
+        Saved
+      </div>
+      <button class="btn-preview">👁 Preview</button>
+      <button class="btn-publish">↗ Publish</button>
+    </div>
+  </div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-header">
+      <div class="sidebar-section-label">Lessons</div>
+    </div>
+
+    <div class="lesson-list">
+
+      <div class="lesson-item active">
+        <span class="lesson-num">1</span>
+        <span class="lesson-name">Introduction</span>
+        <span class="lesson-block-count">3</span>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-num">2</span>
+        <span class="lesson-name">Fire Hazards</span>
+        <span class="lesson-block-count">5</span>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-num">3</span>
+        <span class="lesson-name">Evacuation Procedure</span>
+        <span class="lesson-block-count">4</span>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-num">4</span>
+        <span class="lesson-name">Using a Fire Extinguisher</span>
+        <span class="lesson-block-count">6</span>
+      </div>
+      <div class="lesson-item">
+        <span class="lesson-num">5</span>
+        <span class="lesson-name">Knowledge Check</span>
+        <span class="lesson-block-count">2</span>
+      </div>
+
+    </div>
+
+    <button class="add-lesson-btn">＋ Add lesson</button>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn">⚙️ Course settings</button>
+      <button class="sidebar-footer-btn">📦 Export SCORM</button>
+    </div>
+
+  </aside>
+
+  <!-- ══ CANVAS ══ -->
+  <div class="canvas-wrap">
+
+    <div class="canvas-lesson-header">
+      <input class="lesson-title-input" value="Introduction" placeholder="Lesson title…" />
+      <span class="lesson-meta">3 blocks</span>
+    </div>
+
+    <div class="canvas">
+
+      <!-- ─ Add block (first) ─ -->
+      <div class="add-block-row show" style="max-width:720px;width:100%;padding:4px 0;opacity:0.4;">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+      </div>
+
+      <!-- ─ Block 1: Heading ─ -->
+      <div class="block-item" style="padding:0 0 0 0;">
+        <div class="block-card focused">
+          <div class="block-type-chip">📝 Heading</div>
+          <input class="block-heading-input" value="Welcome to Fire Safety Induction" />
+        </div>
+        <div class="block-controls">
+          <button class="block-ctrl" title="Move up">↑</button>
+          <button class="block-ctrl" title="Move down">↓</button>
+          <button class="block-ctrl" title="Duplicate">⧉</button>
+          <button class="block-ctrl danger" title="Delete">✕</button>
+        </div>
+      </div>
+
+      <!-- ─ Add block (between) ─ -->
+      <div class="add-block-row" style="max-width:720px;width:100%;padding:4px 0;">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+      </div>
+
+      <!-- ─ Block 2: Text ─ -->
+      <div class="block-item">
+        <div class="block-card">
+          <div class="block-type-chip">📄 Text</div>
+          <textarea class="block-text-input" rows="3">This course covers essential fire safety knowledge for all staff. By the end, you'll know how to identify hazards, respond to alarms, and use basic firefighting equipment safely.</textarea>
+        </div>
+        <div class="block-controls">
+          <button class="block-ctrl">↑</button>
+          <button class="block-ctrl">↓</button>
+          <button class="block-ctrl">⧉</button>
+          <button class="block-ctrl danger">✕</button>
+        </div>
+      </div>
+
+      <!-- ─ Add block (between) ─ -->
+      <div class="add-block-row" style="max-width:720px;width:100%;padding:4px 0;">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+
+        <!-- Block picker popup (shown for context) -->
+        <div class="block-picker-popup">
+          <div class="picker-title">Add a block</div>
+          <div class="picker-grid">
+            <div class="picker-item">
+              <span class="picker-icon">📝</span>
+              <span class="picker-label">Heading</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">📄</span>
+              <span class="picker-label">Text</span>
+            </div>
+            <div class="picker-item" style="background:#e8fdf8;border-color:#99f6e4;">
+              <span class="picker-icon">🖼</span>
+              <span class="picker-label">Image</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">▶️</span>
+              <span class="picker-label">Video</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">✅</span>
+              <span class="picker-label">Quiz</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">📋</span>
+              <span class="picker-label">List</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">💬</span>
+              <span class="picker-label">Quote</span>
+            </div>
+            <div class="picker-item">
+              <span class="picker-icon">📊</span>
+              <span class="picker-label">Table</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ Block 3: Image placeholder ─ -->
+      <div class="block-item">
+        <div class="block-card">
+          <div class="block-type-chip">🖼 Image</div>
+          <div class="image-block">
+            <span class="image-block-icon">🖼</span>
+            <span class="image-block-label">Click to add an image</span>
+            <span class="image-block-hint">PNG, JPG, GIF up to 10MB</span>
+          </div>
+        </div>
+        <div class="block-controls">
+          <button class="block-ctrl">↑</button>
+          <button class="block-ctrl">↓</button>
+          <button class="block-ctrl">⧉</button>
+          <button class="block-ctrl danger">✕</button>
+        </div>
+      </div>
+
+      <!-- ─ Add block (end) ─ -->
+      <div class="add-block-row" style="max-width:720px;width:100%;padding:4px 0;opacity:0.4;">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

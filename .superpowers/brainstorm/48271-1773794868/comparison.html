@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — All Pages</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #071612;
+  min-height: 100vh;
+  padding: 28px 28px 40px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+.header h1 {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(94,234,212,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.pages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.page-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(94,234,212,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(20,184,166,0.15);
+}
+
+.frame-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(20,184,166,0.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  position: relative;
+  /* height set by JS */
+}
+
+.frame-inner {
+  position: absolute;
+  top: 0; left: 0;
+  width: 1280px;
+  height: 860px;
+  transform-origin: top left;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>TideLearn — Page Designs</h1>
+</div>
+
+<div class="pages">
+
+  <div class="page-slot">
+    <div class="page-label">01 — Landing</div>
+    <div class="frame-wrap" id="fw1">
+      <div class="frame-inner" id="fi1">
+        <iframe src="fullpage-immersive.html" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-slot">
+    <div class="page-label">02 — Courses</div>
+    <div class="frame-wrap" id="fw2">
+      <div class="frame-inner" id="fi2">
+        <iframe src="fullpage-courses-v7.html" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-slot">
+    <div class="page-label">03 — Auth</div>
+    <div class="frame-wrap" id="fw3">
+      <div class="frame-inner" id="fi3">
+        <iframe src="fullpage-auth-v2.html" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function setScales() {
+  const pairs = [['fw1','fi1'],['fw2','fi2'],['fw3','fi3']];
+  pairs.forEach(([wrapId, innerId]) => {
+    const wrap = document.getElementById(wrapId);
+    const inner = document.getElementById(innerId);
+    if (!wrap || !inner) return;
+    const colW = wrap.offsetWidth;
+    const scale = colW / 1280;
+    const scaledH = 860 * scale;
+    wrap.style.height = scaledH + 'px';
+    inner.style.transform = `scale(${scale})`;
+  });
+}
+setScales();
+window.addEventListener('resize', setScales);
+</script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — Landing Page Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: white; }
+
+  /* NAV */
+  nav {
+    background: #0f2e2b;
+    padding: 14px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .nav-logo-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #14b8a6, #06b6d4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .nav-logo-text {
+    font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.03em;
+  }
+  .nav-links {
+    display: flex; gap: 24px; align-items: center;
+  }
+  .nav-links a {
+    color: #5eead4; font-size: 14px; text-decoration: none; font-weight: 500;
+  }
+  .nav-links a:hover { color: white; }
+  .nav-cta {
+    background: #14b8a6;
+    color: #0f2e2b;
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, #e0fdf4 0%, #ccfbf1 35%, #a5f3fc 70%, #bae6fd 100%);
+    padding: 72px 48px 0;
+  }
+  .hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .hero-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0d9488;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #0f2e2b;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .hero-title em {
+    color: #0d9488;
+    font-style: italic;
+  }
+  .hero-subtitle {
+    font-size: 17px;
+    color: #0f766e;
+    line-height: 1.65;
+    margin-bottom: 32px;
+    max-width: 440px;
+  }
+  .hero-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-primary {
+    background: #0f2e2b;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost {
+    background: rgba(255,255,255,0.55);
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+    padding: 12px 20px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    backdrop-filter: blur(6px);
+  }
+
+  /* Hero preview card */
+  .hero-preview {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #ccfbf1;
+    box-shadow: 0 20px 60px rgba(13, 148, 136, 0.18);
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .hero-preview-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #14b8a6, #06b6d4, #0891b2);
+  }
+  .hero-preview-chrome {
+    background: #f0fdfb;
+    padding: 10px 16px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    border-bottom: 1px solid #e0fdf4;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .hero-preview-body {
+    padding: 20px;
+  }
+  .fake-lesson-title {
+    height: 16px;
+    background: #0f2e2b;
+    border-radius: 4px;
+    width: 55%;
+    margin-bottom: 12px;
+  }
+  .fake-text { height: 9px; background: #e2e8f0; border-radius: 3px; margin-bottom: 6px; }
+  .fake-block {
+    background: #f0fdfb;
+    border: 1px solid #ccfbf1;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 14px;
+  }
+  .fake-block-label {
+    height: 8px; background: #14b8a6; border-radius: 3px; width: 30%; margin-bottom: 8px;
+  }
+  .fake-option {
+    height: 28px;
+    border: 1px solid #ccfbf1;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .fake-radio { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #99f6e4; flex-shrink: 0; }
+  .fake-radio.selected { background: #14b8a6; border-color: #14b8a6; }
+  .fake-option-text { height: 7px; background: #e2e8f0; border-radius: 3px; flex: 1; }
+
+  /* Wave divider */
+  .wave-divider {
+    display: block;
+    width: 100%;
+    margin-bottom: -2px;
+  }
+
+  /* FEATURES */
+  .features {
+    background: white;
+    padding: 64px 48px;
+  }
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .features-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0d9488;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .features-title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f2e2b;
+    text-align: center;
+    margin-bottom: 40px;
+    letter-spacing: -0.01em;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .feature-card {
+    border: 1px solid #ccfbf1;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .feature-card:hover {
+    box-shadow: 0 8px 32px rgba(13,148,136,0.12);
+    transform: translateY(-2px);
+  }
+  .feature-card-stripe {
+    height: 4px;
+    background: linear-gradient(90deg, #14b8a6, #06b6d4);
+  }
+  .feature-card-body {
+    padding: 20px;
+  }
+  .feature-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .feature-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+  .feature-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  footer {
+    background: #0f2e2b;
+    padding: 28px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 800; color: white;
+  }
+  .footer-note {
+    font-size: 13px;
+    color: #475569;
+  }
+  .footer-note span { color: #5eead4; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🌊</div>
+    <span class="nav-logo-text">TideLearn</span>
+  </div>
+  <div class="nav-links">
+    <a href="#">My Courses</a>
+    <a href="#features">Features</a>
+    <a href="/auth" class="nav-cta">Sign In</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="hero-label">A personal e-learning authoring tool</p>
+      <h1 class="hero-title">Build courses<br>worth <em>actually<br>taking.</em></h1>
+      <p class="hero-subtitle">Block-based authoring, instant shareable URL, SCORM export. Built for L&D folk who want to move fast without making something ugly.</p>
+      <div class="hero-buttons">
+        <a href="/courses" class="btn-primary">Start authoring →</a>
+        <a href="#features" class="btn-ghost">See what it does</a>
+      </div>
+    </div>
+
+    <div class="hero-preview">
+      <div class="hero-preview-bar"></div>
+      <div class="hero-preview-chrome">
+        <div class="dot" style="background:#ef4444;"></div>
+        <div class="dot" style="background:#f59e0b;"></div>
+        <div class="dot" style="background:#22c55e;"></div>
+        <div style="flex:1;background:#e0fdf4;border-radius:4px;height:20px;margin-left:8px;"></div>
+      </div>
+      <div class="hero-preview-body">
+        <div class="fake-lesson-title"></div>
+        <div class="fake-text" style="width:90%;"></div>
+        <div class="fake-text" style="width:75%;"></div>
+        <div class="fake-text" style="width:82%;"></div>
+        <div class="fake-block">
+          <div class="fake-block-label"></div>
+          <div class="fake-option">
+            <div class="fake-radio selected"></div>
+            <div class="fake-option-text" style="width:55%;"></div>
+          </div>
+          <div class="fake-option">
+            <div class="fake-radio"></div>
+            <div class="fake-option-text" style="width:70%;"></div>
+          </div>
+          <div class="fake-option">
+            <div class="fake-radio"></div>
+            <div class="fake-option-text" style="width:45%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <svg class="wave-divider" viewBox="0 0 1440 64" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,32 C240,60 480,4 720,32 C960,60 1200,4 1440,32 L1440,64 L0,64 Z" fill="white"/>
+  </svg>
+</section>
+
+<section class="features" id="features">
+  <div class="features-inner">
+    <p class="features-label">What it does</p>
+    <h2 class="features-title">Everything you need, nothing you don't.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">🧱</div>
+          <div class="feature-title">Block-based editing</div>
+          <p class="feature-desc">Compose lessons from headings, text, images, video, quizzes, accordions, and more — no code needed.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">🔗</div>
+          <div class="feature-title">Instant publish</div>
+          <p class="feature-desc">One click to generate a shareable URL. Embed it on Google Sites or link from anywhere.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">📦</div>
+          <div class="feature-title">SCORM export</div>
+          <p class="feature-desc">Export a SCORM 1.2 package and drop it straight into any LMS — Moodle, Blackboard, you name it.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">📱</div>
+          <div class="feature-title">Responsive by default</div>
+          <p class="feature-desc">Courses look great on desktop, tablet, and phone without any extra effort.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">☁️</div>
+          <div class="feature-title">Cloud sync</div>
+          <p class="feature-desc">Sign in and your courses follow you. Works offline too — saves to localStorage when you're not logged in.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-stripe"></div>
+        <div class="feature-card-body">
+          <div class="feature-icon">✏️</div>
+          <div class="feature-title">Rich text editing</div>
+          <p class="feature-desc">Full formatting support — bold, italic, links, lists — wherever text appears in your course.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">🌊 TideLearn</div>
+  <p class="footer-note">A personal project by <span>Theo Navarro</span> · © 2026</p>
+</footer>
+
+</body>
+</html>
