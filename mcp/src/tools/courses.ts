@@ -54,18 +54,49 @@ export function registerCourseTools(server: McpServer) {
   );
 
   server.tool(
-    "update_course_title",
-    "Rename a course",
-    { course_id: z.string().uuid(), title: z.string().min(1) },
-    async ({ course_id, title }) =>
+    "update_course",
+    "Update a course's title, visibility, or both. At least one of title or is_public must be provided.",
+    {
+      course_id: z.string().uuid(),
+      title: z.string().optional(),
+      is_public: z.boolean().optional(),
+    },
+    async ({ course_id, title, is_public }) =>
       withAuth(async (client, userId) => {
-        const { mutateCourse } = await import("../lib/mutate.js");
-        const error = await mutateCourse(client, userId, course_id, (c) => ({
-          ...c,
-          title,
-        }));
-        if (error) return err(error, `Failed to update course title`);
-        return ok({ message: "Course title updated" });
+        if (title === undefined && is_public === undefined) {
+          return err("validation_failed", "At least one of title or is_public must be provided");
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fields: Record<string, any> = { updated_at: new Date().toISOString() };
+
+        if (title !== undefined) {
+          const { data, error: readError } = await client
+            .from("courses")
+            .select("content")
+            .eq("id", course_id)
+            .eq("user_id", userId)
+            .single();
+
+          if (readError || !data) return err("course_not_found", `No course with id ${course_id}`);
+
+          const content = { ...(data.content as Record<string, unknown>), title };
+          fields.title = title;
+          fields.content = content;
+        }
+
+        if (is_public !== undefined) {
+          fields.is_public = is_public;
+        }
+
+        const { error: updateError } = await client
+          .from("courses")
+          .update(fields)
+          .eq("id", course_id)
+          .eq("user_id", userId);
+
+        if (updateError) return err("update_failed", updateError.message);
+        return ok({ updated: true });
       })
   );
 
@@ -86,20 +117,4 @@ export function registerCourseTools(server: McpServer) {
       })
   );
 
-  server.tool(
-    "set_course_visibility",
-    "Set a course to public or private",
-    { course_id: z.string().uuid(), is_public: z.boolean() },
-    async ({ course_id, is_public }) =>
-      withAuth(async (client, userId) => {
-        const { error } = await client
-          .from("courses")
-          .update({ is_public })
-          .eq("id", course_id)
-          .eq("user_id", userId);
-
-        if (error) return err("update_failed", error.message);
-        return ok({ message: `Course is now ${is_public ? "public" : "private"}` });
-      })
-  );
 }
