@@ -113,7 +113,7 @@ export const registry: BlockSpec[] = [
   },
   {
     type: "toc",
-    label: "Table of Contents",
+    label: "Contents",
     icon: ListIcon,
     create: factories.toc,
     Editor: TocForm as EditorRenderer<TocBlock>,
@@ -185,7 +185,7 @@ export const registry: BlockSpec[] = [
   },
   {
     type: "quiz",
-    label: "Quiz (simple)",
+    label: "Multiple Choice",
     icon: HelpCircle,
     create: factories.quiz,
     Editor: QuizForm as EditorRenderer<QuizBlock>,
