@@ -39,7 +39,6 @@ function buildManifest(title: string) {
 }
 
 function buildIndexHtml(title: string, publishUrl: string) {
-  // SCORM 1.2 wrapper with iframe launch + runtime bridge (resume/progress)
   const safeTitle = title || "Course";
   const escapedUrl = publishUrl
     .replace(/&/g, "&amp;")
@@ -52,13 +51,11 @@ function buildIndexHtml(title: string, publishUrl: string) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${safeTitle}</title>
-  <meta name="description" content="${safeTitle} - SCORM package" />
-  <link rel="canonical" href="${escapedUrl}" />
   <style>
     :root{color-scheme:light dark}
-    html,body{height:100%}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;margin:0;line-height:1.5;background:#0b1020;color:#e2e8f0}
-    header{padding:12px 16px;border-bottom:1px solid #1f2937;background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0))}
+    html,body{height:100%;margin:0}
+    body{font-family:system-ui,-apple-system,sans-serif;background:#0b1020;color:#e2e8f0}
+    header{padding:12px 16px;border-bottom:1px solid #1f2937;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0))}
     h1{font-size:16px;margin:0}
     .frame-wrap{position:fixed;inset:48px 0 0 0}
     iframe{width:100%;height:100%;border:0}
@@ -66,64 +63,109 @@ function buildIndexHtml(title: string, publishUrl: string) {
     .btn{appearance:none;border:1px solid #334155;border-radius:8px;padding:.5rem .75rem;background:#0ea5e9;color:white;cursor:pointer}
   </style>
   <script>
-  // SCORM 1.2 API discovery
-  function findAPI(win){var maxTries=500;while((win.API==null) && (win.parent!=null) && (win.parent!=win) && (maxTries>0)){maxTries--;win = win.parent;}return win.API||null;}
+  // ── SCORM 1.2 API discovery ──────────────────────────────────────────────
+  function findAPI(win) {
+    var tries = 0;
+    while (win.API == null && win.parent != null && win.parent !== win && tries < 500) {
+      tries++; win = win.parent;
+    }
+    return win.API || null;
+  }
   var api = null;
   var childWin = null;
-  function initSCORM(){
-    try{
-      api = findAPI(window);
-      if(!api){console.warn('SCORM API not found');return}
-      var ok = api.LMSInitialize("");
-      if(ok!="true"){console.warn('LMSInitialize failed')}
-      api.LMSSetValue('cmi.core.lesson_status','incomplete');
-      api.LMSCommit("");
-    }catch(e){console.warn('SCORM init error',e)}
+  var startTime = null;
+
+  // Format elapsed seconds as SCORM 1.2 session_time: "HH:MM:SS"
+  function formatSessionTime(seconds) {
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = Math.floor(seconds % 60);
+    return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }
-  function onMessage(e){
-    try{
+
+  function initSCORM() {
+    try {
+      api = findAPI(window);
+      if (!api) { console.warn('SCORM API not found'); return; }
+      var ok = api.LMSInitialize('');
+      if (ok !== 'true') { console.warn('LMSInitialize failed'); }
+      startTime = Date.now();
+      // Required CMI fields
+      api.LMSSetValue('cmi.core.lesson_status', 'incomplete');
+      api.LMSSetValue('cmi.core.credit', 'credit');
+      // Check entry: resume if suspend_data exists, else ab-initio
+      var existing = api.LMSGetValue('cmi.suspend_data');
+      api.LMSSetValue('cmi.core.entry', (existing && existing.length > 2) ? 'resume' : 'ab-initio');
+      api.LMSCommit('');
+    } catch(e) { console.warn('SCORM init error', e); }
+  }
+
+  function finishSCORM() {
+    try {
+      if (!api) return;
+      if (startTime) {
+        var elapsed = Math.round((Date.now() - startTime) / 1000);
+        api.LMSSetValue('cmi.core.session_time', formatSessionTime(elapsed));
+      }
+      api.LMSCommit('');
+      api.LMSFinish('');
+    } catch(e) { console.warn('SCORM finish error', e); }
+  }
+
+  function onMessage(e) {
+    try {
       var data = e.data || {};
-      if(!data || typeof data !== 'object') return;
-      if(data.type === 'ready'){
-        if(!api) return;
-        try{
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'ready') {
+        if (!api) return;
+        try {
           var s = api.LMSGetValue('cmi.suspend_data') || '';
           var state = {};
-          if(s && typeof s === 'string'){ try{ state = JSON.parse(s); }catch(err){ state = {}; } }
-          if(childWin){ childWin.postMessage({ type: 'resume', state: state }, '*'); }
-        }catch(err){ console.warn('resume fetch error', err); }
+          try { if (s) state = JSON.parse(s); } catch(err) {}
+          if (childWin) childWin.postMessage({ type: 'resume', state: state }, '*');
+        } catch(err) { console.warn('resume fetch error', err); }
       }
-      if(data.type === 'progress'){
-        if(!api) return;
-        try{
-          var state = { completed: Array.isArray(data.completed)? data.completed : [], lastLessonId: data.lastLessonId || null };
+
+      if (data.type === 'progress') {
+        if (!api) return;
+        try {
+          var state = {
+            completed: Array.isArray(data.completed) ? data.completed : [],
+            lastLessonId: data.lastLessonId || null
+          };
           api.LMSSetValue('cmi.suspend_data', JSON.stringify(state));
-          if(data.courseCompleted){ api.LMSSetValue('cmi.core.lesson_status','completed'); }
-          api.LMSCommit("");
-        }catch(err){ console.warn('progress commit error', err); }
+          if (data.courseCompleted) {
+            api.LMSSetValue('cmi.core.lesson_status', 'completed');
+          }
+          // Report score if available
+          if (data.score !== null && data.score !== undefined) {
+            api.LMSSetValue('cmi.core.score.raw', String(data.score));
+            api.LMSSetValue('cmi.core.score.min', '0');
+            api.LMSSetValue('cmi.core.score.max', '100');
+          }
+          api.LMSCommit('');
+        } catch(err) { console.warn('progress commit error', err); }
       }
-    }catch(err){ console.warn('message error', err); }
+    } catch(err) { console.warn('message error', err); }
   }
+
   window.addEventListener('message', onMessage);
-  window.addEventListener('load', function(){
+  window.addEventListener('load', function() {
     initSCORM();
     var frame = document.getElementById('courseFrame');
     childWin = frame ? frame.contentWindow : null;
   });
-  window.addEventListener('beforeunload', function(){ try{ if(api){ api.LMSFinish(""); } }catch(e){} });
+  window.addEventListener('beforeunload', finishSCORM);
   </script>
 </head>
 <body>
-  <header>
-    <h1>${safeTitle}</h1>
-  </header>
+  <header><h1>${safeTitle}</h1></header>
   <div class="frame-wrap">
     <iframe id="courseFrame" src="${escapedUrl}" title="${safeTitle}" loading="eager" allowfullscreen></iframe>
   </div>
   <noscript>
-    <div class="fallback">
-      JavaScript is required. Open the course: <a class="btn" href="${escapedUrl}" target="_blank" rel="noopener">Open course</a>
-    </div>
+    <div class="fallback">JavaScript is required. <a class="btn" href="${escapedUrl}" target="_blank" rel="noopener">Open course</a></div>
   </noscript>
 </body>
 </html>`;

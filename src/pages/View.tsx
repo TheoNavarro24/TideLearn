@@ -34,6 +34,9 @@ interface ProgressMessage {
   completed: string[];
   lastLessonId: string | null;
   courseCompleted: boolean;
+  score: number | null;        // 0–100 percentage, null if no quizzes
+  totalQuestions: number;
+  correctAnswers: number;
 }
 
 export default function View() {
@@ -211,6 +214,20 @@ export default function View() {
     if (!course) return;
     const total = course.lessons.length || 0;
     const courseCompleted = total > 0 && completed.size >= total;
+
+    // Calculate score across all quiz/truefalse/shortanswer blocks
+    const allQuizIds: string[] = [];
+    for (const lesson of course.lessons) {
+      for (const block of lesson.blocks) {
+        if (["quiz", "truefalse", "shortanswer"].includes((block as any).type)) {
+          if (block.id) allQuizIds.push(block.id);
+        }
+      }
+    }
+    const totalQuestions = allQuizIds.length;
+    const correctAnswers = allQuizIds.filter((id) => answers[id] === true).length;
+    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : null;
+
     try {
       if (window.parent && window.parent !== window) {
         const msg: ProgressMessage = {
@@ -218,11 +235,14 @@ export default function View() {
           completed: Array.from(completed),
           lastLessonId,
           courseCompleted,
+          score,
+          totalQuestions,
+          correctAnswers,
         };
         window.parent.postMessage(msg, "*");
       }
     } catch {}
-  }, [completed, lastLessonId, course]);
+  }, [completed, lastLessonId, course, answers]);
 
   // Scrollspy for active section
   useEffect(() => {
