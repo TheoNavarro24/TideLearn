@@ -2,9 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { withAuth, ok, err } from "../lib/supabase.js";
 import { mutateCourse } from "../lib/mutate.js";
-import { uid, courseSchema, lessonSchema, blockSchema, type Course, type Block } from "../lib/types.js";
+import { uid, lessonSchema, blockSchema, type Block } from "../lib/types.js";
+import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
 
-function injectIds(course: any): Course {
+function injectIds(course: any) {
   return {
     ...course,
     lessons: (course.lessons ?? []).map((l: any) => ({
@@ -27,7 +28,10 @@ export function registerSemanticTools(server: McpServer) {
   // ── save_course ──────────────────────────────────────────────────────────
   server.tool(
     "save_course",
-    "Bulk-save a full course (create new or replace existing). Omit all id fields — they are generated automatically. Pass course_id to replace an existing course.",
+    `Bulk-save a full course (create new or replace existing). Omit all id fields — they are generated automatically. Pass course_id to replace an existing course.
+
+REQUIRED: course_json must include schemaVersion: 1 at the top level.
+Text block "text" field must be HTML (e.g. "<p>Hello</p>"), not markdown.`,
     {
       course_json: z.record(z.unknown()),
       course_id: z.string().uuid().optional(),
@@ -35,61 +39,18 @@ export function registerSemanticTools(server: McpServer) {
     async ({ course_json, course_id }) =>
       withAuth(async (client, userId) => {
         const withIds = injectIds(course_json);
-        const parsed = courseSchema.safeParse(withIds);
-        if (!parsed.success) return err("validation_error", parsed.error.issues[0]?.message ?? "Invalid course");
+        const result = validateCourseJson(withIds);
+        if (!result.ok) return err("validation_error", `Validation failed:\n${result.errors.map((e) => `- ${e}`).join("\n")}`);
 
         if (course_id) {
           // Replace existing
           const { data: existing } = await client.from("courses").select("id").eq("id", course_id).eq("user_id", userId).single();
           if (!existing) return err("course_not_found", `No course with id ${course_id}`);
-          await client.from("courses").update({ content: parsed.data, title: parsed.data.title }).eq("id", course_id).eq("user_id", userId);
+          await client.from("courses").update({ content: result.course, title: result.course.title }).eq("id", course_id).eq("user_id", userId);
           return ok({ course_id });
         }
 
-        const { data, error } = await client.from("courses").insert({ user_id: userId, title: parsed.data.title, content: parsed.data, is_public: false }).select("id").single();
-        if (error || !data) return err("insert_failed", error?.message ?? "Unknown");
-        return ok({ course_id: data.id });
-      })
-  );
-
-  // ── replace_lesson ────────────────────────────────────────────────────────
-  server.tool(
-    "replace_lesson",
-    "Replace all blocks in a lesson with a new set. Omit id fields from blocks — generated automatically.",
-    {
-      course_id: z.string().uuid(),
-      lesson_id: z.string().uuid(),
-      blocks: z.array(z.record(z.unknown())),
-    },
-    async ({ course_id, lesson_id, blocks }) =>
-      withAuth(async (client, userId) => {
-        const blocksWithIds = blocks.map((b) => ({ ...b, id: uid() }));
-        const validated = blocksWithIds.map((b) => blockSchema.safeParse(b));
-        const invalid = validated.find((r) => !r.success);
-        if (invalid && !invalid.success) return err("invalid_block_type", invalid.error.issues[0]?.message ?? "Invalid block");
-
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : { ...l, blocks: validated.map((r) => (r as any).data) }
-          ),
-        }));
-        if (mutError) return err(mutError, "Failed to replace lesson");
-        return ok({ message: "Lesson blocks replaced" });
-      })
-  );
-
-  // ── generate_course ───────────────────────────────────────────────────────
-  server.tool(
-    "generate_course",
-    "Save a fully-drafted course JSON as a new course. Claude should generate the complete course_json before calling this tool.",
-    { course_json: z.record(z.unknown()) },
-    async ({ course_json }) =>
-      withAuth(async (client, userId) => {
-        const withIds = injectIds(course_json);
-        const parsed = courseSchema.safeParse(withIds);
-        if (!parsed.success) return err("validation_error", parsed.error.issues[0]?.message ?? "Invalid course");
-        const { data, error } = await client.from("courses").insert({ user_id: userId, title: parsed.data.title, content: parsed.data, is_public: false }).select("id").single();
+        const { data, error } = await client.from("courses").insert({ user_id: userId, title: result.course.title, content: result.course, is_public: false }).select("id").single();
         if (error || !data) return err("insert_failed", error?.message ?? "Unknown");
         return ok({ course_id: data.id });
       })
@@ -154,7 +115,10 @@ export function registerSemanticTools(server: McpServer) {
   // ── rewrite_block ─────────────────────────────────────────────────────────
   server.tool(
     "rewrite_block",
-    "Replace a block's content with a rewritten version. Claude should fetch the block first (via get_course), rewrite it, then call this tool with the updated block (no id field needed).",
+    `Replace a block's content with a rewritten version. Fetch the block first via get_course, rewrite it, then call this tool.
+
+Omit the id field from updated_block — it is set automatically from block_id.
+Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not markdown.`,
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
@@ -165,7 +129,7 @@ export function registerSemanticTools(server: McpServer) {
       withAuth(async (client, userId) => {
         const withId = { ...updated_block, id: block_id };
         const parsed = blockSchema.safeParse(withId);
-        if (!parsed.success) return err("invalid_block_type", parsed.error.issues[0]?.message ?? "Invalid block");
+        if (!parsed.success) return err("invalid_block_type", `Validation failed:\n${formatZodErrors(parsed.error).map((e) => `- ${e}`).join("\n")}`);
 
         const mutError = await mutateCourse(client, userId, course_id, (course) => ({
           ...course,
