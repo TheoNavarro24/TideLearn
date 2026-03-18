@@ -3,34 +3,92 @@ import { z } from "zod";
 import { withAuth, ok, err } from "../lib/supabase.js";
 import { mutateCourse } from "../lib/mutate.js";
 import { uid, blockSchema, type Block } from "../lib/types.js";
+import { formatZodErrors } from "../lib/validate.js";
 
 export function registerBlockTools(server: McpServer) {
   server.tool(
-    "list_blocks",
-    "List all blocks in a lesson",
+    "rewrite_blocks",
+    `Replace multiple blocks in one operation. Provide an array of updates, each with lesson_id, block_id, and the new block content.
+
+Omit the id field from each updated_block — it is injected from block_id.
+Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not markdown.`,
     {
       course_id: z.string().uuid(),
-      lesson_id: z.string().uuid(),
+      updates: z.array(z.object({
+        lesson_id: z.string().uuid(),
+        block_id: z.string().uuid(),
+        updated_block: z.record(z.unknown()),
+      })).min(1),
     },
-    async ({ course_id, lesson_id }) =>
+    async ({ course_id, updates }) =>
       withAuth(async (client, userId) => {
-        const { data, error } = await client
-          .from("courses")
-          .select("content")
-          .eq("id", course_id)
-          .eq("user_id", userId)
-          .single();
+        // Validate all blocks first, collect all errors before aborting
+        const allErrors: string[] = [];
+        const validatedBlocks: Block[] = [];
+        for (const update of updates) {
+          const withId = { ...update.updated_block, id: update.block_id };
+          const parsed = blockSchema.safeParse(withId);
+          if (!parsed.success) {
+            const msgs = formatZodErrors(parsed.error).map(e => `block ${update.block_id}: ${e}`);
+            allErrors.push(...msgs);
+          } else {
+            validatedBlocks.push(parsed.data);
+          }
+        }
+        if (allErrors.length > 0) {
+          return err("validation_error", `Validation failed:\n${allErrors.map(e => `- ${e}`).join("\n")}`);
+        }
 
-        if (error || !data) return err("course_not_found", `No course with id ${course_id}`);
-        const lesson = (data.content as any).lessons?.find((l: any) => l.id === lesson_id);
-        if (!lesson) return err("lesson_not_found", `No lesson with id ${lesson_id}`);
-        return ok(lesson.blocks.map((b: any, i: number) => ({ id: b.id, type: b.type, position: i + 1 })));
+        // Build lookup: lesson_id -> block_id -> validated block
+        const updateMap = new Map<string, Map<string, Block>>();
+        for (let i = 0; i < updates.length; i++) {
+          const { lesson_id, block_id } = updates[i];
+          if (!updateMap.has(lesson_id)) updateMap.set(lesson_id, new Map());
+          updateMap.get(lesson_id)!.set(block_id, validatedBlocks[i]);
+        }
+
+        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
+          ...course,
+          lessons: course.lessons.map(l => {
+            const blockUpdates = updateMap.get(l.id);
+            if (!blockUpdates) return l;
+            return {
+              ...l,
+              blocks: l.blocks.map(b => blockUpdates.get(b.id) ?? b),
+            };
+          }),
+        }));
+
+        if (mutError) return err(mutError, "Failed to rewrite blocks");
+        return ok({ updated: updates.length });
       })
   );
 
   server.tool(
     "add_block",
-    "Add a block to a lesson. Omit the 'id' field — it will be generated automatically.",
+    `Add a block to a lesson. Omit the 'id' field — it is generated automatically.
+
+BLOCK TYPES — pass exactly these fields in the 'block' object:
+
+  heading    { type:"heading", text:"..." }
+  text       { type:"text", text:"..." }
+  image      { type:"image", src:"https://...", alt:"..." }
+  video      { type:"video", url:"https://youtube.com/..." }
+  audio      { type:"audio", src:"https://...", title?:"..." }
+  code       { type:"code", language:"python", code:"..." }
+  list       { type:"list", style:"bulleted"|"numbered", items:["item1","item2"] }
+  quote      { type:"quote", text:"...", cite?:"Author" }
+  callout    { type:"callout", variant:"info"|"success"|"warning"|"danger", title?:"...", text:"..." }
+  accordion  { type:"accordion", items:[{ id:"<uuid>", title:"...", content:"..." }] }
+  tabs       { type:"tabs", items:[{ id:"<uuid>", label:"...", content:"..." }] }
+  quiz       { type:"quiz", question:"...", options:["A","B","C","D"], correctIndex:0 }
+  truefalse  { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
+  shortanswer { type:"shortanswer", question:"...", answer:"...", acceptable?:["alt1"], caseSensitive?:false, trimWhitespace?:true }
+  divider    { type:"divider" }
+  toc        { type:"toc" }
+
+accordion and tabs items require a UUID id field — generate one with crypto.randomUUID().
+position is 1-based and optional; omit to append at the end.`,
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
@@ -66,7 +124,7 @@ export function registerBlockTools(server: McpServer) {
 
   server.tool(
     "update_block",
-    "Update specific fields of a block (partial patch). Rich text fields (text, content) must be valid HTML strings.",
+    "Update specific fields of a block (partial patch). Pass only the fields you want to change — type and id are preserved automatically. Text fields are plain strings, not HTML.",
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
