@@ -1,5 +1,6 @@
 import { useAuth } from "@/components/auth/AuthContext";
 import { Link } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 
 /* ─── colour / style constants ─────────────────────────── */
 const TEAL_GRAD = "linear-gradient(135deg, #14b8a6, #06b6d4)";
@@ -7,7 +8,7 @@ const TEAL_GRAD_TEXT = "linear-gradient(135deg, #14b8a6, #67e8f9)";
 const OCEAN_DEEP = "#0a1f1c";
 
 /* ─── Nav ─────────────────────────────────────────────── */
-function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
+function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void> }) {
   return (
     <nav
       style={{
@@ -40,7 +41,7 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
             width: 34,
             height: 34,
             borderRadius: 8,
-            background: TEAL_GRAD,
+            background: "var(--gradient-primary)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -68,7 +69,7 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
         <Link
           to="/courses"
           style={{
-            color: "#14b8a6",
+            color: "var(--teal-bright)",
             fontSize: 14,
             fontWeight: 500,
             textDecoration: "none",
@@ -79,7 +80,7 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
         <a
           href="#features"
           style={{
-            color: "#14b8a6",
+            color: "var(--teal-bright)",
             fontSize: 14,
             fontWeight: 500,
             textDecoration: "none",
@@ -92,10 +93,10 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
             onClick={signOut}
             style={{
               padding: "7px 18px",
-              border: "1.5px solid #14b8a6",
+              border: "1.5px solid var(--teal-bright)",
               borderRadius: 8,
               background: "transparent",
-              color: "#14b8a6",
+              color: "var(--teal-bright)",
               fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
@@ -108,9 +109,9 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
             to="/auth"
             style={{
               padding: "7px 18px",
-              border: "1.5px solid #14b8a6",
+              border: "1.5px solid var(--teal-bright)",
               borderRadius: 8,
-              color: "#14b8a6",
+              color: "var(--teal-bright)",
               fontSize: 14,
               fontWeight: 500,
               textDecoration: "none",
@@ -258,7 +259,7 @@ function EditorCard() {
 
         {/* Main content area */}
         <div style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#14b8a6", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-bright)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Lesson 02
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#e0fdf4", fontFamily: "Lora, Georgia, serif", lineHeight: 1.3 }}>
@@ -278,7 +279,7 @@ function EditorCard() {
               padding: "16px 20px",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#14b8a6", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-bright)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
               Knowledge check
             </div>
             <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600, marginBottom: 12 }}>
@@ -323,7 +324,7 @@ function EditorCard() {
 /* ─── Wave divider SVG ─────────────────────────────────── */
 function WaveDivider() {
   return (
-    <div style={{ lineHeight: 0, background: OCEAN_DEEP, marginTop: -2 }}>
+    <div style={{ lineHeight: 0, background: "var(--ocean-deep)", marginTop: -2 }}>
       <svg
         viewBox="0 0 1440 80"
         xmlns="http://www.w3.org/2000/svg"
@@ -403,7 +404,7 @@ function FeatureRow({
           fontFamily: "Lora, Georgia, serif",
           fontSize: 48,
           fontWeight: 900,
-          color: "#e0fdf4",
+          color: "var(--teal-bright)",
           lineHeight: 1,
           paddingTop: 4,
         }}
@@ -418,7 +419,7 @@ function FeatureRow({
             fontFamily: "Inter, sans-serif",
             fontSize: 20,
             fontWeight: 800,
-            color: "#0f2e2b",
+            color: "var(--text-primary)",
             marginBottom: 8,
           }}
         >
@@ -583,7 +584,7 @@ const Index = () => {
                 display: "inline-block",
                 padding: "13px 28px",
                 borderRadius: 10,
-                background: TEAL_GRAD,
+                background: "var(--gradient-primary)",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: 15,
@@ -636,7 +637,7 @@ const Index = () => {
             left: 0,
             right: 0,
             height: 4,
-            background: TEAL_GRAD,
+            background: "var(--gradient-primary)",
           }}
         />
 
@@ -655,7 +656,7 @@ const Index = () => {
                 width: 32,
                 height: 3,
                 borderRadius: 2,
-                background: TEAL_GRAD,
+                background: "var(--gradient-primary)",
               }}
             />
             <span
@@ -677,7 +678,7 @@ const Index = () => {
               fontFamily: "Lora, Georgia, serif",
               fontSize: 44,
               fontWeight: 700,
-              color: "#0f2e2b",
+              color: "var(--text-primary)",
               letterSpacing: "-0.02em",
               lineHeight: 1.2,
               margin: "0 0 56px",
@@ -703,7 +704,7 @@ const Index = () => {
       {/* ── Footer ───────────────────────────────────── */}
       <footer
         style={{
-          background: OCEAN_DEEP,
+          background: "var(--ocean-deep)",
           padding: "32px 56px",
           display: "flex",
           alignItems: "center",
@@ -718,7 +719,7 @@ const Index = () => {
               width: 28,
               height: 28,
               borderRadius: 7,
-              background: TEAL_GRAD,
+              background: "var(--gradient-primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
