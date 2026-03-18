@@ -8,7 +8,7 @@
 
 ## Context
 
-The TideLearn MCP server was first tested in a real course-build session (financial literacy course, 5 modules). The session surface several friction points:
+The TideLearn MCP server was first tested in a real course-build session (financial literacy course, 5 modules). The session surfaced several friction points:
 
 - The LLM hit a cryptic Zod validation error (`"Invalid literal value, expected 1"`) caused by a missing `schemaVersion: 1` field and had to guess at the fix
 - Text block content was stored as markdown, but the renderer expected HTML — invisible at write time, broken at view time
@@ -60,11 +60,19 @@ This spec addresses all remaining issues via four changes.
 
 Tools kept without change: `tidelearn_login`, `tidelearn_logout`, `list_courses`, `get_course`, `create_course`, `delete_course`, `add_lesson`, `delete_lesson`, `add_block`, `update_block`, `move_block`, `delete_block`, `save_course`, `generate_lesson`, `generate_quiz_for_lesson`, `rewrite_block`, `rewrite_lesson`, `restructure_course`, `preview_course`, `review_course`, `upload_media`.
 
+#### Implementation notes for merged tools
+
+**`update_course`** — `title` and `is_public` live in different places: `title` is both a top-level DB column and inside the `content` JSON blob (requiring `mutateCourse`); `is_public` is a top-level DB column only. When either or both fields are supplied, use a **single `supabase.from("courses").update(...)` call** that sets all changed columns together: `{ title, is_public, content, updated_at }`. This avoids two round trips and keeps the update atomic. When `title` is supplied, also update `content.title` inside the JSON blob (reuse the `mutateCourse` read-modify-write to get the updated `content`, then write all columns in one call).
+
+**`update_lesson`** — delegates to the same `mutateCourse` read-modify-write used by the existing `update_lesson_title` and `reorder_lesson`. The `position` field uses the same **1-based splice semantics** as the existing `reorder_lesson` (position 1 = first, spliced in place). If `lesson_id` is not found in the course, **return an error** — do not silently no-op. This gives the LLM actionable feedback rather than a confusing success with no effect.
+
+**`rewrite_blocks`** — fetches the course once, applies all `updates` in memory, writes back once. Each `updated_block` **must omit the `id` field** — the implementation injects `id: block_id` from the `block_id` parameter, same as `rewrite_block`. This must be documented in the tool description: *"Omit the `id` field from `updated_block` — it is set automatically from `block_id`."*
+
 ---
 
 ### 2. Error Handling
 
-**Richer Zod error messages.** All Zod `safeParse` failures get reformatted before returning to the LLM. Instead of the raw Zod output, the tool returns a plain-English list of what's wrong:
+**Richer Zod error messages.** All Zod `safeParse` failures get reformatted before returning to the LLM. Instead of raw Zod output, the tool returns a plain-English list:
 
 ```
 Validation failed:
@@ -72,9 +80,15 @@ Validation failed:
 - lessons[0].blocks[2]: unknown block type "bullet" — valid types are: heading, text, image, video, audio, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc
 ```
 
-**Pre-flight validation.** `save_course`, `rewrite_block`, and `rewrite_blocks` validate inputs before attempting any Supabase write. If validation fails, the tool returns the error immediately with no write attempted. This prevents partial writes and silent failures.
+**Pre-flight validation — scope is specific:**
 
-Implementation: extract a shared `validateCourseJson(json)` helper in `mcp/src/lib/` that runs the Zod schema and returns either `{ ok: true, course }` or `{ ok: false, errors: string[] }`.
+- `save_course` already calls `courseSchema.safeParse`. Change: replace raw Zod error output with the plain-English formatter using `validateCourseJson()`. The helper returns `{ ok: true, course }` or `{ ok: false, errors: string[] }`.
+- `rewrite_block` already calls `blockSchema.safeParse`. Change: replace raw Zod error output with the same plain-English formatter. **Does not use `validateCourseJson()`** — it validates a single block, not a full course.
+- `rewrite_blocks` (new tool) calls `blockSchema.safeParse` on each `updated_block` before attempting any write. Same plain-English formatter. If any block fails validation, return all errors and abort — no partial writes.
+
+**`validateCourseJson(json)` helper** lives in `mcp/src/lib/validate.ts`. Used only by `save_course`. Signature: `(json: unknown) => { ok: true; course: Course } | { ok: false; errors: string[] }`.
+
+A shared **`formatZodErrors(result: ZodError) => string[]`** utility is extracted alongside it and used by both `validateCourseJson` and the block validation in `rewrite_block` / `rewrite_blocks`.
 
 ---
 
@@ -91,14 +105,17 @@ Implementation: extract a shared `validateCourseJson(json)` helper in `mcp/src/l
 `save_course` description must include:
 > "course_json must include `schemaVersion: 1` at the top level. Text block `text` field must be HTML (e.g. `<p>text</p>`), not markdown."
 
-`rewrite_block` and `rewrite_blocks` descriptions must include:
-> "The `updated_block` must be valid HTML in text fields — not markdown."
+`rewrite_block` description must include:
+> "Omit the `id` field from `updated_block` — it is set automatically. Text fields must be HTML, not markdown."
+
+`rewrite_blocks` description must include:
+> "Omit the `id` field from each `updated_block` — it is injected from `block_id`. Text fields must be HTML, not markdown."
 
 ---
 
 ### 4. Workflow Fixes
 
-**`rewrite_blocks` (new tool).** Accepts an array of block updates and applies them in a single read-modify-write cycle against Supabase. Signature:
+**`rewrite_blocks` Zod schema:**
 
 ```typescript
 {
@@ -107,15 +124,15 @@ Implementation: extract a shared `validateCourseJson(json)` helper in `mcp/src/l
     lesson_id: z.string().uuid(),
     block_id: z.string().uuid(),
     updated_block: z.record(z.unknown()),
+    // Note: updated_block must NOT include an id field — injected from block_id
   })).min(1),
 }
 ```
 
-The implementation uses the existing `mutateCourse` pattern: fetch course once, apply all updates in memory, write back once.
-
-**`upload_media` content-type fix.** When uploading, detect the file extension and set the correct MIME type:
+**`upload_media` content-type fix.** The existing `ALLOWED_TYPES` allow-list in `media.ts` is **replaced** by a `getMimeType` helper. The `MIME_MAP` becomes the single source of truth for both allowed types and their MIME types. Files with extensions not in the map are rejected with a clear error (e.g. `"Unsupported file type: .xyz"`).
 
 ```typescript
+// mcp/src/lib/mime.ts
 const MIME_MAP: Record<string, string> = {
   '.html': 'text/html',
   '.htm': 'text/html',
@@ -129,9 +146,14 @@ const MIME_MAP: Record<string, string> = {
   '.mp3': 'audio/mpeg',
   '.pdf': 'application/pdf',
 };
+
+export function getMimeType(filePath: string): string | null {
+  const ext = path.extname(filePath).toLowerCase();
+  return MIME_MAP[ext] ?? null;
+}
 ```
 
-Falls back to `application/octet-stream` for unknown extensions. This ensures Supabase storage serves files with the correct `Content-Type` header.
+In `upload_media`, replace the `ALLOWED_TYPES` check with: if `getMimeType(file_path)` returns `null`, return an error listing supported extensions. Otherwise use the returned MIME type as the `contentType` for the Supabase upload.
 
 ---
 
@@ -139,15 +161,15 @@ Falls back to `application/octet-stream` for unknown extensions. This ensures Su
 
 | File | Change |
 |---|---|
-| `mcp/src/index.ts` | Remove 4 tools, register `update_course`, `update_lesson`, `rewrite_blocks` |
+| `mcp/src/index.ts` | Unregister 4 removed tools; register `update_course`, `update_lesson`, `rewrite_blocks` |
 | `mcp/src/tools/courses.ts` | Remove `update_course_title`, `set_course_visibility`; add `update_course` |
-| `mcp/src/tools/lessons.ts` | Remove `update_lesson_title`, `reorder_lesson`; add `update_lesson` |
-| `mcp/src/tools/blocks.ts` | Add `rewrite_blocks`; update `rewrite_block` description with HTML reminder |
-| `mcp/src/tools/semantic.ts` | Remove `generate_course`, `replace_lesson`; update `save_course` description and add pre-flight validation; update `list_lessons`, `list_blocks` removal |
-| `mcp/src/lib/validate.ts` | New file — `validateCourseJson()` helper |
-| `mcp/src/lib/mime.ts` | New file — `getMimeType(filepath)` helper |
-| `mcp/src/tools/media.ts` | Update `upload_media` to use `getMimeType` |
-| `mcp/src/resources/instructions.ts` | Rewrite resource content |
+| `mcp/src/tools/lessons.ts` | Remove `update_lesson_title`, `reorder_lesson`, `list_lessons`; add `update_lesson` |
+| `mcp/src/tools/blocks.ts` | Remove `list_blocks`; add `rewrite_blocks` |
+| `mcp/src/tools/semantic.ts` | Remove `generate_course`, `replace_lesson`; update `save_course` description + error messages; update `rewrite_block` description + error messages |
+| `mcp/src/lib/validate.ts` | New file — `validateCourseJson()` and `formatZodErrors()` helpers |
+| `mcp/src/lib/mime.ts` | New file — `getMimeType(filepath)` helper + `MIME_MAP` |
+| `mcp/src/tools/media.ts` | Replace `ALLOWED_TYPES` allow-list with `getMimeType`; pass MIME type to Supabase upload |
+| `mcp/src/resources/instructions.ts` | Rewrite resource content — critical rules first, workflow, block reference, tool reference |
 
 ---
 
