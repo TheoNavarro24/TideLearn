@@ -79,7 +79,7 @@ function Nav({ user, signOut }: { user: unknown; signOut: () => void }) {
         <a
           href="#features"
           style={{
-            color: "#94a3b8",
+            color: "#14b8a6",
             fontSize: 14,
             fontWeight: 500,
             textDecoration: "none",
@@ -519,7 +519,7 @@ const Index = () => {
               }}
             />
             <span
-              style={{ fontSize: 13, color: "#5eead4", fontWeight: 500, letterSpacing: "0.01em" }}
+              style={{ fontSize: "11px", color: "#5eead4", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Personal e-learning authoring tool
             </span>
