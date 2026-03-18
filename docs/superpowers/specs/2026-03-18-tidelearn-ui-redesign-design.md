@@ -79,13 +79,13 @@ Replace the `:root` block in `src/index.css` with both sets of tokens:
   --primary:                173 84% 32%;   /* #0d9488 (teal-primary) */
   --primary-foreground:     0 0% 100%;
 
-  --secondary:              168 94% 95%;   /* #f0fdfb (surface-tint) */
+  --secondary:              171 76% 97%;   /* #f0fdfb (surface-tint) */
   --secondary-foreground:   176 57% 11%;
 
-  --muted:                  168 94% 95%;   /* #f0fdfb */
-  --muted-foreground:       215 16% 57%;   /* #94a3b8 */
+  --muted:                  171 76% 97%;   /* #f0fdfb */
+  --muted-foreground:       215 20% 65%;   /* #94a3b8 */
 
-  --accent:                 168 94% 95%;
+  --accent:                 171 76% 97%;
   --accent-foreground:      176 57% 11%;
 
   --destructive:            0 84.2% 60.2%;
@@ -111,7 +111,7 @@ Replace the `:root` block in `src/index.css` with both sets of tokens:
 
 > **Note:** The `.dark` block from the original file should be removed — this app does not support a dark mode toggle (§8). Dark surfaces are implemented by explicit `--ocean-*` token usage, not via CSS class toggle.
 
-### 2.4 Typography
+### 2.3 Typography
 
 Two typefaces throughout:
 
@@ -133,7 +133,7 @@ Two typefaces throughout:
 - Label / chip: Inter 10–11px / 700 / uppercase / ls 0.08em
 - Meta: Inter 11px / 500 / `--text-muted`
 
-### 2.5 Radius & Shadow
+### 2.4 Radius & Shadow
 
 ```css
 --radius-sm:  6px;   /* buttons, chips, inputs */
@@ -423,6 +423,7 @@ These shadcn components need CSS variable overrides to pick up the Rockpool pale
 | `src/pages/Courses.tsx` | Full rewrite | Sidebar app layout + card redesign + empty state |
 | `src/pages/Editor.tsx` | Layout upgrade | Lesson sidebar, topbar, canvas with add-block UX |
 | `src/pages/View.tsx` | Moderate rewrite | Lesson sidebar, reading column, bottom nav, progress bar |
+| `src/components/blocks/registry.ts` | Label update | Rename `quiz` block label from `"Quiz (simple)"` to `"Multiple Choice"` |
 | `src/components/blocks/` | Colour polish | Update block editors/viewers to use new tokens |
 | shadcn components | Token override | Button, Input, Card, Badge, Dialog, DropdownMenu |
 
