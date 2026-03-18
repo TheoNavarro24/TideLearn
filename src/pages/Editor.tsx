@@ -1,17 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
-import { Plus, Save, Share2, Trash2, ArrowUp, ArrowDown, Copy, PlusCircle, FileText, Type, Image as ImageIcon, List as ListIcon, Quote, CheckSquare, Edit3, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse, saveCourseToCloud, loadCourseFromCloud } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { exportScorm12Zip, buildScormFileName, exportStaticWebZip, buildStaticFileName } from "@/lib/scorm12";
 import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -21,8 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Block, Lesson, uid } from "@/types/course";
 import type { BlockType } from "@/types/course";
 import { registry, createBlock, getSpec } from "@/components/blocks/registry";
-
-// uid provided by shared types
 
 const defaultLesson: Lesson = {
   id: uid(),
@@ -34,16 +25,30 @@ const defaultLesson: Lesson = {
   ],
 };
 
+const CATEGORY_META: Record<string, { label: string; iconBg: string }> = {
+  Text: { label: "Text", iconBg: "#f0fdf4" },
+  Media: { label: "Media", iconBg: "#eff6ff" },
+  Interactive: { label: "Interactive", iconBg: "#faf5ff" },
+  Knowledge: { label: "Knowledge Check", iconBg: "#fff7ed" },
+};
+
+const CATEGORIES = ["Text", "Media", "Interactive", "Knowledge"] as const;
+
 export default function Editor() {
   const { user } = useAuth();
   const [courseTitle, setCourseTitle] = useState("My Course");
   const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
-  const [quickPickerOpen, setQuickPickerOpen] = useState(false);
+  const [pickerState, setPickerState] = useState<{ rowIndex: number } | null>(null);
+  const [pickerSearch, setPickerSearch] = useState("");
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [showImportSection, setShowImportSection] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
   const deepLink = useDeepLinkIntents();
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const pickerSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (deepLink.status !== "idle") {
@@ -60,10 +65,10 @@ export default function Editor() {
   useEffect(() => {
     async function loadInitialCourse() {
       if (courseId) {
-        let loaded = loadCourse(courseId); // try localStorage first
+        let loaded = loadCourse(courseId);
         if (!loaded && user) {
-          loaded = await loadCourseFromCloud(courseId); // fallback to cloud
-          if (loaded) saveCourse(courseId, loaded); // cache locally
+          loaded = await loadCourseFromCloud(courseId);
+          if (loaded) saveCourse(courseId, loaded);
         }
         if (loaded?.lessons?.length) {
           setCourseTitle(loaded.title || "My Course");
@@ -111,7 +116,6 @@ export default function Editor() {
       return prev;
     });
   }, [courseTitle]);
-
 
   const addLesson = () => {
     const newLesson: Lesson = { id: uid(), title: `Lesson ${lessons.length + 1}`, blocks: [] };
@@ -182,11 +186,9 @@ export default function Editor() {
   const courseData = { schemaVersion: 1, title: courseTitle, lessons };
   const compressedHash = useMemo(() => compressToEncodedURIComponent(JSON.stringify(courseData)), [courseData]);
   const publishUrl = useMemo(() => {
-    // When the user is logged in and has a courseId, use a clean /view?id= URL
     if (user && courseId) {
       return `${window.location.origin}/view?id=${courseId}`;
     }
-    // Fallback: compress course data into the URL hash (works without login)
     return `${window.location.origin}/view#${compressedHash}`;
   }, [user, courseId, compressedHash]);
   const hashSize = compressedHash.length;
@@ -196,7 +198,7 @@ export default function Editor() {
   const saveNow = async () => {
     try {
       if (courseId) {
-        saveCourse(courseId, courseData as any); // always save locally
+        saveCourse(courseId, courseData as any);
         if (user) {
           await saveCourseToCloud(courseId, courseData as any, user.id);
         }
@@ -229,7 +231,7 @@ export default function Editor() {
     };
   }, [courseTitle, lessons, courseId, user]);
 
-  // Keyboard shortcut to open full block picker
+  // Keyboard shortcut to open block picker
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
@@ -241,13 +243,33 @@ export default function Editor() {
             (target as any).isContentEditable);
         if (!isTyping) {
           e.preventDefault();
-          setQuickPickerOpen(true);
+          setPickerState({ rowIndex: selectedLesson?.blocks.length ?? 0 });
+          setPickerSearch("");
         }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [selectedLesson]);
+
+  // Close picker on outside click
+  useEffect(() => {
+    if (!pickerState) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setPickerState(null);
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [pickerState]);
+
+  // Focus search when picker opens
+  useEffect(() => {
+    if (pickerState && pickerSearchRef.current) {
+      setTimeout(() => pickerSearchRef.current?.focus(), 50);
+    }
+  }, [pickerState]);
 
   const copy = async (text: string, label = "Copied to clipboard") => {
     await navigator.clipboard.writeText(text);
@@ -268,7 +290,6 @@ export default function Editor() {
       setSelectedLessonId(data.lessons[0]?.id ?? uid());
       toast({ title: "Course imported" });
     } else {
-      // Merge: append incoming lessons with fresh IDs to avoid collisions
       const incoming = data.lessons.map((l) => ({ ...l, id: uid() }));
       setLessons((prev) => [...prev, ...incoming]);
       toast({ title: `Merged ${data.lessons.length} lessons` });
@@ -296,7 +317,6 @@ export default function Editor() {
     if (!file) return;
     try {
       const zip = await JSZip.loadAsync(file);
-      // Prefer embedded course.json if available
       const courseEntry = zip.file(/(^|\/)course\.json$/i)?.[0];
       if (courseEntry) {
         const json = await courseEntry.async("text");
@@ -305,7 +325,6 @@ export default function Editor() {
         if (importMode === "replace" && !window.confirm("Replace current course with imported content? This cannot be undone.")) return;
         applyImportedCourse({ title: data.title, lessons: data.lessons }, importMode);
       } else {
-        // Fallback: extract publish URL from HTML wrapper
         const indexEntry = zip.file(/index\.html$/i)?.[0] || zip.file(/\.html$/i)?.[0];
         if (!indexEntry) throw new Error("index.html not found");
         const html = await indexEntry.async("text");
@@ -339,7 +358,6 @@ export default function Editor() {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
     if (/\.json$/i.test(file.name) || file.type.includes("json")) {
-      // Simulate JSON import
       const fakeEvent = { target: { files: [file] } } as any as React.ChangeEvent<HTMLInputElement>;
       await handleImportFile(fakeEvent);
     } else if (/\.zip$/i.test(file.name) || file.type.includes("zip")) {
@@ -349,6 +367,7 @@ export default function Editor() {
       toast({ title: "Unsupported file type" });
     }
   };
+
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify(courseData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -392,272 +411,1056 @@ export default function Editor() {
       toast({ title: "Export failed" });
     }
   };
-  const AddBlockMenu = ({
-    onSelect,
-    text = "Add block",
-    open,
-    onOpenChange,
-  }: { onSelect: (t: BlockType) => void; text?: string; open?: boolean; onOpenChange?: (o: boolean) => void }) => (
-    <DropdownMenu open={open} onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="ghost"><PlusCircle className="mr-2 h-4 w-4" /> {text}</Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="z-50 w-56">
-        <DropdownMenuLabel>Insert</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {registry.map((spec) => (
-          <DropdownMenuItem key={spec.type} onClick={() => onSelect(spec.type)}>
-            <spec.icon className="mr-2 h-4 w-4" /> {spec.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+
+  // Filtered registry for picker search
+  const filteredRegistry = useMemo(() => {
+    if (!pickerSearch.trim()) return registry;
+    const q = pickerSearch.toLowerCase();
+    return registry.filter(s => s.label.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+  }, [pickerSearch]);
+
+  const blocks = selectedLesson?.blocks ?? [];
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <Sidebar className="w-60">
-          <SidebarHeader>
-            <div className="px-2 py-1">
-              <h2 className="text-sm font-medium text-muted-foreground">Course Outline</h2>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Main</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {lessons.map((l) => (
-                    <SidebarMenuItem key={l.id}>
-                      <SidebarMenuButton asChild>
-                        <button
-                          className={`w-full text-left ${selectedLessonId === l.id ? "bg-muted text-primary" : "hover:bg-muted/60"}`}
-                          onClick={() => setSelectedLessonId(l.id)}
-                        >
-                          <span className="truncate">{l.title}</span>
-                        </button>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-                <div className="p-2">
-                  <Button variant="secondary" className="w-full" onClick={addLesson}>
-                    <Plus /> Add lesson
-                  </Button>
-                </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "220px 1fr",
+        gridTemplateRows: "48px 1fr",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      {/* Hidden file inputs */}
+      <input ref={importInputRef} type="file" accept="application/json" style={{ display: "none" }} onChange={handleImportFile} />
+      <input ref={scormImportInputRef} type="file" accept=".zip,application/zip" style={{ display: "none" }} onChange={handleImportScormFile} />
 
-        <SidebarInset className="min-w-0">
-          <header className="border-b bg-hero">
-            <div className="container mx-auto flex items-center gap-3 py-3">
-              <SidebarTrigger />
-              <a href="/courses">
-                <Button variant="secondary" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Courses
-                </Button>
-              </a>
-              <h1 className="sr-only">Rapid E-learning Authoring Editor</h1>
-              <Input
-                value={courseTitle}
-                onChange={(e) => setCourseTitle(e.target.value)}
-                className="max-w-sm bg-background/80"
-                aria-label="Course title" placeholder="Course title"
-              />
-              <div className="ml-auto flex items-center gap-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="hero"><Share2 /> Publish</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Share & Export</DialogTitle>
-                      <DialogDescription>
-                        Share via URL or iframe, export packages, or import a course.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Tabs defaultValue="share" className="mt-2">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="share">Share</TabsTrigger>
-                        <TabsTrigger value="export">Export</TabsTrigger>
-                        <TabsTrigger value="import">Import</TabsTrigger>
-                      </TabsList>
+      {/* ── Topbar ── */}
+      <div
+        style={{
+          gridColumn: "1 / -1",
+          background: "var(--ocean-surface)",
+          borderBottom: "1px solid rgba(20,184,166,0.15)",
+          height: 48,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: 0,
+          zIndex: 10,
+        }}
+      >
+        {/* Back button */}
+        <a
+          href="/courses"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 12,
+            fontWeight: 600,
+            color: "rgba(94,234,212,0.5)",
+            textDecoration: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "0 8px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <ArrowLeft size={13} style={{ opacity: 0.7 }} />
+          My Courses
+        </a>
 
-                      <TabsContent value="share" className="space-y-4 mt-4">
-                        {hashSize > 100000 && (
-                          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm">
-                            Large course detected: link size is {hashSize.toLocaleString()} characters. Consider Export JSON for portability.
-                          </div>
-                        )}
-                        <div>
-                          <label className="text-sm text-muted-foreground">Shareable URL</label>
-                          <Input value={publishUrl} readOnly />
-                          <div className="mt-2">
-                            <Button variant="secondary" onClick={() => copy(publishUrl, "URL copied!")}>Copy URL</Button>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">Iframe embed</label>
-                          <Textarea
-                            readOnly
-                            value={`<iframe src="${publishUrl}" style="width:100%;height:700px;border:0" loading="lazy" allowfullscreen></iframe>`}
-                          />
-                          <div className="mt-2">
-                            <Button variant="secondary" onClick={() => copy(`<iframe src=\"${publishUrl}\" style=\"width:100%;height:700px;border:0\" loading=\"lazy\" allowfullscreen></iframe>`, "Iframe copied!")}>Copy iframe</Button>
-                          </div>
-                        </div>
-                      </TabsContent>
+        {/* Divider */}
+        <div style={{ width: 1, height: 20, background: "rgba(20,184,166,0.15)", margin: "0 12px" }} />
 
-                      <TabsContent value="export" className="space-y-4 mt-4">
-                        <div>
-                          <label className="text-sm text-muted-foreground">Export options</label>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Button variant="secondary" onClick={exportJSON}>Export JSON</Button>
-                            <Button variant="secondary" onClick={exportSCORM12}>Export SCORM 1.2</Button>
-                            <Button variant="secondary" onClick={exportStaticZip}>Export Static Web Zip</Button>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">SCORM export wraps your course for LMS. Static zip is ideal for simple hosting.</p>
-                        </div>
-                      </TabsContent>
+        {/* Course title input */}
+        <input
+          value={courseTitle}
+          onChange={e => setCourseTitle(e.target.value)}
+          aria-label="Course title"
+          placeholder="Course title"
+          style={{
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "white",
+            fontFamily: "Inter, sans-serif",
+            flex: 1,
+            minWidth: 0,
+          }}
+        />
 
-                      <TabsContent value="import" className="space-y-4 mt-4">
-                        <div>
-                          <label className="text-sm text-muted-foreground">Import mode</label>
-                          <RadioGroup value={importMode} onValueChange={(v) => setImportMode(v as any)} className="mt-2 flex gap-6">
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="replace" id="mode-replace" />
-                              <Label htmlFor="mode-replace">Replace current course</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="merge" id="mode-merge" />
-                              <Label htmlFor="mode-merge">Merge (append lessons)</Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
+        {/* Right side */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
+          {/* Saved indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--teal-bright)" }} />
+            <span style={{ fontSize: 11, color: "rgba(94,234,212,0.4)", fontWeight: 500 }}>Saved</span>
+          </div>
 
-                        <div
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDropImport}
-                          className={`rounded-md border-2 border-dashed p-6 text-center bg-muted/30 ${isDragOver ? "border-primary" : "border-muted"}`}
-                        >
-                          <p className="text-sm">Drag and drop a .json or .zip (SCORM 1.2) file here to import</p>
-                          <p className="text-xs text-muted-foreground mt-1">JSON replaces or merges the raw course. SCORM restores a package exported from this editor.</p>
-                        </div>
+          {/* Preview button */}
+          <button
+            onClick={() => window.open(publishUrl, "_blank")}
+            style={{
+              background: "none",
+              border: "1.5px solid rgba(20,184,166,0.35)",
+              borderRadius: 6,
+              color: "var(--teal-bright)",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "5px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Preview
+          </button>
 
-                        <div>
-                          <label className="text-sm text-muted-foreground">Import JSON</label>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Button variant="outline" onClick={onImportClick}>Choose file</Button>
-                            <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">Import SCORM 1.2 (.zip)</label>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Button variant="outline" onClick={onImportScormClick}>Choose SCORM file</Button>
-                            <input ref={scormImportInputRef} type="file" accept=".zip,application/zip" className="hidden" onChange={handleImportScormFile} />
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">Imports courses previously exported as SCORM from this editor.</p>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                    <DialogFooter>
-                      <Button onClick={() => window.open(publishUrl, "_blank")}>Preview</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Button variant="outline" onClick={saveNow}><Save /> Save</Button>
-              </div>
-            </div>
-          </header>
+          {/* Save button */}
+          <button
+            onClick={saveNow}
+            style={{
+              background: "none",
+              border: "1.5px solid rgba(20,184,166,0.35)",
+              borderRadius: 6,
+              color: "var(--teal-bright)",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "5px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Save
+          </button>
 
-          <main className="container mx-auto py-6">
-            <section className="sticky top-0 z-50 border-b bg-background/95">
-              <div className="flex flex-nowrap items-center gap-2 py-2 overflow-x-auto max-w-full">
-                <Button size="sm" variant="secondary" onClick={() => addBlock("heading" as BlockType)}>
-                  <FileText className="mr-2 h-4 w-4" /> Heading
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("text" as BlockType)}>
-                  <Type className="mr-2 h-4 w-4" /> Text
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("image" as BlockType)}>
-                  <ImageIcon className="mr-2 h-4 w-4" /> Image
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("list" as BlockType)}>
-                  <ListIcon className="mr-2 h-4 w-4" /> List
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("quote" as BlockType)}>
-                  <Quote className="mr-2 h-4 w-4" /> Quote
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("truefalse" as BlockType)}>
-                  <CheckSquare className="mr-2 h-4 w-4" /> True/False
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => addBlock("shortanswer" as BlockType)}>
-                  <Edit3 className="mr-2 h-4 w-4" /> Short Answer
-                </Button>
-                <AddBlockMenu
-                  onSelect={(t) => { addBlock(t); setQuickPickerOpen(false); }}
-                  text="More"
-                  open={quickPickerOpen}
-                  onOpenChange={setQuickPickerOpen}
-                />
-                <span className="text-xs text-muted-foreground hidden sm:inline-block">Press “/” for more</span>
-              </div>
-            </section>
-
-            <section className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Input
-                  value={selectedLesson.title}
-                  onChange={(e) => updateLessonTitle(selectedLesson.id, e.target.value)}
-                  aria-label="Lesson title"
-                />
-                <Button variant="destructive" onClick={() => removeLesson(selectedLesson.id)} disabled={lessons.length === 1}>
-                  <Trash2 /> Remove lesson
-                </Button>
-              </div>
-
-              {selectedLesson.blocks.length === 0 && (
-                <p className="text-muted-foreground">No blocks yet. Use the buttons above to add content.</p>
-              )}
-
-              {selectedLesson.blocks.map((b, idx) => {
-                const spec = getSpec(b.type as BlockType);
-                const EditorComp = spec.Editor as any;
-                const lastIndex = selectedLesson.blocks.length - 1;
-                return (
-                  <div key={b.id} className="space-y-2">
-                    <article className="card-surface p-4">
-                      <div className="flex justify-end gap-1 mb-2">
-                        <Button size="sm" variant="ghost" onClick={() => moveBlock(b.id, "up")} disabled={idx === 0} aria-label="Move up">
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => moveBlock(b.id, "down")} disabled={idx === lastIndex} aria-label="Move down">
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => duplicateBlock(b.id)} aria-label="Duplicate">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => removeBlock(b.id)} aria-label="Remove">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <EditorComp block={b as any} onChange={(updated: any) => updateBlock(b.id, () => updated as Block)} />
-                    </article>
-                    <div className="flex justify-center">
-                      <AddBlockMenu onSelect={(t) => insertBlockAt(idx + 1, t)} text="Add block here" />
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
-          </main>
-        </SidebarInset>
+          {/* Publish button */}
+          <button
+            onClick={() => { setPublishOpen(true); setShowImportSection(false); }}
+            style={{
+              background: "var(--gradient-primary)",
+              border: "none",
+              borderRadius: 6,
+              color: "white",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "5px 14px",
+              cursor: "pointer",
+            }}
+          >
+            Publish
+          </button>
+        </div>
       </div>
-    </SidebarProvider>
+
+      {/* ── Sidebar ── */}
+      <div
+        style={{
+          background: "var(--ocean-mid)",
+          borderRight: "1px solid rgba(20,184,166,0.18)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        {/* Sidebar header */}
+        <div style={{ padding: "14px 16px 8px" }}>
+          <span style={{
+            fontSize: 9.5,
+            fontWeight: 700,
+            color: "rgba(94,234,212,0.45)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}>
+            Lessons
+          </span>
+        </div>
+
+        {/* Lesson list */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 8px" }}>
+          {lessons.map((l, idx) => {
+            const isActive = l.id === selectedLessonId;
+            return (
+              <button
+                key={l.id}
+                onClick={() => setSelectedLessonId(l.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  width: "100%",
+                  textAlign: "left",
+                  background: isActive ? "rgba(20,184,166,0.18)" : "transparent",
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "7px 10px",
+                  cursor: "pointer",
+                  color: isActive ? "#ccfbf1" : "rgba(204,251,241,0.6)",
+                  marginBottom: 2,
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(20,184,166,0.1)";
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                }}
+              >
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: isActive ? "var(--teal-bright)" : "rgba(94,234,212,0.4)",
+                  minWidth: 16,
+                  fontFamily: "Inter, monospace",
+                }}>
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 500, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {l.title}
+                </span>
+                <span style={{ fontSize: 10, color: "rgba(94,234,212,0.35)", whiteSpace: "nowrap" }}>
+                  {l.blocks.length}b
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Add lesson button */}
+        <div style={{ padding: "8px 8px" }}>
+          <button
+            onClick={addLesson}
+            style={{
+              width: "100%",
+              background: "none",
+              border: "1.5px dashed rgba(20,184,166,0.25)",
+              borderRadius: 6,
+              color: "rgba(94,234,212,0.45)",
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "7px 0",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            + Add lesson
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div style={{ borderTop: "1px solid rgba(20,184,166,0.12)", padding: "8px" }}>
+          <button
+            onClick={() => { setPublishOpen(true); setShowImportSection(false); }}
+            style={{
+              width: "100%",
+              background: "none",
+              border: "none",
+              borderRadius: 6,
+              color: "rgba(94,234,212,0.45)",
+              fontSize: 11,
+              fontWeight: 500,
+              padding: "6px 10px",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            ⚙️ Course settings
+          </button>
+          <button
+            onClick={exportSCORM12}
+            style={{
+              width: "100%",
+              background: "none",
+              border: "none",
+              borderRadius: 6,
+              color: "rgba(94,234,212,0.45)",
+              fontSize: 11,
+              fontWeight: 500,
+              padding: "6px 10px",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            📦 Export SCORM
+          </button>
+        </div>
+      </div>
+
+      {/* ── Canvas ── */}
+      <div
+        style={{
+          background: "var(--surface-subtle)",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Lesson header */}
+        {selectedLesson && (
+          <div style={{
+            background: "white",
+            borderBottom: "1px solid #e0fdf4",
+            padding: "16px 32px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}>
+            <input
+              value={selectedLesson.title}
+              onChange={e => updateLessonTitle(selectedLesson.id, e.target.value)}
+              aria-label="Lesson title"
+              style={{
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontFamily: "Lora, Georgia, serif",
+                fontSize: 19,
+                fontWeight: 700,
+                color: "#0d2926",
+                width: "100%",
+              }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                {blocks.length} block{blocks.length !== 1 ? "s" : ""}
+              </span>
+              {lessons.length > 1 && (
+                <button
+                  onClick={() => removeLesson(selectedLesson.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: 11,
+                    color: "#fca5a5",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  Remove lesson
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Canvas body */}
+        <div style={{ padding: "20px 64px 80px", maxWidth: 700 + 128, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+          <div style={{ maxWidth: 700, margin: "0 auto", display: "flex", flexDirection: "column" }}>
+
+            {/* Add-block row before first block */}
+            <AddBlockRow
+              rowIndex={0}
+              pickerState={pickerState}
+              onOpen={() => { setPickerState({ rowIndex: 0 }); setPickerSearch(""); }}
+              pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
+              pickerSearch={pickerSearch}
+              setPickerSearch={setPickerSearch}
+              filteredRegistry={filteredRegistry}
+              pickerSearchRef={pickerSearchRef}
+              onPickerSelect={(type) => { insertBlockAt(0, type); setPickerState(null); }}
+              onPickerClose={() => setPickerState(null)}
+            />
+
+            {blocks.map((b, idx) => {
+              const spec = getSpec(b.type as BlockType);
+              const EditorComp = spec.Editor as any;
+              const isPickerBelowThis = pickerState !== null && pickerState.rowIndex <= idx;
+              return (
+                <div key={b.id} style={{ opacity: isPickerBelowThis ? 0.25 : 1, transition: "opacity 0.15s" }}>
+                  {/* Block item */}
+                  <BlockItem
+                    block={b}
+                    idx={idx}
+                    total={blocks.length}
+                    spec={spec}
+                    EditorComp={EditorComp}
+                    onMove={moveBlock}
+                    onDuplicate={duplicateBlock}
+                    onRemove={removeBlock}
+                    onUpdate={updateBlock}
+                  />
+
+                  {/* Add-block row after this block */}
+                  <AddBlockRow
+                    rowIndex={idx + 1}
+                    pickerState={pickerState}
+                    onOpen={() => { setPickerState({ rowIndex: idx + 1 }); setPickerSearch(""); }}
+                    pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
+                    pickerSearch={pickerSearch}
+                    setPickerSearch={setPickerSearch}
+                    filteredRegistry={filteredRegistry}
+                    pickerSearchRef={pickerSearchRef}
+                    onPickerSelect={(type) => { insertBlockAt(idx + 1, type); setPickerState(null); }}
+                    onPickerClose={() => setPickerState(null)}
+                  />
+                </div>
+              );
+            })}
+
+            {blocks.length === 0 && (
+              <p style={{ color: "#94a3b8", fontSize: 13, textAlign: "center", padding: "32px 0" }}>
+                No blocks yet. Click "+ Add block" above to get started, or press "/" anywhere.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Publish Modal ── */}
+      {publishOpen && (
+        <PublishModal
+          publishUrl={publishUrl}
+          courseTitle={courseTitle}
+          hashSize={hashSize}
+          onClose={() => { setPublishOpen(false); setShowImportSection(false); }}
+          onCopy={copy}
+          onExportJSON={exportJSON}
+          onExportSCORM12={exportSCORM12}
+          onExportStaticZip={exportStaticZip}
+          showImport={showImportSection}
+          onToggleImport={() => setShowImportSection(v => !v)}
+          importMode={importMode}
+          setImportMode={setImportMode}
+          onImportClick={onImportClick}
+          onImportScormClick={onImportScormClick}
+          isDragOver={isDragOver}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDropImport}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────
+
+interface AddBlockRowProps {
+  rowIndex: number;
+  pickerState: { rowIndex: number } | null;
+  onOpen: () => void;
+  pickerRef: (rowIndex: number) => React.RefObject<HTMLDivElement> | undefined;
+  pickerSearch: string;
+  setPickerSearch: (s: string) => void;
+  filteredRegistry: typeof registry;
+  pickerSearchRef: React.RefObject<HTMLInputElement>;
+  onPickerSelect: (type: BlockType) => void;
+  onPickerClose: () => void;
+}
+
+function AddBlockRow({
+  rowIndex,
+  pickerState,
+  onOpen,
+  pickerRef,
+  pickerSearch,
+  setPickerSearch,
+  filteredRegistry,
+  pickerSearchRef,
+  onPickerSelect,
+  onPickerClose,
+}: AddBlockRowProps) {
+  const isOpen = pickerState?.rowIndex === rowIndex;
+  const ref = pickerRef(rowIndex);
+
+  return (
+    <div
+      className="abr-container"
+      style={{ position: "relative", margin: "4px 0" }}
+    >
+      <style>{`
+        .abr { opacity: 0; transition: opacity 0.15s; }
+        .abr-container:hover .abr { opacity: 1; }
+        .abr.open { opacity: 1; }
+        .abr-pill:hover { background: #f0fdfb !important; border-color: #5eead4 !important; }
+        .bctrl { opacity: 0; transition: opacity 0.15s; }
+        .block-item:hover .bctrl { opacity: 1; }
+        .bctrl-btn:hover { background: #f8fafc !important; border-color: #c7f5ee !important; }
+        .bctrl-btn.del:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #ef4444 !important; }
+        .block-item:hover .block-card { border-color: #e0fdf4 !important; }
+        .picker-tile:hover { background: #f0fdfb !important; border-color: #99f6e4 !important; }
+        .sidebar-footer-btn:hover { background: rgba(20,184,166,0.08) !important; }
+      `}</style>
+
+      <div
+        className={`abr${isOpen ? " open" : ""}`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          width: "100%",
+          gap: 0,
+        }}
+      >
+        {/* Left line */}
+        <div style={{ flex: 1, height: 1, background: "rgba(20,184,166,0.15)" }} />
+
+        {/* Pill button */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <button
+            className="abr-pill"
+            onClick={onOpen}
+            style={{
+              background: "white",
+              border: "1.5px solid #99f6e4",
+              borderRadius: 20,
+              color: "#0d9488",
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "5px 13px",
+              cursor: "pointer",
+              margin: "0 10px",
+              transition: "background 0.15s, border-color 0.15s",
+            }}
+          >
+            + Add block
+          </button>
+
+          {/* Picker popup */}
+          {isOpen && (
+            <div
+              ref={ref}
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 420,
+                background: "white",
+                border: "1px solid #c7f5ee",
+                borderRadius: 12,
+                boxShadow: "0 24px 60px rgba(0,0,0,0.13)",
+                zIndex: 100,
+                overflow: "hidden",
+              }}
+            >
+              {/* Search */}
+              <div style={{ padding: "10px 14px", borderBottom: "1px solid #f0fdf4", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ color: "#94a3b8", fontSize: 14 }}>🔍</span>
+                <input
+                  ref={pickerSearchRef}
+                  value={pickerSearch}
+                  onChange={e => setPickerSearch(e.target.value)}
+                  placeholder="Search blocks…"
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: 13,
+                    color: "#0f172a",
+                    width: "100%",
+                    background: "transparent",
+                  }}
+                />
+              </div>
+
+              {/* Categories */}
+              <div style={{ maxHeight: 320, overflowY: "auto", padding: "8px 0" }}>
+                {CATEGORIES.map(cat => {
+                  const catSpecs = filteredRegistry.filter(s => s.category === cat || (cat === "Knowledge" && s.category === "Knowledge"));
+                  if (catSpecs.length === 0) return null;
+                  const meta = CATEGORY_META[cat];
+                  return (
+                    <div key={cat} style={{ padding: "0 14px 10px" }}>
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, marginTop: 4 }}>
+                        {meta.label}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                        {catSpecs.map(spec => (
+                          <button
+                            key={spec.type}
+                            className="picker-tile"
+                            onClick={() => onPickerSelect(spec.type)}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 5,
+                              background: "white",
+                              border: "1.5px solid #e0fdf4",
+                              borderRadius: 8,
+                              padding: "8px 4px",
+                              cursor: "pointer",
+                              transition: "background 0.12s, border-color 0.12s",
+                            }}
+                          >
+                            <div style={{
+                              width: 34,
+                              height: 34,
+                              background: meta.iconBg,
+                              borderRadius: 6,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}>
+                              <spec.icon size={16} style={{ color: "#0d9488" }} />
+                            </div>
+                            <span style={{ fontSize: 10, color: "#334155", fontWeight: 600, textAlign: "center", lineHeight: 1.2 }}>
+                              {spec.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {filteredRegistry.length === 0 && (
+                  <div style={{ padding: "16px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>
+                    No blocks found
+                  </div>
+                )}
+              </div>
+
+              {/* Footer close */}
+              <div style={{ borderTop: "1px solid #f0fdf4", padding: "8px 14px", textAlign: "right" }}>
+                <button
+                  onClick={onPickerClose}
+                  style={{ background: "none", border: "none", fontSize: 11, color: "#94a3b8", cursor: "pointer" }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right line */}
+        <div style={{ flex: 1, height: 1, background: "rgba(20,184,166,0.15)" }} />
+      </div>
+    </div>
+  );
+}
+
+interface BlockItemProps {
+  block: Block;
+  idx: number;
+  total: number;
+  spec: ReturnType<typeof getSpec>;
+  EditorComp: any;
+  onMove: (id: string, dir: "up" | "down") => void;
+  onDuplicate: (id: string) => void;
+  onRemove: (id: string) => void;
+  onUpdate: (id: string, updater: (b: Block) => Block) => void;
+}
+
+function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, onRemove, onUpdate }: BlockItemProps) {
+  return (
+    <div
+      className="block-item"
+      style={{ position: "relative", marginBottom: 0 }}
+    >
+      {/* Block card */}
+      <div
+        className="block-card"
+        style={{
+          background: "white",
+          border: "1.5px solid transparent",
+          borderRadius: 8,
+          padding: "16px 20px",
+          transition: "border-color 0.15s",
+          position: "relative",
+        }}
+      >
+        {/* Block type chip */}
+        <div style={{
+          fontSize: 9,
+          fontWeight: 800,
+          color: "var(--teal-bright)",
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          marginBottom: 6,
+        }}>
+          {spec.label}
+        </div>
+
+        <EditorComp
+          block={block as any}
+          onChange={(updated: any) => onUpdate(block.id, () => updated as Block)}
+        />
+      </div>
+
+      {/* Block controls */}
+      <div
+        className="bctrl"
+        style={{
+          position: "absolute",
+          right: -40,
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
+      >
+        {[
+          { label: "↑", action: () => onMove(block.id, "up"), disabled: idx === 0, cls: "" },
+          { label: "↓", action: () => onMove(block.id, "down"), disabled: idx === total - 1, cls: "" },
+          { label: "⧉", action: () => onDuplicate(block.id), disabled: false, cls: "" },
+          { label: "✕", action: () => onRemove(block.id), disabled: false, cls: "del" },
+        ].map((btn) => (
+          <button
+            key={btn.label}
+            onClick={btn.action}
+            disabled={btn.disabled}
+            className={`bctrl-btn${btn.cls ? ` ${btn.cls}` : ""}`}
+            style={{
+              width: 26,
+              height: 26,
+              background: "white",
+              border: "1px solid #e0fdf4",
+              borderRadius: 5,
+              fontSize: 10,
+              cursor: btn.disabled ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: btn.disabled ? 0.35 : 1,
+              transition: "background 0.12s, border-color 0.12s, color 0.12s",
+              color: "#334155",
+            }}
+            aria-label={btn.label}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface PublishModalProps {
+  publishUrl: string;
+  courseTitle: string;
+  hashSize: number;
+  onClose: () => void;
+  onCopy: (text: string, label?: string) => void;
+  onExportJSON: () => void;
+  onExportSCORM12: () => void;
+  onExportStaticZip: () => void;
+  showImport: boolean;
+  onToggleImport: () => void;
+  importMode: "merge" | "replace";
+  setImportMode: (m: "merge" | "replace") => void;
+  onImportClick: () => void;
+  onImportScormClick: () => void;
+  isDragOver: boolean;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+}
+
+function PublishModal({
+  publishUrl,
+  courseTitle,
+  hashSize,
+  onClose,
+  onCopy,
+  onExportJSON,
+  onExportSCORM12,
+  onExportStaticZip,
+  showImport,
+  onToggleImport,
+  importMode,
+  setImportMode,
+  onImportClick,
+  onImportScormClick,
+  isDragOver,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}: PublishModalProps) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(7,22,18,0.72)",
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        style={{
+          width: 500,
+          background: "white",
+          borderRadius: 14,
+          overflow: "hidden",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
+        }}
+      >
+        {/* Teal stripe */}
+        <div style={{ height: 3, background: "linear-gradient(135deg, #0d9488, #0891b2)" }} />
+
+        {/* Modal top */}
+        <div style={{ padding: "28px 32px 24px" }}>
+          {/* Success circle */}
+          <div style={{
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #0d9488, #0891b2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <polyline points="20 6 9 17 4 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          {/* Title */}
+          <h2 style={{ fontFamily: "Lora, Georgia, serif", fontSize: 22, fontWeight: 700, color: "#0d2926", margin: "0 0 6px" }}>
+            Your course is live
+          </h2>
+          <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 20px" }}>
+            <strong>{courseTitle}</strong> is published and ready to share.
+          </p>
+
+          {/* Large URL warning */}
+          {hashSize > 100000 && (
+            <div style={{ background: "#fefce8", border: "1px solid #fbbf24", borderRadius: 6, padding: "8px 12px", marginBottom: 12, fontSize: 12, color: "#92400e" }}>
+              Large course: link is {hashSize.toLocaleString()} chars. Use Export JSON for better portability.
+            </div>
+          )}
+
+          {/* Share link row */}
+          <div style={{ marginBottom: 4 }}>
+            <div style={{ fontSize: 9, fontWeight: 800, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+              Share Link
+            </div>
+            <div style={{ display: "flex", gap: 0, border: "1.5px solid #d1faf4", borderRadius: 8, overflow: "hidden" }}>
+              <input
+                value={publishUrl}
+                readOnly
+                style={{
+                  flex: 1,
+                  border: "none",
+                  outline: "none",
+                  fontSize: 12,
+                  fontFamily: "monospace",
+                  padding: "8px 12px",
+                  color: "#334155",
+                  background: "#f8fffe",
+                  minWidth: 0,
+                }}
+              />
+              <button
+                onClick={() => onCopy(publishUrl, "URL copied!")}
+                style={{
+                  background: "linear-gradient(135deg, #0d9488, #0891b2)",
+                  border: "none",
+                  color: "white",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "0 16px",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 32px", margin: "0 0 20px" }}>
+          <div style={{ flex: 1, height: 1, background: "#e0fdf4" }} />
+          <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>Export for offline & LMS</span>
+          <div style={{ flex: 1, height: 1, background: "#e0fdf4" }} />
+        </div>
+
+        {/* Export grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "0 32px 24px" }}>
+          {[
+            {
+              icon: "📦",
+              iconBg: "#f0fdf4",
+              label: "SCORM 1.2",
+              desc: "Upload to any LMS",
+              action: "Export .zip →",
+              onClick: onExportSCORM12,
+            },
+            {
+              icon: "🌐",
+              iconBg: "#eff6ff",
+              label: "HTML Export",
+              desc: "Self-hosted web package",
+              action: "Download .html →",
+              onClick: onExportStaticZip,
+            },
+            {
+              icon: "📄",
+              iconBg: "#fff7ed",
+              label: "Course JSON",
+              desc: "Portable course data",
+              action: "Download .json →",
+              onClick: onExportJSON,
+            },
+          ].map(card => (
+            <div
+              key={card.label}
+              style={{
+                background: "#fafffe",
+                border: "1.5px solid #e0fdf4",
+                borderRadius: 10,
+                padding: "14px 12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              <div style={{
+                width: 32,
+                height: 32,
+                background: card.iconBg,
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16,
+              }}>
+                {card.icon}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#0d2926" }}>{card.label}</div>
+              <div style={{ fontSize: 10, color: "#94a3b8" }}>{card.desc}</div>
+              <button
+                onClick={card.onClick}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: 11,
+                  color: "#0d9488",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  padding: 0,
+                  textAlign: "left",
+                  marginTop: "auto",
+                }}
+              >
+                {card.action}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Import section (collapsible) */}
+        {showImport && (
+          <div style={{ borderTop: "1px solid #e0fdf4", padding: "16px 32px 20px" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#0d2926", marginBottom: 10 }}>Import course</div>
+
+            {/* Import mode */}
+            <RadioGroup value={importMode} onValueChange={(v) => setImportMode(v as any)} className="flex gap-6 mb-3">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="replace" id="mode-replace" />
+                <Label htmlFor="mode-replace" style={{ fontSize: 12 }}>Replace current course</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="merge" id="mode-merge" />
+                <Label htmlFor="mode-merge" style={{ fontSize: 12 }}>Merge (append lessons)</Label>
+              </div>
+            </RadioGroup>
+
+            {/* Drop zone */}
+            <div
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              style={{
+                border: `2px dashed ${isDragOver ? "#0d9488" : "#c7f5ee"}`,
+                borderRadius: 8,
+                padding: "16px",
+                textAlign: "center",
+                background: isDragOver ? "#f0fdfb" : "#f8fffe",
+                marginBottom: 10,
+                transition: "border-color 0.15s, background 0.15s",
+              }}
+            >
+              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Drag & drop a .json or .zip (SCORM) file here</p>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={onImportClick}
+                style={{
+                  background: "none",
+                  border: "1.5px solid #c7f5ee",
+                  borderRadius: 6,
+                  color: "#0d9488",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Import JSON
+              </button>
+              <button
+                onClick={onImportScormClick}
+                style={{
+                  background: "none",
+                  border: "1.5px solid #c7f5ee",
+                  borderRadius: 6,
+                  color: "#0d9488",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Import SCORM .zip
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{
+          borderTop: "1px solid #e0fdf4",
+          padding: "12px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
+          <button
+            onClick={onToggleImport}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 12,
+              color: "#94a3b8",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            {showImport ? "Hide import" : "Import course"}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#0d9488",
+              cursor: "pointer",
+              padding: "6px 14px",
+              borderRadius: 6,
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#f0fdfb")}
+            onMouseLeave={e => (e.currentTarget.style.background = "none")}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
