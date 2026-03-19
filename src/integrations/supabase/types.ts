@@ -17,6 +17,7 @@ export type Database = {
       courses: {
         Row: {
           content: Json
+          cover_image_url: string | null
           created_at: string
           id: string
           is_public: boolean
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           content: Json
+          cover_image_url?: string | null
           created_at?: string
           id?: string
           is_public?: boolean
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           content?: Json
+          cover_image_url?: string | null
           created_at?: string
           id?: string
           is_public?: boolean
