@@ -98,10 +98,10 @@ Blocks are the smallest unit of content — they represent a single element on t
 - move_block(course_id, lesson_id, block_id, new_position, target_lesson_id?) — reorder or move between lessons
 - delete_block(course_id, lesson_id, block_id) — remove one block
 - rewrite_block(course_id, lesson_id, block_id, updated_block) — replace one block entirely
-- rewrite_blocks(course_id, lesson_id, updates) — replace multiple blocks in one call
+- rewrite_blocks(course_id, updates[]) — replace multiple blocks in one call; each update has { lesson_id, block_id, updated_block }
 
 ### Media
-- upload_media(file_path, mime_type) — upload a local file, returns a hosted URL
+- upload_media(file_path) — upload a local file, returns a hosted URL (MIME type detected automatically from extension)
 
 ---
 
