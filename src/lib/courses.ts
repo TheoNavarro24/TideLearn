@@ -8,7 +8,13 @@ import {
 } from "@/types/course";
 import { supabase } from "@/integrations/supabase/client";
 
-export type CourseIndexItem = { id: string; title: string; updatedAt: number };
+export type CourseIndexItem = {
+  id: string;
+  title: string;
+  updatedAt: number;
+  isPublic?: boolean;
+  coverImageUrl?: string | null;
+};
 
 const INDEX_KEY = "courses:index";
 const COURSE_KEY = (id: string) => `course:${id}`;
@@ -131,34 +137,93 @@ export function migrateFromLegacy(): string | null {
 export async function loadCoursesFromCloud(): Promise<CourseIndexItem[]> {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, title, updated_at")
+    .select("id, title, updated_at, is_public, cover_image_url")
     .order("updated_at", { ascending: false });
   if (error || !data) return [];
   return data.map((row) => ({
     id: row.id,
     title: row.title,
     updatedAt: new Date(row.updated_at).getTime(),
+    isPublic: row.is_public,
+    coverImageUrl: row.cover_image_url,
   }));
 }
 
 /** Save or update a course in Supabase.
- *  is_public defaults to true so that share links work for anyone,
- *  including visitors who are not logged in.
+ *  Does NOT touch is_public — visibility is managed exclusively via setCourseVisibility.
+ *  Cover image only written when explicitly provided via options.
  */
 export async function saveCourseToCloud(
   id: string,
   course: Course,
-  userId: string
+  userId: string,
+  options?: { coverImageUrl?: string | null }
 ): Promise<void> {
-  const { error } = await supabase.from("courses").upsert({
+  const upsertData: Record<string, unknown> = {
     id,
     user_id: userId,
     title: course.title || "Untitled Course",
     content: course as unknown as import("@/integrations/supabase/types").Json,
-    is_public: true,
+    updated_at: new Date().toISOString(),
+  };
+  if (options?.coverImageUrl !== undefined) {
+    upsertData.cover_image_url = options.coverImageUrl;
+  }
+  const { error } = await supabase.from("courses").upsert(upsertData);
+  if (error) throw error;
+}
+
+export async function setCourseVisibility(id: string, isPublic: boolean): Promise<void> {
+  const { error } = await supabase
+    .from("courses")
+    .update({ is_public: isPublic, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function setCourseCoverImage(id: string, coverImageUrl: string | null): Promise<void> {
+  const { error } = await supabase
+    .from("courses")
+    .update({ cover_image_url: coverImageUrl, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function uploadCourseCover(
+  userId: string,
+  courseId: string,
+  file: File
+): Promise<string> {
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `${userId}/${courseId}/cover.${ext}`;
+  const { error } = await supabase.storage
+    .from("course-media")
+    .upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = supabase.storage.from("course-media").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function duplicateCourseInCloud(
+  sourceId: string,
+  newId: string,
+  userId: string
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("content, title")
+    .eq("id", sourceId)
+    .single();
+  if (error || !data) throw error ?? new Error("Source course not found");
+  const { error: insertError } = await supabase.from("courses").insert({
+    id: newId,
+    user_id: userId,
+    title: `${data.title} (Copy)`,
+    content: data.content,
+    is_public: false,
     updated_at: new Date().toISOString(),
   });
-  if (error) throw error;
+  if (insertError) throw insertError;
 }
 
 /** Delete a course from Supabase */
