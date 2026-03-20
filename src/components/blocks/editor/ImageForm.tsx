@@ -32,7 +32,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
           {user && (
             <>
               <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}

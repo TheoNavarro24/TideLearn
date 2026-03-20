@@ -65,7 +65,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
                 type="file"
                 accept={currentType?.accept}
                 style={{ display: "none" }}
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
               />
               <button
                 type="button"
