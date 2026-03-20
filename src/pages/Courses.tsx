@@ -19,6 +19,10 @@ import {
   saveCourse,
   loadCoursesFromCloud,
   deleteCourseFromCloud,
+  setCourseVisibility,
+  setCourseCoverImage,
+  uploadCourseCover,
+  duplicateCourseInCloud,
 } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
 
@@ -28,6 +32,8 @@ interface CourseIndex {
   title: string;
   updatedAt: string | number;
   lessons?: unknown[];
+  isPublic?: boolean;
+  coverImageUrl?: string | null;
 }
 
 /* ─── Styles (inline, referencing CSS vars) ─────────────────── */
@@ -350,6 +356,10 @@ interface CardProps {
   onDuplicate: (id: string) => void;
   onExport: (id: string) => void;
   onExportScorm: (id: string) => void;
+  onCoverUpload: (id: string, file: File) => void;
+  onToggleVisibility: (id: string, current: boolean) => void;
+  uploadingCoverId: string | null;
+  isLoggedIn: boolean;
   openDropdownId: string | null;
   setOpenDropdownId: (id: string | null) => void;
 }
@@ -361,6 +371,10 @@ function CourseCard({
   onDuplicate,
   onExport,
   onExportScorm,
+  onCoverUpload,
+  onToggleVisibility,
+  uploadingCoverId,
+  isLoggedIn,
   openDropdownId,
   setOpenDropdownId,
 }: CardProps) {
@@ -410,67 +424,59 @@ function CourseCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Card visual header */}
+      {/* Cover image area */}
       <div
         style={{
-          overflow: "hidden",
-          borderRadius: "9px 9px 0 0",
+          height: 120,
+          background: course.coverImageUrl
+            ? `url(${course.coverImageUrl}) center/cover no-repeat`
+            : "linear-gradient(135deg, #0d9488 0%, #0891b2 100%)",
+          borderRadius: "10px 10px 0 0",
+          position: "relative",
+          cursor: isLoggedIn ? "pointer" : "default",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
+        onClick={() => {
+          if (!isLoggedIn) return;
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/jpeg,image/png,image/webp,image/gif";
+          input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) onCoverUpload(course.id, file);
+          };
+          input.click();
+        }}
+        title={isLoggedIn ? "Click to upload cover image" : undefined}
       >
+        {!course.coverImageUrl && (
+          <span style={{ fontSize: 28, opacity: 0.5, color: "#fff" }}>
+            {course.title.charAt(0).toUpperCase()}
+          </span>
+        )}
+        {uploadingCoverId === course.id && (
+          <div style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontSize: 12, borderRadius: "10px 10px 0 0",
+          }}>
+            Uploading…
+          </div>
+        )}
+        {/* Lesson count bottom-left */}
         <div
           style={{
-            height: 88,
-            background: "linear-gradient(135deg, #0d9488 0%, #0891b2 100%)",
-            position: "relative",
+            position: "absolute",
+            bottom: 10,
+            left: 14,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.9)",
           }}
         >
-          {/* Radial highlight overlay */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.15) 0%, transparent 65%)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Dots top-right */}
-          <div
-            style={{
-              position: "absolute",
-              top: 12,
-              right: 14,
-              display: "flex",
-              gap: 5,
-            }}
-          >
-            {[false, false, true].map((active, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: active
-                    ? "rgba(255,255,255,0.85)"
-                    : "rgba(255,255,255,0.3)",
-                }}
-              />
-            ))}
-          </div>
-          {/* Lesson count bottom-left */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 10,
-              left: 14,
-              fontSize: 11,
-              fontWeight: 600,
-              color: "rgba(255,255,255,0.9)",
-            }}
-          >
-            {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
-          </div>
+          {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
         </div>
       </div>
 
@@ -525,6 +531,29 @@ function CourseCard({
           >
             Open →
           </button>
+
+          {/* Visibility toggle */}
+          {isLoggedIn && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleVisibility(course.id, course.isPublic ?? true); }}
+              title={course.isPublic !== false ? "Public — click to make private" : "Private — click to make public"}
+              style={{
+                background: "none",
+                border: "1px solid #e0fdf4",
+                borderRadius: 6,
+                cursor: "pointer",
+                padding: "4px 6px",
+                color: course.isPublic !== false ? "#0d9488" : "#94a3b8",
+                fontSize: 13,
+                width: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {course.isPublic !== false ? "🌐" : "🔒"}
+            </button>
+          )}
 
           {/* Overflow button */}
           <div ref={dropRef} style={{ position: "relative" }}>
@@ -589,8 +618,9 @@ function CourseCard({
                 />
                 <DropItem
                   icon="🔗"
-                  label="Copy share link"
+                  label={course.isPublic !== false ? "Copy share link" : "Copy share link (private)"}
                   onClick={() => {
+                    if (course.isPublic === false) return;
                     setOpenDropdownId(null);
                     navigator.clipboard.writeText(
                       `${window.location.origin}/view?id=${course.id}`
@@ -707,7 +737,47 @@ export default function Courses() {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const newCourseInputRef = useRef<HTMLInputElement>(null);
 
+  const [uploadingCoverId, setUploadingCoverId] = useState<string | null>(null);
+
+  async function refreshCourses() {
+    if (user) {
+      const cloudCourses = await loadCoursesFromCloud();
+      setCourses(cloudCourses);
+    } else {
+      setCourses(getCoursesIndex());
+    }
+  }
+
   const refresh = () => setCourses(getCoursesIndex());
+
+  async function handleCoverUpload(courseId: string, file: File) {
+    if (!user) return;
+    setUploadingCoverId(courseId);
+    try {
+      const url = await uploadCourseCover(user.id, courseId, file);
+      await setCourseCoverImage(courseId, url);
+      setCourses(prev =>
+        prev.map(c => c.id === courseId ? { ...c, coverImageUrl: url } : c)
+      );
+    } catch (e) {
+      console.error("Cover upload failed", e);
+    } finally {
+      setUploadingCoverId(null);
+    }
+  }
+
+  async function handleToggleVisibility(courseId: string, current: boolean) {
+    if (!user) return;
+    const next = !current;
+    try {
+      await setCourseVisibility(courseId, next);
+      setCourses(prev =>
+        prev.map(c => c.id === courseId ? { ...c, isPublic: next } : c)
+      );
+    } catch (e) {
+      console.error("Visibility toggle failed", e);
+    }
+  }
 
   /* migration */
   useEffect(() => {
@@ -769,12 +839,18 @@ export default function Courses() {
     }
   };
   const cancelDelete = () => setDeleteId(null);
-  const onDuplicate = (id: string) => {
-    const nid = duplicateCourse(id);
-    if (nid) {
-      refresh();
-      navigate(`/editor?courseId=${nid}`);
+  const onDuplicate = async (id: string) => {
+    const newId = duplicateCourse(id);
+    if (!newId) return;
+    if (user) {
+      try {
+        await duplicateCourseInCloud(id, newId, user.id);
+      } catch (e) {
+        console.error("Cloud duplication failed", e);
+      }
     }
+    await refreshCourses();
+    navigate(`/editor?courseId=${newId}`);
   };
   const onExport = (id: string) => {
     const c = loadCourse(id);
@@ -988,6 +1064,10 @@ export default function Courses() {
                   onDuplicate={onDuplicate}
                   onExport={onExport}
                   onExportScorm={onExportScorm}
+                  onCoverUpload={handleCoverUpload}
+                  onToggleVisibility={handleToggleVisibility}
+                  uploadingCoverId={uploadingCoverId}
+                  isLoggedIn={!!user}
                   openDropdownId={openDropdownId}
                   setOpenDropdownId={setOpenDropdownId}
                 />
