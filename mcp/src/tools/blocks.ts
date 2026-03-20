@@ -124,7 +124,7 @@ position is 1-based and optional; omit to append at the end.`,
 
   server.tool(
     "update_block",
-    "Update specific fields of a block (partial patch). Pass only the fields you want to change — type and id are preserved automatically. Text fields are plain strings, not HTML.",
+    "Update specific fields of a block (partial patch). Pass only the fields you want to change — type and id are preserved automatically. Text fields (e.g. text block \"text\" field) must be HTML (e.g. \"<p>content</p>\"), not markdown.",
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
