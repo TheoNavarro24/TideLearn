@@ -9,8 +9,9 @@ function sanitizeFileName(name: string) {
   return (name || "course").toLowerCase().replace(/[^a-z0-9-_]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "course";
 }
 
-function buildManifest(title: string) {
+function buildManifest(title: string, mediaPaths: string[] = []) {
   const safeTitle = title || "Course";
+  const mediaFileEntries = mediaPaths.map(p => `      <file href="${p}"/>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="com.example.course" version="1.0"
   xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
@@ -33,6 +34,7 @@ function buildManifest(title: string) {
   <resources>
     <resource identifier="RES1" type="webcontent" adlcp:scormtype="sco" href="index.html">
       <file href="index.html"/>
+${mediaFileEntries}
     </resource>
   </resources>
 </manifest>`;
@@ -184,6 +186,14 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
       case 'quiz': return renderQuiz(b);
       case 'truefalse': return renderTrueFalse(b);
       case 'shortanswer': return renderShortAnswer(b);
+      case 'document': {
+        var src = b.src || '';
+        if (!src) return '<p style="color:#94a3b8;font-size:13px;">No document set</p>';
+        var isPdf = b.fileType === 'pdf';
+        var OFFICE_VIEWER = 'https://view.officeapps.live.com/op/embed.aspx?src=';
+        var embedSrc = isPdf ? esc(src) : OFFICE_VIEWER + encodeURIComponent(src);
+        return '<div style="margin:16px 0">' + (b.title ? '<p style="font-size:13px;color:#64748b;margin-bottom:8px;font-weight:500">' + esc(b.title) + '</p>' : '') + '<div style="border:1px solid #e0fdf4;border-radius:10px;overflow:hidden"><iframe src="' + embedSrc + '" style="width:100%;height:500px;border:none;display:block" title="' + esc(b.title || 'Document') + '" allow="fullscreen"></iframe></div></div>';
+      }
       case 'toc': return renderTOC();
       default: return '';
     }
@@ -223,18 +233,21 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
-    html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+')" id="'+id+'-btn">Submit</button>';
+    html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
-  function checkQuiz(id, correctIndex) {
+  function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
-    if (fb) { fb.textContent = correct ? '✓ Correct!' : '✗ Incorrect — try again.'; fb.className = 'feedback ' + (correct?'correct':'incorrect'); }
+    if (fb && showFeedback) {
+      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
   }
 
@@ -243,28 +256,29 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     return '<div class="quiz" id="'+id+'"><p>'+esc(b.question)+'</p>' +
       '<label><input type="radio" name="'+id+'" value="true"> True</label>' +
       '<label><input type="radio" name="'+id+'" value="false"> False</label>' +
-      '<br><button onclick="checkTF(\\''+id+'\\','+b.correct+',\\''+esc(b.feedbackCorrect||'Correct!')+'\\',' +
+      '<br><button onclick="checkTF(\\''+id+'\\','+b.correct+','+!!b.showFeedback+',\\''+esc(b.feedbackCorrect||'Correct!')+'\\',' +
       '\\''+esc(b.feedbackIncorrect||'Incorrect.')+'\\')">Submit</button>' +
       '<div class="feedback" id="'+id+'-fb"></div></div>';
   }
 
-  function checkTF(id, correct, fbCorrect, fbWrong) {
+  function checkTF(id, correct, showFeedback, fbCorrect, fbWrong) {
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var isCorrect = (sel.value === 'true') === correct;
-    if (fb) { fb.textContent = isCorrect ? fbCorrect : fbWrong; fb.className = 'feedback ' + (isCorrect?'correct':'incorrect'); }
+    if (fb && showFeedback) { fb.textContent = isCorrect ? fbCorrect : fbWrong; fb.className = 'feedback ' + (isCorrect?'correct':'incorrect'); }
+    else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
   }
 
   function renderShortAnswer(b) {
     var id = 'sa-' + b.id;
     return '<div class="quiz" id="'+id+'"><p>'+esc(b.question)+'</p>' +
       '<input type="text" id="'+id+'-input" style="width:100%;padding:.375rem .75rem;border:1px solid #cbd5e1;border-radius:.375rem;margin:.5rem 0">' +
-      '<br><button onclick="checkSA(\\''+id+'\\',\\''+escJs(b.answer)+'\\','+!!b.caseSensitive+','+!!b.trimWhitespace+')">Submit</button>' +
+      '<br><button onclick="checkSA(\\''+id+'\\',\\''+escJs(b.answer)+'\\','+!!b.caseSensitive+','+!!b.trimWhitespace+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')">Submit</button>' +
       '<div class="feedback" id="'+id+'-fb"></div></div>';
   }
 
-  function checkSA(id, answer, caseSensitive, trim) {
+  function checkSA(id, answer, caseSensitive, trim, showFeedback, feedbackMessage) {
     var input = document.getElementById(id+'-input');
     var fb = document.getElementById(id+'-fb');
     if (!input || !fb) return;
@@ -273,8 +287,10 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     if (trim) { val = val.trim(); ans = ans.trim(); }
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
-    fb.textContent = correct ? '✓ Correct!' : '✗ Not quite — try again.';
-    fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    if (showFeedback) {
+      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    } else { fb.textContent = ''; fb.className = 'feedback'; }
   }
 
   function esc(s) {
@@ -503,6 +519,14 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
       case 'truefalse': return renderTrueFalse(b);
       case 'shortanswer': return renderShortAnswer(b);
       case 'toc': return renderTOC();
+      case 'document': {
+        var src = b.src || '';
+        if (!src) return '<p style="color:#94a3b8;font-size:13px;">No document set</p>';
+        var isPdf = b.fileType === 'pdf';
+        var OFFICE_VIEWER = 'https://view.officeapps.live.com/op/embed.aspx?src=';
+        var embedSrc = isPdf ? esc(src) : OFFICE_VIEWER + encodeURIComponent(src);
+        return '<div style="margin:16px 0">' + (b.title ? '<p style="font-size:13px;color:#64748b;margin-bottom:8px;font-weight:500">'+esc(b.title)+'</p>' : '') + '<div style="border:1px solid #e0fdf4;border-radius:10px;overflow:hidden"><iframe src="'+embedSrc+'" style="width:100%;height:500px;border:none;display:block" title="'+esc(b.title||'Document')+'" allow="fullscreen"></iframe></div></div>';
+      }
       default: return '';
     }
   }
@@ -541,18 +565,21 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
-    html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+')" id="'+id+'-btn">Submit</button>';
+    html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
-  function checkQuiz(id, correctIndex) {
+  function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
-    if (fb) { fb.textContent = correct ? '✓ Correct!' : '✗ Incorrect — try again.'; fb.className = 'feedback ' + (correct?'correct':'incorrect'); }
+    if (fb && showFeedback) {
+      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
   }
 
@@ -561,28 +588,29 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     return '<div class="quiz" id="'+id+'"><p>'+esc(b.question)+'</p>' +
       '<label><input type="radio" name="'+id+'" value="true"> True</label>' +
       '<label><input type="radio" name="'+id+'" value="false"> False</label>' +
-      '<br><button onclick="checkTF(\\''+id+'\\','+b.correct+',\\''+esc(b.feedbackCorrect||'Correct!')+'\\',' +
+      '<br><button onclick="checkTF(\\''+id+'\\','+b.correct+','+!!b.showFeedback+',\\''+esc(b.feedbackCorrect||'Correct!')+'\\',' +
       '\\''+esc(b.feedbackIncorrect||'Incorrect.')+'\\')">Submit</button>' +
       '<div class="feedback" id="'+id+'-fb"></div></div>';
   }
 
-  function checkTF(id, correct, fbCorrect, fbWrong) {
+  function checkTF(id, correct, showFeedback, fbCorrect, fbWrong) {
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var isCorrect = (sel.value === 'true') === correct;
-    if (fb) { fb.textContent = isCorrect ? fbCorrect : fbWrong; fb.className = 'feedback ' + (isCorrect?'correct':'incorrect'); }
+    if (fb && showFeedback) { fb.textContent = isCorrect ? fbCorrect : fbWrong; fb.className = 'feedback ' + (isCorrect?'correct':'incorrect'); }
+    else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
   }
 
   function renderShortAnswer(b) {
     var id = 'sa-' + b.id;
     return '<div class="quiz" id="'+id+'"><p>'+esc(b.question)+'</p>' +
       '<input type="text" id="'+id+'-input" style="width:100%;padding:.375rem .75rem;border:1px solid #cbd5e1;border-radius:.375rem;margin:.5rem 0">' +
-      '<br><button onclick="checkSA(\\''+id+'\\',\\''+escJs(b.answer)+'\\','+!!b.caseSensitive+','+!!b.trimWhitespace+')">Submit</button>' +
+      '<br><button onclick="checkSA(\\''+id+'\\',\\''+escJs(b.answer)+'\\','+!!b.caseSensitive+','+!!b.trimWhitespace+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')">Submit</button>' +
       '<div class="feedback" id="'+id+'-fb"></div></div>';
   }
 
-  function checkSA(id, answer, caseSensitive, trim) {
+  function checkSA(id, answer, caseSensitive, trim, showFeedback, feedbackMessage) {
     var input = document.getElementById(id+'-input');
     var fb = document.getElementById(id+'-fb');
     if (!input || !fb) return;
@@ -591,8 +619,10 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     if (trim) { val = val.trim(); ans = ans.trim(); }
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
-    fb.textContent = correct ? '✓ Correct!' : '✗ Not quite — try again.';
-    fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    if (showFeedback) {
+      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      fb.className = 'feedback ' + (correct?'correct':'incorrect');
+    } else { fb.textContent = ''; fb.className = 'feedback'; }
   }
 
   function esc(s) {
@@ -656,7 +686,7 @@ export async function exportScorm12Zip(course: CourseData, _publishUrl: string):
   for (const [original, relative] of urlMap) {
     courseJson = courseJson.replaceAll(JSON.stringify(original), JSON.stringify(relative));
   }
-  zip.file("imsmanifest.xml", buildManifest(course.title));
+  zip.file("imsmanifest.xml", buildManifest(course.title, [...urlMap.values()]));
   zip.file("index.html", buildScormIndexHtml(courseJson, course.title));
   // Include raw course for robust re-import
   zip.file("course.json", courseJson);
