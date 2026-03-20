@@ -46,47 +46,49 @@ export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
         onFocus={(e) => (e.currentTarget.style.borderColor = "#5eead4")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "#d1faf4")}
       />
-      <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
-        <button
-          onClick={check}
-          disabled={revealed && correct === true}
-          style={{
-            background: (revealed && correct === true) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
-            border: "none",
-            borderRadius: 7,
-            color: (revealed && correct === true) ? "#94a3b8" : "#fff",
-            fontSize: 12,
-            fontWeight: 700,
-            padding: "6px 14px",
-            cursor: (revealed && correct === true) ? "not-allowed" : "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          Check
-        </button>
-        <button
-          onClick={() => { setValue(""); setRevealed(false); setCorrect(null); }}
-          style={{
-            background: "none",
-            border: "1.5px solid #e0fdf4",
-            borderRadius: 7,
-            color: "#64748b",
-            fontSize: 12,
-            fontWeight: 600,
-            padding: "5px 12px",
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          Reset
-        </button>
-        {revealed && (
-          <span style={{ fontSize: 13, color: correct ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
-            {correct ? "Correct!" : "Try again."}
-          </span>
-        )}
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={check}
+            disabled={revealed && correct === true}
+            style={{
+              background: (revealed && correct === true) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
+              border: "none",
+              borderRadius: 7,
+              color: (revealed && correct === true) ? "#94a3b8" : "#fff",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "6px 14px",
+              cursor: (revealed && correct === true) ? "not-allowed" : "pointer",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            Check
+          </button>
+          <button
+            onClick={() => { setValue(""); setRevealed(false); setCorrect(null); }}
+            style={{
+              background: "none",
+              border: "1.5px solid #e0fdf4",
+              borderRadius: 7,
+              color: "#64748b",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "5px 12px",
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            Reset
+          </button>
+          {revealed && (
+            <span style={{ fontSize: 13, color: correct ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+              {correct ? "Correct!" : "Try again."}
+            </span>
+          )}
+        </div>
         {block.showFeedback && block.feedbackMessage && revealed && !correct && (
-          <span style={{ fontSize: 13, color: "#475569", marginTop: 4, display: "block" }}>
+          <span style={{ fontSize: 13, color: "#475569" }}>
             {block.feedbackMessage}
           </span>
         )}
