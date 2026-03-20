@@ -85,6 +85,11 @@ export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
             {correct ? "Correct!" : "Try again."}
           </span>
         )}
+        {block.showFeedback && block.feedbackMessage && revealed && !correct && (
+          <span style={{ fontSize: 13, color: "#475569", marginTop: 4, display: "block" }}>
+            {block.feedbackMessage}
+          </span>
+        )}
       </div>
     </div>
   );
