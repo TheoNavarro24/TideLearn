@@ -30,8 +30,28 @@ export function registerSemanticTools(server: McpServer) {
     "save_course",
     `Bulk-save a full course (create new or replace existing). Omit all id fields — they are generated automatically. Pass course_id to replace an existing course.
 
-REQUIRED: course_json must include schemaVersion: 1 at the top level.
-Text block "text" field must be HTML (e.g. "<p>Hello</p>"), not markdown.`,
+REQUIRED fields and types:
+- schemaVersion: 1 (number literal) at the top level — omitting causes validation error
+- text blocks: "text" field must be HTML e.g. "<p>Hello</p>", not markdown
+- quiz blocks: use "correctIndex" (number, 0-based) not "correct_answer"
+- accordion/tabs items: each item needs an "id" field (UUID)
+
+MINIMAL EXAMPLE — one text block + one quiz block:
+{
+  "schemaVersion": 1,
+  "title": "My Course",
+  "lessons": [
+    {
+      "title": "Lesson 1",
+      "blocks": [
+        { "type": "text", "text": "<p>Welcome to the lesson.</p>" },
+        { "type": "quiz", "question": "What is 2+2?", "options": ["3","4","5","6"], "correctIndex": 1 }
+      ]
+    }
+  ]
+}
+
+If unsure of schema, read the tidelearn://instructions resource for the full block type reference.`,
     {
       course_json: z.record(z.unknown()),
       course_id: z.string().uuid().optional(),
