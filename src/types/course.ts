@@ -9,6 +9,8 @@ export type QuizBlock = {
   question: string;
   options: string[];
   correctIndex: number;
+  showFeedback?: boolean;
+  feedbackMessage?: string;
 };
 
 export type CodeBlock = {
@@ -71,11 +73,20 @@ export type AudioBlock = {
   title?: string;
 };
 
+export type DocumentBlock = {
+  id: string;
+  type: "document";
+  src: string;
+  fileType: "pdf" | "docx" | "xlsx" | "pptx";
+  title?: string;
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
   question: string;
   correct: boolean;
+  showFeedback?: boolean;
   feedbackCorrect?: string;
   feedbackIncorrect?: string;
 };
@@ -88,6 +99,8 @@ export type ShortAnswerBlock = {
   acceptable?: string[];
   caseSensitive?: boolean;
   trimWhitespace?: boolean;
+  showFeedback?: boolean;
+  feedbackMessage?: string;
 };
 
 export type Block =
@@ -106,7 +119,8 @@ export type Block =
   | TocBlock
   | CalloutBlock
   | VideoBlock
-  | AudioBlock;
+  | AudioBlock
+  | DocumentBlock;
 
 export type Lesson = { id: string; title: string; blocks: Block[] };
 export type Course = { schemaVersion: 1; title: string; lessons: Lesson[] };
@@ -137,6 +151,8 @@ export const quizBlockSchema = z.object({
   question: z.string(),
   options: z.array(z.string()),
   correctIndex: z.number(),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
 });
 
 export const trueFalseBlockSchema = z.object({
@@ -144,6 +160,7 @@ export const trueFalseBlockSchema = z.object({
   type: z.literal("truefalse"),
   question: z.string(),
   correct: z.boolean(),
+  showFeedback: z.boolean().optional(),
   feedbackCorrect: z.string().optional(),
   feedbackIncorrect: z.string().optional(),
 });
@@ -156,6 +173,8 @@ export const shortAnswerBlockSchema = z.object({
   acceptable: z.array(z.string()).optional(),
   caseSensitive: z.boolean().optional(),
   trimWhitespace: z.boolean().optional(),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
 });
 
 export const listBlockSchema = z.object({
@@ -215,6 +234,14 @@ export const audioBlockSchema = z.object({
   title: z.string().optional(),
 });
 
+export const documentBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("document"),
+  src: z.string(),
+  fileType: z.union([z.literal("pdf"), z.literal("docx"), z.literal("xlsx"), z.literal("pptx")]),
+  title: z.string().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -231,6 +258,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   calloutBlockSchema,
   videoBlockSchema,
   audioBlockSchema,
+  documentBlockSchema,
 ]);
 
 export const lessonSchema = z.object({
@@ -302,6 +330,7 @@ export const factories = {
   audio: (): AudioBlock => ({ id: uid(), type: "audio", src: "https://www.w3schools.com/html/horse.mp3", title: "Audio clip" }),
   truefalse: (): TrueFalseBlock => ({ id: uid(), type: "truefalse", question: "Statement goes here.", correct: true, feedbackCorrect: "Correct!", feedbackIncorrect: "Not quite." }),
   shortanswer: (): ShortAnswerBlock => ({ id: uid(), type: "shortanswer", question: "Your question?", answer: "answer", acceptable: [], caseSensitive: false, trimWhitespace: true }),
+  document: (): DocumentBlock => ({ id: uid(), type: "document", src: "", fileType: "pdf", title: "" }),
 } as const;
 
 export type BlockType = keyof typeof factories;
