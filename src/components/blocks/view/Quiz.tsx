@@ -106,9 +106,16 @@ export function QuizView({ block }: { block: QuizBlock }) {
           Reset
         </button>
         {revealed && (
-          <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
-            {isCorrect ? "Correct!" : "Try again."}
-          </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+              {isCorrect ? "Correct!" : "Try again."}
+            </span>
+            {block.showFeedback && block.feedbackMessage && !isCorrect && (
+              <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+                {block.feedbackMessage}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </div>

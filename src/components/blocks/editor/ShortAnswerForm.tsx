@@ -1,6 +1,8 @@
 import { ShortAnswerBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; onChange: (b: ShortAnswerBlock) => void }) {
   const acceptableCSV = (block.acceptable ?? []).join(", ");
@@ -43,6 +45,31 @@ export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; 
           </div>
           <Switch checked={block.trimWhitespace !== false} onCheckedChange={(v) => onChange({ ...block, trimWhitespace: v })} />
         </div>
+      </div>
+
+      {/* Feedback section */}
+      <div style={{ borderTop: "1px solid #e0fdf4", paddingTop: 12, marginTop: 4 }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Switch
+            id={`feedback-${block.id}`}
+            checked={block.showFeedback ?? false}
+            onCheckedChange={(v) => onChange({ ...block, showFeedback: v })}
+          />
+          <Label htmlFor={`feedback-${block.id}`} className="text-sm text-muted-foreground">
+            Show feedback after answer
+          </Label>
+        </div>
+        {block.showFeedback && (
+          <div className="space-y-1">
+            <label className="text-sm text-muted-foreground">Feedback message</label>
+            <Textarea
+              value={block.feedbackMessage ?? ""}
+              onChange={(e) => onChange({ ...block, feedbackMessage: e.target.value })}
+              placeholder="Explain the correct answer..."
+              rows={2}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

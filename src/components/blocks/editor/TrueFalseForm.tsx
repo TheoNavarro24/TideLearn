@@ -1,7 +1,7 @@
 import { TrueFalseBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onChange: (b: TrueFalseBlock) => void }) {
   return (
@@ -17,13 +17,39 @@ export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onCh
         </div>
         <Switch checked={block.correct} onCheckedChange={(v) => onChange({ ...block, correct: v })} />
       </div>
-      <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Feedback (Correct)</label>
-        <Textarea value={block.feedbackCorrect ?? ""} onChange={(e) => onChange({ ...block, feedbackCorrect: e.target.value })} placeholder="Shown when the learner answers correctly" />
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Feedback (Incorrect)</label>
-        <Textarea value={block.feedbackIncorrect ?? ""} onChange={(e) => onChange({ ...block, feedbackIncorrect: e.target.value })} placeholder="Shown when the learner answers incorrectly" />
+
+      {/* Feedback section */}
+      <div style={{ borderTop: "1px solid #e0fdf4", paddingTop: 12, marginTop: 4 }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Switch
+            id={`feedback-${block.id}`}
+            checked={block.showFeedback ?? false}
+            onCheckedChange={(v) => onChange({ ...block, showFeedback: v })}
+          />
+          <Label htmlFor={`feedback-${block.id}`} className="text-sm text-muted-foreground">
+            Show feedback after answer
+          </Label>
+        </div>
+        {block.showFeedback && (
+          <div className="grid gap-2">
+            <div className="space-y-1">
+              <label className="text-sm text-muted-foreground">Correct feedback</label>
+              <Input
+                value={block.feedbackCorrect ?? ""}
+                onChange={(e) => onChange({ ...block, feedbackCorrect: e.target.value })}
+                placeholder="Great job!"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm text-muted-foreground">Incorrect feedback</label>
+              <Input
+                value={block.feedbackIncorrect ?? ""}
+                onChange={(e) => onChange({ ...block, feedbackIncorrect: e.target.value })}
+                placeholder="Not quite — the answer is..."
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

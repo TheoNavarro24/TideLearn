@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { CodeView } from "./view/Code";
@@ -32,7 +32,9 @@ import { TrueFalseForm } from "./editor/TrueFalseForm";
 import { ShortAnswerForm } from "./editor/ShortAnswerForm";
 import { TocForm } from "./editor/TocForm";
 import { TocView } from "./view/Toc";
-import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3 } from "lucide-react";
+import { DocumentForm } from "./editor/DocumentForm";
+import { DocumentView } from "./view/Document";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -163,6 +165,15 @@ export const registry: BlockSpec[] = [
     create: factories.audio,
     Editor: AudioForm as EditorRenderer<AudioBlock>,
     View: AudioView as ViewRenderer<AudioBlock>,
+    category: "Media",
+  },
+  {
+    type: "document",
+    label: "Document",
+    icon: DocumentIcon,
+    create: factories.document,
+    Editor: DocumentForm as EditorRenderer<DocumentBlock>,
+    View: DocumentView as ViewRenderer<DocumentBlock>,
     category: "Media",
   },
   {
