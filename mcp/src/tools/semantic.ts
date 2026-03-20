@@ -79,7 +79,18 @@ If unsure of schema, read the tidelearn://instructions resource for the full blo
   // ── generate_lesson ───────────────────────────────────────────────────────
   server.tool(
     "generate_lesson",
-    "Insert a fully-drafted lesson into an existing course. Claude should generate the lesson_json before calling this tool.",
+    `Insert a fully-drafted lesson into an existing course at the given position. Omit id fields — they are generated automatically.
+
+lesson_json shape:
+{
+  "title": "Lesson Title",
+  "blocks": [
+    { "type": "text", "text": "<p>HTML content.</p>" },
+    { "type": "quiz", "question": "...", "options": ["A","B","C"], "correctIndex": 0 }
+  ]
+}
+
+Text fields must be HTML. See tidelearn://instructions for all block types.`,
     {
       course_id: z.string().uuid(),
       lesson_json: z.record(z.unknown()),
@@ -106,7 +117,16 @@ If unsure of schema, read the tidelearn://instructions resource for the full blo
   // ── generate_quiz_for_lesson ──────────────────────────────────────────────
   server.tool(
     "generate_quiz_for_lesson",
-    "Append assessment blocks to a lesson. Claude should read the lesson first (via get_course), generate the blocks, then call this tool.",
+    `Append assessment blocks to a lesson. Read the lesson first via get_course, then draft the blocks and call this tool. Omit id fields — they are generated automatically.
+
+blocks array shape:
+[
+  { "type": "quiz", "question": "What is X?", "options": ["A","B","C","D"], "correctIndex": 2 },
+  { "type": "truefalse", "question": "True or false: Y?", "correct": true },
+  { "type": "shortanswer", "question": "Define Z.", "answer": "expected answer" }
+]
+
+Only assessment block types are appropriate here: quiz, truefalse, shortanswer.`,
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
