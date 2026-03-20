@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 const ALLOWED_TYPES: Record<string, string[]> = {
   image: ["image/jpeg", "image/png", "image/webp", "image/gif"],
   video: ["video/mp4", "video/webm"],
-  audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3"],
+  audio: ["audio/mpeg", "audio/wav", "audio/ogg"],
   document: [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
