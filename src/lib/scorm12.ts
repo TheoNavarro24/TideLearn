@@ -54,6 +54,7 @@ async function fetchAndBundleMedia(
   const seen = new Set<string>();
 
   for (const lesson of course.lessons ?? []) {
+    if (lesson.kind === 'assessment') continue;
     for (const block of lesson.blocks ?? []) {
       const urls: string[] = [];
       if (block.type === "image" && block.src) urls.push(block.src);
