@@ -114,6 +114,8 @@ export default function Editor() {
   function syncWelcomeHeading(title: string, currentLessons: Lesson[]): Lesson[] {
     if (!currentLessons.length) return currentLessons;
     const first = currentLessons[0];
+    // Assessment lessons don't have blocks — skip sync
+    if (first.kind !== "content") return currentLessons;
     const firstBlock: any = first.blocks[0];
     let changed = false;
     const nextFirst: Lesson = { ...first };
@@ -129,7 +131,12 @@ export default function Editor() {
   }
 
   const addLesson = () => {
-    const newLesson: Lesson = { id: uid(), title: `Lesson ${lessons.length + 1}`, blocks: [] };
+    const newLesson: ContentLesson = {
+      kind: "content",
+      id: uid(),
+      title: `Lesson ${lessons.length + 1}`,
+      blocks: [],
+    };
     pushHistory({ courseTitle, lessons: [...lessons, newLesson] });
     setSelectedLessonId(newLesson.id);
   };

@@ -264,6 +264,7 @@ export default function View() {
 
     const allQuizIds: string[] = [];
     for (const lesson of course.lessons) {
+      if (lesson.kind !== "content") continue;
       for (const block of lesson.blocks) {
         if (["quiz", "truefalse", "shortanswer"].includes((block as any).type)) {
           if (block.id) allQuizIds.push(block.id);
@@ -702,7 +703,7 @@ export default function View() {
                   </h1>
 
                   {/* Blocks */}
-                  {currentLesson.blocks.map((b) => {
+                  {currentLesson.kind === "content" && currentLesson.blocks.map((b) => {
                     const spec = getSpec((b as any).type);
                     const ViewComp = spec.View as any;
                     return (
@@ -711,6 +712,11 @@ export default function View() {
                       </article>
                     );
                   })}
+                  {currentLesson.kind === "assessment" && (
+                    <div style={{ padding: "24px 0", color: "#64748b", fontSize: 14 }}>
+                      Assessment lesson — open the full view to take this assessment.
+                    </div>
+                  )}
 
                   {/* Mark complete toggle */}
                   <div style={{ marginTop: 32, display: "flex", justifyContent: "flex-end" }}>
@@ -744,7 +750,9 @@ export default function View() {
                 {course.lessons.map((l, lessonIdx) => {
                   const isUnlocked = unlocked.has(l.id);
                   const nextId = course.lessons[lessonIdx + 1]?.id as string | undefined;
-                  const quizIds = l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id);
+                  const quizIds = l.kind === "content"
+                    ? l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id)
+                    : [];
                   const totalChecks = quizIds.length;
                   const correctChecks = quizIds.filter((id: string) => answers[id]).length;
 
@@ -788,7 +796,7 @@ export default function View() {
                       ) : (
                         <>
                           <div>
-                            {l.blocks.map((b) => {
+                            {l.kind === "content" && l.blocks.map((b) => {
                               const spec = getSpec((b as any).type);
                               const ViewComp = spec.View as any;
                               return (
@@ -797,6 +805,11 @@ export default function View() {
                                 </article>
                               );
                             })}
+                            {l.kind === "assessment" && (
+                              <div style={{ padding: "16px 0", color: "#64748b", fontSize: 14, fontStyle: "italic" }}>
+                                Assessment: {(l as any).questions?.length ?? 0} questions — navigate to this lesson to take the assessment.
+                              </div>
+                            )}
                           </div>
 
                           {/* Mark complete toggle */}
