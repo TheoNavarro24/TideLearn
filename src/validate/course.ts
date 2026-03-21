@@ -8,11 +8,30 @@ const blockSchema = z
   })
   .passthrough()
 
-const lessonSchema = z.object({
+const contentLessonSchema = z.object({
+  kind: z.literal("content"),
   id: z.string(),
   title: z.string(),
   blocks: z.array(blockSchema),
-})
+}).passthrough()
+
+const assessmentLessonSchema = z.object({
+  kind: z.literal("assessment"),
+  id: z.string(),
+  title: z.string(),
+  questions: z.array(z.object({
+    id: z.string(),
+    text: z.string(),
+    options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+    correctIndex: z.number().int().min(0).max(3),
+  }).passthrough()),
+  config: z.object({}).passthrough(),
+}).passthrough()
+
+const lessonSchema = z.discriminatedUnion("kind", [
+  contentLessonSchema,
+  assessmentLessonSchema,
+])
 
 const courseSchema = z.object({
   schemaVersion: z.literal(1),
