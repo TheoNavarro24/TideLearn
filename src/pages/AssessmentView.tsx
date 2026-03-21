@@ -26,6 +26,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionCorrectIds, setSessionCorrectIds] = useState<Set<string>>(new Set());
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [mode, setMode] = useState<"study" | "exam">("study");
 
   const seenCount = Object.values(progress.questions).filter((p) => p.testCount > 0).length;
@@ -37,7 +38,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   function startStudy() {
     const q = generateStudySession(lesson.questions, progress.questions);
     if (q.length === 0) {
-      alert("No questions are due for review right now. Come back after answering some!");
+      setErrorMsg("No questions are due right now. Come back after answering some!");
       return;
     }
     setQueue(shuffle(q));
@@ -48,13 +49,14 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSessionCorrect(0);
     setSessionCorrectIds(new Set());
     setMode("study");
+    setErrorMsg(null);
     setScreen("study");
   }
 
   function startExam() {
     const q = generateExamSession(lesson.questions, examSize);
     if (q.length === 0) {
-      alert("No questions in the bank yet.");
+      setErrorMsg("No questions in the bank yet.");
       return;
     }
     setQueue(q);
@@ -65,13 +67,14 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSessionCorrect(0);
     setSessionCorrectIds(new Set());
     setMode("exam");
+    setErrorMsg(null);
     setScreen("exam");
   }
 
   function startDrill() {
     const q = generateWeakAreaSession(lesson.questions, progress.questions, 20);
     if (q.length === 0) {
-      alert("No weak-area data yet. Answer some questions first!");
+      setErrorMsg("No weak-area data yet. Answer some questions first!");
       return;
     }
     setQueue(q);
@@ -82,6 +85,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSessionCorrect(0);
     setSessionCorrectIds(new Set());
     setMode("study");
+    setErrorMsg(null);
     setScreen("drill");
   }
 
@@ -191,6 +195,12 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </button>
           <button onClick={() => setScreen("notebook")} style={btnSecondary}>Mistake Notebook</button>
         </div>
+
+        {errorMsg && (
+          <p style={{ fontSize: 13, color: "#ef4444", marginTop: 12 }}>
+            {errorMsg}
+          </p>
+        )}
 
         {progress.sessionHistory.length > 0 && (
           <div style={{ marginTop: 32 }}>
