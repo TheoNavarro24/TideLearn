@@ -6,6 +6,7 @@ import {
   type TextBlock,
   type TocBlock,
 } from "@/types/course";
+import type { ContentLesson } from "@/types/course";
 import { supabase } from "@/integrations/supabase/client";
 
 export type CourseIndexItem = {
@@ -20,6 +21,16 @@ const INDEX_KEY = "courses:index";
 const COURSE_KEY = (id: string) => `course:${id}`;
 const LEGACY_KEY = "editor:course";
 const LEGACY_MIGRATED_KEY = "editor:course:migrated";
+
+/** Adds kind: "content" to any lesson that is missing it. Safe to call multiple times. */
+function migrateLessons(course: Course): Course {
+  return {
+    ...course,
+    lessons: course.lessons.map((l: any) =>
+      l.kind ? l : { ...l, kind: "content" }
+    ) as Course["lessons"],
+  };
+}
 
 export function getCoursesIndex(): CourseIndexItem[] {
   try {
@@ -41,7 +52,7 @@ export function loadCourse(id: string): Course | null {
   try {
     const raw = localStorage.getItem(COURSE_KEY(id));
     if (!raw) return null;
-    return JSON.parse(raw) as Course;
+    return migrateLessons(JSON.parse(raw) as Course);
   } catch {
     return null;
   }
@@ -88,7 +99,8 @@ export function duplicateCourse(id: string): string | null {
 
 export function createNewCourse(title = "New Course"): { id: string; course: Course } {
   // Create default with Welcome + TOC
-  const welcome: Lesson = {
+  const welcome: ContentLesson = {
+    kind: "content",
     id: uid(),
     title: "Welcome",
     blocks: [
@@ -121,7 +133,9 @@ export function migrateFromLegacy(): string | null {
     const course: Course = {
       schemaVersion: 1,
       title: parsed.title || "Imported Course",
-      lessons: parsed.lessons as Lesson[],
+      lessons: (parsed.lessons as any[]).map((l: any) =>
+      l.kind ? l : { ...l, kind: "content" }
+    ) as Lesson[],
     };
     saveCourse(id, course);
     // Mark as migrated so this runs only once
