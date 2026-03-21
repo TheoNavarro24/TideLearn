@@ -56,6 +56,10 @@ function handleOp(course: Course, op: PatchOp, report: PatchReport) {
         report.warnings.push(`appendBlocks: lesson ${op.lessonId} not found`);
         return;
       }
+      if (lesson.kind === "assessment") {
+        report.warnings.push(`appendBlocks: lesson ${op.lessonId} is an assessment lesson — block operations not supported`);
+        return;
+      }
       for (const block of op.blocks) {
         if (lesson.blocks.some((b) => b.id === block.id)) {
           report.warnings.push(`appendBlocks: block ${block.id} already exists in lesson ${op.lessonId}`);
@@ -72,6 +76,10 @@ function handleOp(course: Course, op: PatchOp, report: PatchReport) {
         report.warnings.push(`updateBlock: lesson ${op.lessonId} not found`);
         return;
       }
+      if (lesson.kind === "assessment") {
+        report.warnings.push(`updateBlock: lesson ${op.lessonId} is an assessment lesson — block operations not supported`);
+        return;
+      }
       const index = lesson.blocks.findIndex((b) => b.id === op.block.id);
       if (index < 0) {
         report.warnings.push(`updateBlock: block ${op.block.id} not found in lesson ${op.lessonId}`);
@@ -85,6 +93,10 @@ function handleOp(course: Course, op: PatchOp, report: PatchReport) {
       const lesson = course.lessons.find((l) => l.id === op.lessonId);
       if (!lesson) {
         report.warnings.push(`removeBlock: lesson ${op.lessonId} not found`);
+        return;
+      }
+      if (lesson.kind === "assessment") {
+        report.warnings.push(`removeBlock: lesson ${op.lessonId} is an assessment lesson — block operations not supported`);
         return;
       }
       const index = lesson.blocks.findIndex((b) => b.id === op.blockId);

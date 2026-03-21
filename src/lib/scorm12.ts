@@ -306,7 +306,7 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     if (!lesson) return;
     currentIdx = idx;
     var html = '<h2>' + esc(lesson.title) + '</h2>';
-    (lesson.blocks||[]).forEach(function(b){ html += renderBlock(b); });
+    (lesson.kind === 'assessment' ? [] : (lesson.blocks||[])).forEach(function(b){ html += renderBlock(b); });
     var total = COURSE.lessons.length;
     html += '<div class="nav-footer">';
     html += '<button onclick="goTo('+(idx-1)+')" '+(idx===0?'disabled':'')+'>← Previous</button>';
@@ -638,7 +638,7 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     if (!lesson) return;
     currentIdx = idx;
     var html = '<h2>' + esc(lesson.title) + '</h2>';
-    (lesson.blocks||[]).forEach(function(b){ html += renderBlock(b); });
+    (lesson.kind === 'assessment' ? [] : (lesson.blocks||[])).forEach(function(b){ html += renderBlock(b); });
     var total = COURSE.lessons.length;
     html += '<div class="nav-footer">';
     html += '<button onclick="goTo('+(idx-1)+')" '+(idx===0?'disabled':'')+'>← Previous</button>';
