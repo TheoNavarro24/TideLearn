@@ -12,7 +12,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.0",
     "@supabase/supabase-js": "^2.55.0",
-    "keytar": "^7.9.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

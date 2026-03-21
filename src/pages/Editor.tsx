@@ -66,10 +66,15 @@ export default function Editor() {
   useEffect(() => {
     async function loadInitialCourse() {
       if (courseId) {
-        let loaded = loadCourse(courseId);
-        if (!loaded && user) {
+        let loaded: Course | null = null;
+        if (user) {
+          // When logged in, Supabase is the source of truth
           loaded = await loadCourseFromCloud(courseId);
           if (loaded) saveCourse(courseId, loaded);
+        }
+        if (!loaded) {
+          // Fallback: offline or unauthenticated
+          loaded = loadCourse(courseId);
         }
         if (loaded?.lessons?.length) {
           setCourseTitle(loaded.title || "My Course");

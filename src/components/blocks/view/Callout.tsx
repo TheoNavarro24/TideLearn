@@ -28,7 +28,7 @@ export function CalloutView({ block }: { block: CalloutBlock }) {
           </span>
         </div>
       )}
-      <p style={{ fontSize: 14, lineHeight: 1.65, color: "#334155", margin: 0 }}>{block.text}</p>
+      <div style={{ fontSize: 14, lineHeight: 1.65, color: "#334155", margin: 0 }} dangerouslySetInnerHTML={{ __html: block.text }} />
     </div>
   );
 }

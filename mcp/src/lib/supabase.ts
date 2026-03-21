@@ -1,10 +1,8 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   loadSession,
-  saveSession,
   isSessionValid,
   refreshSession,
-  buildLoginUrl,
   type StoredSession,
 } from "./auth.js";
 
@@ -28,14 +26,15 @@ export function err(code: string, message: string): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify({ code, message }) }] };
 }
 
+export { SUPABASE_URL, SUPABASE_ANON_KEY };
+
 /**
  * Get an authenticated Supabase client for the current user.
- * If no valid session exists, returns a login URL for the user to visit.
- * Caller should check result.loginUrl first.
+ * Returns null if no valid session exists.
  */
 export async function getAuthenticatedClient(): Promise<
-  | { client: SupabaseClient; session: StoredSession; loginUrl: null }
-  | { client: null; session: null; loginUrl: string }
+  | { client: SupabaseClient; session: StoredSession }
+  | null
 > {
   let session = await loadSession();
 
@@ -47,10 +46,7 @@ export async function getAuthenticatedClient(): Promise<
     }
   }
 
-  if (!session) {
-    const { url } = await buildLoginUrl(SUPABASE_URL, SUPABASE_ANON_KEY);
-    return { client: null, session: null, loginUrl: url };
-  }
+  if (!session) return null;
 
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false },
@@ -59,26 +55,26 @@ export async function getAuthenticatedClient(): Promise<
     },
   });
 
-  return { client, session, loginUrl: null };
+  return { client, session };
 }
 
 /**
  * Middleware wrapper for all tool handlers.
- * Checks auth, returns login URL if unauthenticated.
+ * If not logged in, tells Claude to call tidelearn_login first.
  */
 export async function withAuth(
   handler: (client: SupabaseClient, userId: string) => Promise<ToolResult>
 ): Promise<ToolResult> {
   const auth = await getAuthenticatedClient();
-  if (auth.loginUrl) {
+
+  if (!auth) {
     return {
       content: [
         {
           type: "text",
           text: JSON.stringify({
             code: "auth_required",
-            message: "Please log in to TideLearn first.",
-            login_url: auth.loginUrl,
+            message: "You are not logged in to TideLearn. Please call the tidelearn_login tool with your email and password first.",
           }),
         },
       ],
@@ -87,11 +83,11 @@ export async function withAuth(
 
   // Extract user_id from the JWT payload
   const payload = JSON.parse(
-    Buffer.from(auth.session!.access_token.split(".")[1], "base64url").toString()
+    Buffer.from(auth.session.access_token.split(".")[1], "base64url").toString()
   );
   const userId: string = payload.sub;
 
-  return handler(auth.client!, userId);
+  return handler(auth.client, userId);
 }
 
 /** Service role client for storage operations only */

@@ -2,6 +2,30 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Rockpool UI (worktree)",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/rockpool-ui && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "Plan3 Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/feat/plan3-undo-redo && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "Plan2 Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/plan2-block-authoring && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "Plan1 Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/plan1-course-management && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
       "name": "TideLearn Dev Server",
       "runtimeExecutable": "/Users/theonavarro/.nvm/versions/node/v24.14.0/bin/node",
       "runtimeArgs": ["node_modules/.bin/vite", "--port", "8080"],
