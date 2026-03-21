@@ -158,15 +158,23 @@ export function registerAssessmentTools(server: McpServer) {
     },
     async ({ course_id, lesson_id, question_id }) =>
       withAuth(async (client, userId) => {
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : {
-              ...l,
-              questions: ((l as any).questions ?? []).filter((q: any) => q.id !== question_id),
-            }
-          ),
-        }));
+        let notFound = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const lesson = course.lessons.find((l) => l.id === lesson_id) as any;
+          if (!lesson || lesson.kind !== "assessment") { notFound = true; return course; }
+          const qIdx = lesson.questions.findIndex((q: any) => q.id === question_id);
+          if (qIdx === -1) { notFound = true; return course; }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) =>
+              l.id !== lesson_id ? l : {
+                ...l,
+                questions: (l as any).questions.filter((q: any) => q.id !== question_id),
+              }
+            ),
+          };
+        });
+        if (notFound) return err("not_found", `Question ${question_id} not found in lesson ${lesson_id}`);
         if (mutError) return err(mutError, "Failed to delete question");
         return ok({ deleted: true });
       })
