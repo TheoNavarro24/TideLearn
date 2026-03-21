@@ -16,7 +16,7 @@ export function registerLessonTools(server: McpServer) {
     async ({ course_id, title, position }) =>
       withAuth(async (client, userId) => {
         const lessonId = uid();
-        const newLesson = { id: lessonId, title, blocks: [] };
+        const newLesson = { id: lessonId, title, kind: "content" as const, blocks: [] };
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const lessons = [...course.lessons];
           const idx = position ? Math.min(position - 1, lessons.length) : lessons.length;

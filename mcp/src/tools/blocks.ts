@@ -47,18 +47,30 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
           updateMap.get(lesson_id)!.set(block_id, validatedBlocks[i]);
         }
 
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map(l => {
-            const blockUpdates = updateMap.get(l.id);
-            if (!blockUpdates) return l;
-            return {
-              ...l,
-              blocks: l.blocks.map(b => blockUpdates.get(b.id) ?? b),
-            };
-          }),
-        }));
+        let assessmentError: string | null = null;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          for (const [lessonId] of updateMap) {
+            const lesson = course.lessons.find((l) => l.id === lessonId);
+            if ((lesson as any)?.kind === "assessment") {
+              assessmentError = lessonId;
+              return course;
+            }
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map(l => {
+              const blockUpdates = updateMap.get(l.id);
+              if (!blockUpdates) return l;
+              const cl = l as any;
+              return {
+                ...l,
+                blocks: cl.blocks.map((b: any) => blockUpdates.get(b.id) ?? b),
+              };
+            }),
+          };
+        });
 
+        if (assessmentError) return err("assessment_lesson", `Block operations cannot be used on assessment lessons. Use add_question / update_question instead.`);
         if (mutError) return err(mutError, "Failed to rewrite blocks");
         return ok({ updated: updates.length });
       })
@@ -106,17 +118,27 @@ position is 1-based and optional; omit to append at the end.`,
         const newBlock = parsed.data;
         const blockId = newBlock.id;
 
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) => {
-            if (l.id !== lesson_id) return l;
-            const blocks = [...l.blocks];
-            const idx = position ? Math.min(position - 1, blocks.length) : blocks.length;
-            blocks.splice(idx, 0, newBlock);
-            return { ...l, blocks };
-          }),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const cl = l as any;
+              const blocks = [...cl.blocks];
+              const idx = position ? Math.min(position - 1, blocks.length) : blocks.length;
+              blocks.splice(idx, 0, newBlock);
+              return { ...l, blocks };
+            }),
+          };
+        });
 
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to add block");
         return ok({ block_id: blockId });
       })
@@ -133,18 +155,28 @@ position is 1-based and optional; omit to append at the end.`,
     },
     async ({ course_id, lesson_id, block_id, fields }) =>
       withAuth(async (client, userId) => {
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) => {
-            if (l.id !== lesson_id) return l;
-            return {
-              ...l,
-              blocks: l.blocks.map((b) =>
-                b.id === block_id ? ({ ...b, ...fields, id: b.id, type: b.type } as Block) : b
-              ),
-            };
-          }),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const cl = l as any;
+              return {
+                ...l,
+                blocks: cl.blocks.map((b: any) =>
+                  b.id === block_id ? ({ ...b, ...fields, id: b.id, type: b.type } as Block) : b
+                ),
+              };
+            }),
+          };
+        });
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to update block");
         return ok({ message: "Block updated" });
       })
@@ -163,28 +195,39 @@ position is 1-based and optional; omit to append at the end.`,
     async ({ course_id, lesson_id, block_id, new_position, target_lesson_id }) =>
       withAuth(async (client, userId) => {
         const targetId = target_lesson_id ?? lesson_id;
+        let assessmentError = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const srcLesson = course.lessons.find((l) => l.id === lesson_id);
+          const tgtLesson = course.lessons.find((l) => l.id === targetId);
+          if ((srcLesson as any)?.kind === "assessment" || (tgtLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+
           // Find and remove block from source lesson
           let blockToMove: Block | undefined;
           const lessonsAfterRemove = course.lessons.map((l) => {
             if (l.id !== lesson_id) return l;
-            const idx = l.blocks.findIndex((b) => b.id === block_id);
+            const cl = l as any;
+            const idx = cl.blocks.findIndex((b: any) => b.id === block_id);
             if (idx === -1) return l;
-            blockToMove = l.blocks[idx];
-            return { ...l, blocks: l.blocks.filter((b) => b.id !== block_id) };
+            blockToMove = cl.blocks[idx];
+            return { ...l, blocks: cl.blocks.filter((b: any) => b.id !== block_id) };
           });
           if (!blockToMove) return course;
 
           // Insert into target lesson at new_position
           const finalLessons = lessonsAfterRemove.map((l) => {
             if (l.id !== targetId) return l;
-            const blocks = [...l.blocks];
+            const cl = l as any;
+            const blocks = [...cl.blocks];
             const idx = Math.min(new_position - 1, blocks.length);
             blocks.splice(idx, 0, blockToMove!);
             return { ...l, blocks };
           });
           return { ...course, lessons: finalLessons };
         });
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to move block");
         return ok({ message: "Block moved" });
       })
@@ -200,12 +243,23 @@ position is 1-based and optional; omit to append at the end.`,
     },
     async ({ course_id, lesson_id, block_id }) =>
       withAuth(async (client, userId) => {
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : { ...l, blocks: l.blocks.filter((b) => b.id !== block_id) }
-          ),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const cl = l as any;
+              return { ...l, blocks: cl.blocks.filter((b: any) => b.id !== block_id) };
+            }),
+          };
+        });
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to delete block");
         return ok({ message: "Block deleted" });
       })

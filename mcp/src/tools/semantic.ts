@@ -8,15 +8,23 @@ import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
 function injectIds(course: any) {
   return {
     ...course,
-    lessons: (course.lessons ?? []).map((l: any) => ({
-      ...l,
-      id: uid(),
-      blocks: (l.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
-    })),
+    lessons: (course.lessons ?? []).map((l: any) => {
+      if (l.kind === "assessment") {
+        return { ...l, id: uid() };
+      }
+      return {
+        ...l,
+        id: uid(),
+        blocks: (l.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
+      };
+    }),
   };
 }
 
 function injectLessonIds(lesson: any) {
+  if (lesson.kind === "assessment") {
+    return { ...lesson, id: uid() };
+  }
   return {
     ...lesson,
     id: uid(),
@@ -99,6 +107,9 @@ Text fields must be HTML. See tidelearn://instructions for all block types.`,
     async ({ course_id, lesson_json, position }) =>
       withAuth(async (client, userId) => {
         const withIds = injectLessonIds(lesson_json);
+        if (withIds.kind === "assessment") {
+          return err("assessment_lesson", "Use add_assessment_lesson to create assessment lessons, not generate_lesson.");
+        }
         const parsed = lessonSchema.safeParse(withIds);
         if (!parsed.success) return err("validation_error", parsed.error.issues[0]?.message ?? "Invalid lesson");
         const lessonId = parsed.data.id;
@@ -141,12 +152,23 @@ Only assessment block types are appropriate here: quiz, truefalse, shortanswer.`
         const parsedBlocks = validated.map((r) => (r as any).data) as Block[];
         const blockIds = parsedBlocks.map((b) => b.id);
 
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : { ...l, blocks: [...l.blocks, ...parsedBlocks] }
-          ),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const cl = l as any;
+              return { ...l, blocks: [...cl.blocks, ...parsedBlocks] };
+            }),
+          };
+        });
+        if (assessmentError) return err("assessment_lesson", "generate_quiz_for_lesson cannot be used on assessment lessons. Use add_question instead.");
         if (mutError) return err(mutError, "Failed to append quiz blocks");
         return ok({ block_ids: blockIds });
       })
@@ -171,12 +193,23 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
         const parsed = blockSchema.safeParse(withId);
         if (!parsed.success) return err("invalid_block_type", `Validation failed:\n${formatZodErrors(parsed.error).map((e) => `- ${e}`).join("\n")}`);
 
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : { ...l, blocks: l.blocks.map((b) => (b.id === block_id ? parsed.data : b)) }
-          ),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const cl = l as any;
+              return { ...l, blocks: cl.blocks.map((b: any) => (b.id === block_id ? parsed.data : b)) };
+            }),
+          };
+        });
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to rewrite block");
         return ok({ message: "Block rewritten" });
       })
@@ -198,12 +231,21 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
         const invalid = validated.find((r) => !r.success);
         if (invalid && !invalid.success) return err("invalid_block_type", invalid.error.issues[0]?.message ?? "Invalid block");
 
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) =>
-            l.id !== lesson_id ? l : { ...l, blocks: validated.map((r) => (r as any).data) }
-          ),
-        }));
+        let assessmentError = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const targetLesson = course.lessons.find((l) => l.id === lesson_id);
+          if ((targetLesson as any)?.kind === "assessment") {
+            assessmentError = true;
+            return course;
+          }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) =>
+              l.id !== lesson_id ? l : { ...l, blocks: validated.map((r) => (r as any).data) }
+            ),
+          };
+        });
+        if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
         if (mutError) return err(mutError, "Failed to rewrite lesson");
         return ok({ message: "Lesson rewritten" });
       })

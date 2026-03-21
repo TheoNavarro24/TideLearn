@@ -55,22 +55,30 @@ function esc(s: string): string {
 export function renderCourseToHtml(course: Course): string {
   const lessonHtml = course.lessons
     .map(
-      (lesson, i) => `
+      (lesson, i) => {
+        const contentHtml = (lesson as any).kind === "assessment"
+          ? `<div style="background:#f0fdf4;padding:1em;border-radius:4px;border:1px solid #ccfbf1">
+      <strong>Assessment lesson</strong> — ${(lesson as any).questions?.length ?? 0} questions
+     </div>`
+          : (lesson as any).blocks.map(renderBlock).join("\n");
+        return `
       <section style="margin-bottom:2em;padding:1em;border:1px solid #e0e0e0;border-radius:6px">
         <h1 style="font-size:1.6em;margin:0 0 1em;border-bottom:2px solid #333;padding-bottom:0.25em">
           Lesson ${i + 1}: ${esc(lesson.title)}
         </h1>
-        ${lesson.blocks.map(renderBlock).join("\n")}
-      </section>`
+        ${contentHtml}
+      </section>`;
+      }
     )
     .join("\n");
 
+  const contentLessons = course.lessons.filter(l => (l as any).kind !== "assessment");
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
     <title>${esc(course.title)}</title>
     <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2em auto;padding:0 1em;line-height:1.6;color:#222}</style>
   </head><body>
     <header style="margin-bottom:2em"><h1 style="font-size:2em">${esc(course.title)}</h1>
-    <p>${course.lessons.length} lessons · ${course.lessons.reduce((n, l) => n + l.blocks.length, 0)} blocks</p></header>
+    <p>${course.lessons.length} lessons · ${contentLessons.reduce((n, l) => n + (l as any).blocks.length, 0)} blocks</p></header>
     ${lessonHtml}
   </body></html>`;
 }
@@ -86,10 +94,17 @@ export function analyzeCourse(course: Course) {
   const gaps: Array<{ type: string; lesson_id: string; message: string }> = [];
 
   for (const lesson of course.lessons) {
+    if ((lesson as any).kind === "assessment") {
+      const qCount = (lesson as any).questions?.length ?? 0;
+      assessment_count += qCount;
+      continue;
+    }
+
     let hasAssessment = false;
     let hasMedia = false;
+    const cl = lesson as any;
 
-    for (const block of lesson.blocks) {
+    for (const block of cl.blocks) {
       block_count++;
       block_type_breakdown[block.type] = (block_type_breakdown[block.type] ?? 0) + 1;
       if (KNOWLEDGE_TYPES.has(block.type)) { assessment_count++; hasAssessment = true; }
@@ -101,7 +116,7 @@ export function analyzeCourse(course: Course) {
 
     if (!hasAssessment) gaps.push({ type: "no_assessment", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no knowledge checks` });
     if (!hasMedia) gaps.push({ type: "no_media", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no media blocks` });
-    if (lesson.blocks.length > 10) gaps.push({ type: "too_long", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has ${lesson.blocks.length} blocks (max recommended: 10)` });
+    if (cl.blocks.length > 10) gaps.push({ type: "too_long", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has ${cl.blocks.length} blocks (max recommended: 10)` });
   }
 
   return {
