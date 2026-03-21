@@ -82,7 +82,8 @@ export default function Editor() {
           if (loaded) saveCourse(courseId, loaded);
         }
         if (loaded?.lessons?.length) {
-          pushHistory({ courseTitle: loaded.title || "My Course", lessons: loaded.lessons });
+          const loadedTitle = loaded.title || "My Course";
+          pushHistory({ courseTitle: loadedTitle, lessons: syncWelcomeHeading(loadedTitle, loaded.lessons) });
           setSelectedLessonId(loaded.lessons[0]?.id ?? defaultLesson.id);
         }
         return;
@@ -92,7 +93,8 @@ export default function Editor() {
       try {
         const saved = JSON.parse(raw);
         if (saved?.lessons?.length) {
-          pushHistory({ courseTitle: saved.title || "My Course", lessons: saved.lessons });
+          const savedTitle = saved.title || "My Course";
+          pushHistory({ courseTitle: savedTitle, lessons: syncWelcomeHeading(savedTitle, saved.lessons) });
           setSelectedLessonId(saved.lessons[0]?.id ?? defaultLesson.id);
         }
       } catch (e) {
@@ -102,26 +104,23 @@ export default function Editor() {
     loadInitialCourse();
   }, [courseId, user?.id]);
 
-  // Keep the welcome heading in sync with the course title
-  useEffect(() => {
-    if (!lessons.length) return;
-    const first = lessons[0];
+  // Helper: returns lessons with the welcome heading synced to a given title
+  function syncWelcomeHeading(title: string, currentLessons: Lesson[]): Lesson[] {
+    if (!currentLessons.length) return currentLessons;
+    const first = currentLessons[0];
     const firstBlock: any = first.blocks[0];
     let changed = false;
     const nextFirst: Lesson = { ...first };
-    if (first.title !== "Welcome") {
-      nextFirst.title = "Welcome";
-      changed = true;
-    }
-    if (firstBlock && firstBlock.type === "heading") {
-      const expected = `Welcome to ${courseTitle}`;
+    if (first.title !== "Welcome") { nextFirst.title = "Welcome"; changed = true; }
+    if (firstBlock?.type === "heading") {
+      const expected = `Welcome to ${title}`;
       if (firstBlock.text !== expected) {
         nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
         changed = true;
       }
     }
-    if (changed) pushHistory({ courseTitle, lessons: [nextFirst, ...lessons.slice(1)] });
-  }, [courseTitle]); // eslint-disable-line react-hooks/exhaustive-deps
+    return changed ? [nextFirst, ...currentLessons.slice(1)] : currentLessons;
+  }
 
   const addLesson = () => {
     const newLesson: Lesson = { id: uid(), title: `Lesson ${lessons.length + 1}`, blocks: [] };
@@ -317,7 +316,8 @@ export default function Editor() {
 
   const applyImportedCourse = (data: { title?: string; lessons: Lesson[] }, mode: "merge" | "replace") => {
     if (mode === "replace") {
-      pushHistory({ courseTitle: data.title || "Untitled Course", lessons: data.lessons });
+      const importedTitle = data.title || "Untitled Course";
+      pushHistory({ courseTitle: importedTitle, lessons: syncWelcomeHeading(importedTitle, data.lessons) });
       setSelectedLessonId(data.lessons[0]?.id ?? uid());
       toast({ title: "Course imported" });
     } else {
@@ -508,7 +508,7 @@ export default function Editor() {
         {/* Course title input */}
         <input
           value={courseTitle}
-          onChange={e => pushHistory({ courseTitle: e.target.value, lessons })}
+          onChange={e => pushHistory({ courseTitle: e.target.value, lessons: syncWelcomeHeading(e.target.value, lessons) })}
           aria-label="Course title"
           placeholder="Course title"
           style={{
