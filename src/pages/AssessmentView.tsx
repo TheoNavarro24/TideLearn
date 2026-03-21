@@ -25,6 +25,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [revealed, setRevealed] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
+  const [sessionCorrectIds, setSessionCorrectIds] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<"study" | "exam">("study");
 
   const seenCount = Object.values(progress.questions).filter((p) => p.testCount > 0).length;
@@ -45,6 +46,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
+    setSessionCorrectIds(new Set());
     setMode("study");
     setScreen("study");
   }
@@ -61,6 +63,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
+    setSessionCorrectIds(new Set());
     setMode("exam");
     setScreen("exam");
   }
@@ -77,6 +80,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
+    setSessionCorrectIds(new Set());
     setMode("study");
     setScreen("drill");
   }
@@ -88,7 +92,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     if (mode === "study" && confidence === null) return;
     setRevealed(true);
     const correct = selected === currentQ.correctIndex;
-    if (correct) setSessionCorrect((n) => n + 1);
+    if (correct) {
+      setSessionCorrect((n) => n + 1);
+      setSessionCorrectIds((prev) => new Set([...prev, currentQ.id]));
+    }
     updateQuestion(currentQ.id, (p) => advanceBox(p, correct, confidence ?? undefined));
   }
 
@@ -123,11 +130,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
       const key = q.bloomLevel!;
       if (!map[key]) map[key] = { total: 0, correct: 0 };
       map[key].total++;
-      const p = progress.questions[q.id];
-      if (p && p.correctCount > 0) map[key].correct++;
+      if (sessionCorrectIds.has(q.id)) map[key].correct++;
     }
     return map;
-  }, [screen, queue, progress]);
+  }, [screen, queue, sessionCorrectIds]);
 
   const containerStyle: React.CSSProperties = {
     maxWidth: 680,
