@@ -691,7 +691,8 @@ export default function View() {
                     Lesson {idx + 1}
                   </div>
 
-                  {/* Lesson title */}
+                  {/* Lesson title — hidden for assessment lessons (AssessmentView renders its own) */}
+                  {currentLesson.kind !== "assessment" && (
                   <h1 style={{
                     fontFamily: "Lora, serif",
                     fontSize: 28,
@@ -703,6 +704,7 @@ export default function View() {
                   }}>
                     {currentLesson.title}
                   </h1>
+                  )}
 
                   {/* Blocks */}
                   {currentLesson.kind === "content" && currentLesson.blocks.map((b) => {
@@ -718,7 +720,8 @@ export default function View() {
                     <AssessmentView lesson={currentLesson} courseId={courseId} />
                   )}
 
-                  {/* Mark complete toggle */}
+                  {/* Mark complete toggle — not shown for assessment lessons */}
+                  {currentLesson.kind !== "assessment" && (
                   <div style={{ marginTop: 32, display: "flex", justifyContent: "flex-end" }}>
                     <button
                       aria-pressed={completed.has(currentLesson.id)}
@@ -740,6 +743,7 @@ export default function View() {
                       {completed.has(currentLesson.id) ? "✓ Completed" : "Mark complete"}
                     </button>
                   </div>
+                  )}
                 </section>
               ) : (
                 <p style={{ color: "#64748b" }}>Select a lesson to begin.</p>
