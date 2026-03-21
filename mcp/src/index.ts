@@ -7,6 +7,7 @@ import { registerBlockTools } from "./tools/blocks.js";
 import { registerSemanticTools } from "./tools/semantic.js";
 import { registerPreviewTools } from "./tools/preview.js";
 import { registerMediaTools } from "./tools/media.js";
+import { registerAssessmentTools } from "./tools/assessment.js";
 import { registerInstructionsResource } from "./resources/instructions.js";
 
 const server = new McpServer(
@@ -32,6 +33,7 @@ registerBlockTools(server);
 registerSemanticTools(server);
 registerPreviewTools(server);
 registerMediaTools(server);
+registerAssessmentTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
