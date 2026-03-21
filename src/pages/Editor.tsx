@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 
 // Shared types
 import { Block, ContentLesson, AssessmentLesson, Lesson, uid } from "@/types/course";
+import { AssessmentEditor } from "@/components/assessment/AssessmentEditor";
 import type { BlockType } from "@/types/course";
 import { registry, createBlock, getSpec } from "@/components/blocks/registry";
 
@@ -130,15 +131,13 @@ export default function Editor() {
     return changed ? [nextFirst, ...currentLessons.slice(1)] : currentLessons;
   }
 
-  const addLesson = () => {
-    const newLesson: ContentLesson = {
-      kind: "content",
-      id: uid(),
-      title: `Lesson ${lessons.length + 1}`,
-      blocks: [],
-    };
+  const addLesson = (kind: "content" | "assessment" = "content") => {
+    const id = uid();
+    const newLesson: Lesson = kind === "assessment"
+      ? { kind: "assessment", id, title: `Assessment ${lessons.filter(l => l.kind === "assessment").length + 1}`, questions: [], config: { passingScore: 80, examSize: 20 } }
+      : { kind: "content", id, title: `Lesson ${lessons.length + 1}`, blocks: [] };
     pushHistory({ courseTitle, lessons: [...lessons, newLesson] });
-    setSelectedLessonId(newLesson.id);
+    setSelectedLessonId(id);
   };
 
   const updateLessonTitle = (id: string, title: string) => {
@@ -267,8 +266,10 @@ export default function Editor() {
             (target as any).isContentEditable);
         if (!isTyping) {
           e.preventDefault();
-          setPickerState({ rowIndex: selectedLesson?.blocks.length ?? 0 });
-          setPickerSearch("");
+          if (selectedLesson?.kind === "content") {
+            setPickerState({ rowIndex: selectedLesson.blocks.length });
+            setPickerSearch("");
+          }
         }
       }
     };
@@ -463,7 +464,7 @@ export default function Editor() {
     return registry.filter(s => s.label.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
   }, [pickerSearch]);
 
-  const blocks = selectedLesson?.blocks ?? [];
+  const blocks = selectedLesson?.kind === "content" ? selectedLesson.blocks : [];
 
   return (
     <div
@@ -714,7 +715,7 @@ export default function Editor() {
                   {l.title}
                 </span>
                 <span style={{ fontSize: 10, color: "rgba(94,234,212,0.35)", whiteSpace: "nowrap" }}>
-                  {l.blocks.length}b
+                  {l.kind === "content" ? `${l.blocks.length}b` : "quiz"}
                 </span>
               </button>
             );
@@ -723,26 +724,49 @@ export default function Editor() {
 
         {/* Add lesson button */}
         <div style={{ padding: "8px 8px" }}>
-          <button
-            onClick={addLesson}
-            style={{
-              width: "100%",
-              background: "none",
-              border: "1.5px dashed rgba(20,184,166,0.25)",
-              borderRadius: 6,
-              color: "rgba(94,234,212,0.45)",
-              fontSize: 11,
-              fontWeight: 600,
-              padding: "7px 0",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-            }}
-          >
-            + Add lesson
-          </button>
+          <div style={{ display: "flex", gap: 4 }}>
+            <button
+              onClick={() => addLesson("content")}
+              style={{
+                flex: 1,
+                background: "none",
+                border: "1.5px dashed rgba(20,184,166,0.25)",
+                borderRadius: 6,
+                color: "rgba(94,234,212,0.45)",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "7px 0",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+              }}
+            >
+              + Lesson
+            </button>
+            <button
+              onClick={() => addLesson("assessment")}
+              title="Add an adaptive assessment lesson"
+              style={{
+                flex: 1,
+                background: "none",
+                border: "1.5px dashed rgba(20,184,166,0.25)",
+                borderRadius: 6,
+                color: "rgba(94,234,212,0.45)",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "7px 0",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+              }}
+            >
+              + Assessment
+            </button>
+          </div>
         </div>
 
         {/* Footer */}
@@ -843,6 +867,14 @@ export default function Editor() {
 
         {/* Canvas body */}
         <div style={{ padding: "20px 64px 80px", maxWidth: 700 + 128, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+          {selectedLesson?.kind === "assessment" ? (
+            <AssessmentEditor
+              lesson={selectedLesson}
+              onChange={(updated) => {
+                pushHistory({ courseTitle, lessons: lessons.map(l => l.id === updated.id ? updated : l) });
+              }}
+            />
+          ) : (
           <div style={{ maxWidth: 700, margin: "0 auto", display: "flex", flexDirection: "column" }}>
 
             {/* Add-block row before first block */}
@@ -901,6 +933,7 @@ export default function Editor() {
               </p>
             )}
           </div>
+          )}
         </div>
       </div>
 
@@ -925,6 +958,7 @@ export default function Editor() {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDropImport}
+          hasAssessments={lessons.some(l => l.kind === "assessment")}
         />
       )}
     </div>
@@ -1243,6 +1277,7 @@ interface PublishModalProps {
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  hasAssessments: boolean;
 }
 
 function PublishModal({
@@ -1264,6 +1299,7 @@ function PublishModal({
   onDragOver,
   onDragLeave,
   onDrop,
+  hasAssessments,
 }: PublishModalProps) {
   return (
     <div
@@ -1443,6 +1479,13 @@ function PublishModal({
             </div>
           ))}
         </div>
+
+        {/* Assessment export note */}
+        {hasAssessments && (
+          <p style={{ fontSize: 11, color: "#94a3b8", margin: "8px 32px 0" }}>
+            Assessment lessons are not included in exported packages.
+          </p>
+        )}
 
         {/* Import section (collapsible) */}
         {showImport && (
