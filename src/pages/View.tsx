@@ -4,6 +4,7 @@ import { loadCourseFromCloud } from "@/lib/courses";
 import { getSpec } from "@/components/blocks/registry";
 
 import { courseSchema, type Course } from "@/types/course";
+import { AssessmentView } from "@/pages/AssessmentView";
 
 interface QuizAnsweredDetail {
   blockId: string;
@@ -100,6 +101,7 @@ export default function View() {
 
   const flatNav = useMemo(() => course?.lessons.map((l) => ({ id: l.id, title: l.title })) ?? [], [course]);
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  const courseId = useMemo(() => params.get("id") ?? "", [params]);
   const gateParam = useMemo(() => params.get("gate"), [params]);
   const gateEnabled = useMemo(() => gateParam === "1" || gateParam === "quiz", [gateParam]);
   const gateQuiz = useMemo(() => gateParam === "quiz", [gateParam]);
@@ -713,9 +715,7 @@ export default function View() {
                     );
                   })}
                   {currentLesson.kind === "assessment" && (
-                    <div style={{ padding: "24px 0", color: "#64748b", fontSize: 14 }}>
-                      Assessment lesson — open the full view to take this assessment.
-                    </div>
+                    <AssessmentView lesson={currentLesson} courseId={courseId} />
                   )}
 
                   {/* Mark complete toggle */}
