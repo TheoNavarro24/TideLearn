@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { toast } from "@/hooks/use-toast";
 import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
 import { ArrowLeft } from "lucide-react";
@@ -36,8 +37,17 @@ const CATEGORIES = ["Text", "Media", "Interactive", "Knowledge"] as const;
 
 export default function Editor() {
   const { user } = useAuth();
-  const [courseTitle, setCourseTitle] = useState("My Course");
-  const [lessons, setLessons] = useState<Lesson[]>([defaultLesson]);
+  const {
+    current: editorState,
+    push: pushHistory,
+    undo: undoHistory,
+    redo: redoHistory,
+    canUndo,
+    canRedo,
+  } = useUndoRedo({ courseTitle: "My Course", lessons: [defaultLesson] });
+
+  const courseTitle = editorState.courseTitle;
+  const lessons = editorState.lessons;
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
   const [pickerState, setPickerState] = useState<{ rowIndex: number } | null>(null);
   const [pickerSearch, setPickerSearch] = useState("");
@@ -72,8 +82,7 @@ export default function Editor() {
           if (loaded) saveCourse(courseId, loaded);
         }
         if (loaded?.lessons?.length) {
-          setCourseTitle(loaded.title || "My Course");
-          setLessons(loaded.lessons);
+          pushHistory({ courseTitle: loaded.title || "My Course", lessons: loaded.lessons });
           setSelectedLessonId(loaded.lessons[0]?.id ?? defaultLesson.id);
         }
         return;
@@ -83,8 +92,7 @@ export default function Editor() {
       try {
         const saved = JSON.parse(raw);
         if (saved?.lessons?.length) {
-          setCourseTitle(saved.title || "My Course");
-          setLessons(saved.lessons);
+          pushHistory({ courseTitle: saved.title || "My Course", lessons: saved.lessons });
           setSelectedLessonId(saved.lessons[0]?.id ?? defaultLesson.id);
         }
       } catch (e) {
@@ -96,72 +104,69 @@ export default function Editor() {
 
   // Keep the welcome heading in sync with the course title
   useEffect(() => {
-    setLessons((prev) => {
-      if (!prev.length) return prev;
-      const first = prev[0];
-      const firstBlock: any = first.blocks[0];
-      let changed = false;
-      const nextFirst: Lesson = { ...first };
-      if (first.title !== "Welcome") {
-        nextFirst.title = "Welcome";
+    if (!lessons.length) return;
+    const first = lessons[0];
+    const firstBlock: any = first.blocks[0];
+    let changed = false;
+    const nextFirst: Lesson = { ...first };
+    if (first.title !== "Welcome") {
+      nextFirst.title = "Welcome";
+      changed = true;
+    }
+    if (firstBlock && firstBlock.type === "heading") {
+      const expected = `Welcome to ${courseTitle}`;
+      if (firstBlock.text !== expected) {
+        nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
         changed = true;
       }
-      if (firstBlock && firstBlock.type === "heading") {
-        const expected = `Welcome to ${courseTitle}`;
-        if (firstBlock.text !== expected) {
-          nextFirst.blocks = [{ ...firstBlock, text: expected }, ...first.blocks.slice(1)];
-          changed = true;
-        }
-      }
-      if (changed) return [nextFirst, ...prev.slice(1)];
-      return prev;
-    });
-  }, [courseTitle]);
+    }
+    if (changed) pushHistory({ courseTitle, lessons: [nextFirst, ...lessons.slice(1)] });
+  }, [courseTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addLesson = () => {
     const newLesson: Lesson = { id: uid(), title: `Lesson ${lessons.length + 1}`, blocks: [] };
-    setLessons(prev => [...prev, newLesson]);
+    pushHistory({ courseTitle, lessons: [...lessons, newLesson] });
     setSelectedLessonId(newLesson.id);
   };
 
   const updateLessonTitle = (id: string, title: string) => {
-    setLessons(prev => prev.map(l => l.id === id ? { ...l, title } : l));
+    pushHistory({ courseTitle, lessons: lessons.map(l => l.id === id ? { ...l, title } : l) });
   };
 
   const removeLesson = (id: string) => {
     if (lessons.length === 1) return;
     const idx = lessons.findIndex(l => l.id === id);
     const newLessons = lessons.filter(l => l.id !== id);
-    setLessons(newLessons);
+    pushHistory({ courseTitle, lessons: newLessons });
     setSelectedLessonId(newLessons[Math.max(0, idx - 1)].id);
   };
 
   const addBlock = (type: BlockType) => {
     const block = createBlock(type);
-    setLessons((prev) => prev.map((l) => (l.id === selectedLesson.id ? { ...l, blocks: [...l.blocks, block] } : l)));
+    pushHistory({ courseTitle, lessons: lessons.map(l => l.id === selectedLesson.id ? { ...l, blocks: [...l.blocks, block] } : l) });
   };
 
   const updateBlock = (blockId: string, updater: (b: Block) => Block) => {
-    setLessons(prev => prev.map(l => l.id === selectedLesson.id ? { ...l, blocks: l.blocks.map(b => b.id === blockId ? updater(b) : b) } : l));
+    pushHistory({ courseTitle, lessons: lessons.map(l => l.id === selectedLesson.id ? { ...l, blocks: l.blocks.map(b => b.id === blockId ? updater(b) : b) } : l) });
   };
 
   const removeBlock = (blockId: string) => {
-    setLessons(prev => prev.map(l => l.id === selectedLesson.id ? { ...l, blocks: l.blocks.filter(b => b.id !== blockId) } : l));
+    pushHistory({ courseTitle, lessons: lessons.map(l => l.id === selectedLesson.id ? { ...l, blocks: l.blocks.filter(b => b.id !== blockId) } : l) });
   };
 
   const insertBlockAt = (index: number, type: BlockType) => {
     const block = createBlock(type);
-    setLessons((prev) => prev.map((l) =>
+    pushHistory({ courseTitle, lessons: lessons.map(l =>
       l.id === selectedLesson.id
         ? { ...l, blocks: [...l.blocks.slice(0, index), block, ...l.blocks.slice(index)] }
         : l
-    ));
+    ) });
   };
 
   const moveBlock = (blockId: string, dir: "up" | "down") => {
-    setLessons((prev) => prev.map((l) => {
+    pushHistory({ courseTitle, lessons: lessons.map(l => {
       if (l.id !== selectedLesson.id) return l;
-      const idx = l.blocks.findIndex((b) => b.id === blockId);
+      const idx = l.blocks.findIndex(b => b.id === blockId);
       if (idx < 0) return l;
       const newIdx = dir === "up" ? idx - 1 : idx + 1;
       if (newIdx < 0 || newIdx >= l.blocks.length) return l;
@@ -169,19 +174,19 @@ export default function Editor() {
       const [item] = blocks.splice(idx, 1);
       blocks.splice(newIdx, 0, item);
       return { ...l, blocks };
-    }));
+    }) });
   };
 
   const duplicateBlock = (blockId: string) => {
-    setLessons((prev) => prev.map((l) => {
+    pushHistory({ courseTitle, lessons: lessons.map(l => {
       if (l.id !== selectedLesson.id) return l;
-      const idx = l.blocks.findIndex((b) => b.id === blockId);
+      const idx = l.blocks.findIndex(b => b.id === blockId);
       if (idx < 0) return l;
       const copy = { ...(l.blocks[idx] as any), id: uid() } as Block;
       const blocks = [...l.blocks];
       blocks.splice(idx + 1, 0, copy);
       return { ...l, blocks };
-    }));
+    }) });
   };
 
   const courseData = { schemaVersion: 1, title: courseTitle, lessons };
@@ -236,7 +241,7 @@ export default function Editor() {
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current!);
     };
-  }, [courseTitle, lessons, courseId, user]);
+  }, [editorState, courseId, user]);
 
   // Keyboard shortcut to open block picker
   useEffect(() => {
@@ -258,6 +263,26 @@ export default function Editor() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedLesson]);
+
+  // Undo/redo keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const ctrl = isMac ? e.metaKey : e.ctrlKey;
+      if (!ctrl) return;
+
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undoHistory();
+      }
+      if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
+        e.preventDefault();
+        redoHistory();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undoHistory, redoHistory]);
 
   // Close picker on outside click
   useEffect(() => {
@@ -292,13 +317,12 @@ export default function Editor() {
 
   const applyImportedCourse = (data: { title?: string; lessons: Lesson[] }, mode: "merge" | "replace") => {
     if (mode === "replace") {
-      setCourseTitle(data.title || "Untitled Course");
-      setLessons(data.lessons);
+      pushHistory({ courseTitle: data.title || "Untitled Course", lessons: data.lessons });
       setSelectedLessonId(data.lessons[0]?.id ?? uid());
       toast({ title: "Course imported" });
     } else {
       const incoming = data.lessons.map((l) => ({ ...l, id: uid() }));
-      setLessons((prev) => [...prev, ...incoming]);
+      pushHistory({ courseTitle, lessons: [...lessons, ...incoming] });
       toast({ title: `Merged ${data.lessons.length} lessons` });
     }
   };
@@ -484,7 +508,7 @@ export default function Editor() {
         {/* Course title input */}
         <input
           value={courseTitle}
-          onChange={e => setCourseTitle(e.target.value)}
+          onChange={e => pushHistory({ courseTitle: e.target.value, lessons })}
           aria-label="Course title"
           placeholder="Course title"
           style={{
@@ -502,6 +526,50 @@ export default function Editor() {
 
         {/* Right side */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
+          {/* Undo/Redo buttons */}
+          <button
+            onClick={() => undoHistory()}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: canUndo ? "pointer" : "not-allowed",
+              opacity: canUndo ? 1 : 0.35,
+              padding: "6px 8px",
+              borderRadius: 6,
+              color: "#5eead4",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            ↩ Undo
+          </button>
+          <button
+            onClick={() => redoHistory()}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: canRedo ? "pointer" : "not-allowed",
+              opacity: canRedo ? 1 : 0.35,
+              padding: "6px 8px",
+              borderRadius: 6,
+              color: "#5eead4",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            ↪ Redo
+          </button>
+
           {/* Saved indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{
