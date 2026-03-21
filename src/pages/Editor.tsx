@@ -12,11 +12,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 // Shared types
-import { Block, Lesson, uid } from "@/types/course";
+import { Block, ContentLesson, AssessmentLesson, Lesson, uid } from "@/types/course";
 import type { BlockType } from "@/types/course";
 import { registry, createBlock, getSpec } from "@/components/blocks/registry";
 
-const defaultLesson: Lesson = {
+const defaultLesson: ContentLesson = {
+  kind: "content",
   id: uid(),
   title: "Welcome",
   blocks: [

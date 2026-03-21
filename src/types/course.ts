@@ -122,7 +122,37 @@ export type Block =
   | AudioBlock
   | DocumentBlock;
 
-export type Lesson = { id: string; title: string; blocks: Block[] };
+export type AssessmentQuestion = {
+  id: string;
+  text: string;
+  options: [string, string, string, string];
+  correctIndex: number;
+  feedback?: string;
+  bloomLevel?: "K" | "C" | "UN" | "AP" | "AN" | "EV";
+  source?: string;
+};
+
+export type AssessmentConfig = {
+  passingScore?: number;
+  examSize?: number;
+};
+
+export type ContentLesson = {
+  kind: "content";
+  id: string;
+  title: string;
+  blocks: Block[];
+};
+
+export type AssessmentLesson = {
+  kind: "assessment";
+  id: string;
+  title: string;
+  questions: AssessmentQuestion[];
+  config: AssessmentConfig;
+};
+
+export type Lesson = ContentLesson | AssessmentLesson;
 export type Course = { schemaVersion: 1; title: string; lessons: Lesson[] };
 
 // Zod schemas mirroring the above types
@@ -261,11 +291,30 @@ export const blockSchema = z.discriminatedUnion("type", [
   documentBlockSchema,
 ]);
 
-export const lessonSchema = z.object({
+const contentLessonSchema = z.object({
+  kind: z.literal("content"),
   id: z.string(),
   title: z.string(),
   blocks: z.array(blockSchema),
-});
+}).passthrough();
+
+const assessmentLessonSchema = z.object({
+  kind: z.literal("assessment"),
+  id: z.string(),
+  title: z.string(),
+  questions: z.array(z.object({
+    id: z.string(),
+    text: z.string(),
+    options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+    correctIndex: z.number().int().min(0).max(3),
+  }).passthrough()),
+  config: z.object({}).passthrough(),
+}).passthrough();
+
+export const lessonSchema = z.discriminatedUnion("kind", [
+  contentLessonSchema,
+  assessmentLessonSchema,
+]);
 
 export const courseSchema = z.object({
   schemaVersion: z.literal(1),
