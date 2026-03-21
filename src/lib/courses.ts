@@ -134,8 +134,8 @@ export function migrateFromLegacy(): string | null {
       schemaVersion: 1,
       title: parsed.title || "Imported Course",
       lessons: (parsed.lessons as any[]).map((l: any) =>
-      l.kind ? l : { ...l, kind: "content" }
-    ) as Lesson[],
+        l.kind ? l : { ...l, kind: "content" }
+      ) as Lesson[],
     };
     saveCourse(id, course);
     // Mark as migrated so this runs only once
