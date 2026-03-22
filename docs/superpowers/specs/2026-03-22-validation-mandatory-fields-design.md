@@ -97,6 +97,10 @@ z.array(z.object({...}))  → z.array(z.object({...})).min(1)    (accordion/tabs
 | `accordionBlockSchema` | `items` | `z.array(z.object({...}))` | `.min(1)`, each item `title: z.string().min(1)` |
 | `tabsBlockSchema` | `items` | `z.array(z.object({...}))` | `.min(1)`, each item `label: z.string().min(1)` |
 
+**Fields NOT changed (already constrained):** `document.fileType` and `callout.variant` are already enforced via `z.union([z.literal(...), ...])` which rejects empty strings. `list.style` has a default value. These need no schema change despite being listed as required in Section 1's table.
+
+**Quiz `correctIndex`:** Stays as `z.number()` (accepts -1). The -1 sentinel from Spec 1 is allowed through the schema on write — it is a valid intermediate state meaning "author hasn't chosen yet." Publish-time validation (Section 3) flags quizzes with `correctIndex === -1` as a warning. MCP callers can save quizzes with -1 but `review_course` will surface it as a gap.
+
 **Files changed:**
 - `src/types/course.ts` — all schemas above
 - `mcp/src/lib/types.ts` — all schemas above (must stay in sync)
@@ -112,13 +116,15 @@ z.array(z.object({...}))  → z.array(z.object({...})).min(1)    (accordion/tabs
 | **MCP `update_block`** | Does NO validation (shallow merge) | **Add validation.** After merging fields, run `blockSchema.safeParse()` on the resulting block. Return validation error if invalid. This closes the gap where a partial patch could create an invalid block. |
 | **MCP `save_course`** | Validates via `validateCourseJson()` | Automatically picks up stricter schemas. |
 | **MCP `generate_lesson`** | Validates blocks via `blockSchema` | Automatically stricter. |
+| **MCP `rewrite_lesson`** | Validates each block via `blockSchema.safeParse()` | Automatically stricter. |
+| **MCP `generate_quiz_for_lesson`** | Validates each block via `blockSchema.safeParse()` | Automatically stricter. |
 | **MCP tool descriptions** (`instructions.ts`) | Documents required fields | Update to note that empty strings are rejected for required fields. |
-| **Factory defaults** | Some factories produce empty strings (e.g. `image: src: ""`, `document: src: ""`) | **Update factories** to produce placeholder values or leave empty and accept that newly created blocks won't pass strict validation until the author fills them. Decision: leave empty — the editor autosaves before strict validation applies, and the empty state is visible to the author. |
+| **Factory defaults** | Some factories produce empty strings (e.g. `image: src: ""`, `document: src: ""`) | **Update factories** to produce placeholder values or leave empty and accept that newly created blocks won't pass strict validation until the author fills them. Decision: leave empty — the editor autosaves before strict validation applies, and the empty state is visible to the author. This means newly added blocks will immediately trigger a validation warning on the next autosave. This is intentional — the warning is surfaced only in the publish modal, not inline in the editor, so it does not disrupt the authoring flow. |
 | **Editor autosave** | Currently saves without validation | **Add validation check before save.** If validation fails, still save (never block autosave / risk data loss) but set a `hasWarnings` flag that surfaces in the publish modal. |
 
 **Schema architecture decision:** Rather than creating separate strict/permissive schema exports, **tighten the canonical schemas** (`blockSchema`, `courseSchema`) and change `View.tsx` to use a separate permissive schema for read. This keeps write validation as the default and makes permissive read an explicit opt-in.
 
-**View.tsx permissive read schema:** Create `blockSchemaPermissive` alongside the strict `blockSchema` — same structure but all `z.string().min(1)` replaced with `z.string()`. The `courseSchemaPermissive` uses this for its block validation. Only `View.tsx` and `src/validate/course.ts` use the permissive versions.
+**View.tsx permissive read schema:** Create `blockSchemaPermissive` alongside the strict `blockSchema` — same structure but all `z.string().min(1)` replaced with `z.string()` and all `.min(N)` on arrays relaxed. Then create `contentLessonSchemaPermissive` (using `blockSchemaPermissive`) and `courseSchemaPermissive` (using `contentLessonSchemaPermissive`). This duplicates the schema chain but is straightforward and explicit. Only `View.tsx` uses `courseSchemaPermissive`. Note: `src/validate/course.ts` has its own independent schema definitions (`z.object({ id: z.string(), type: z.string() }).passthrough()`) — it is intentionally decoupled from the canonical schemas and needs no change.
 
 ### 3. Publish-time validation
 
@@ -201,6 +207,7 @@ This applies to the MCP server preview only — the learner-facing view and SCOR
 | `src/pages/Editor.tsx` | Publish modal validation warnings |
 | `mcp/src/tools/preview.ts` | `analyzeCourse()` empty-field gaps + `renderBlock()` warning placeholders |
 | `mcp/src/tools/blocks.ts` | `update_block` post-merge validation |
+| `mcp/src/tools/semantic.ts` | Automatically picks up stricter schemas (`rewrite_block`, `rewrite_lesson`, `generate_lesson`, `generate_quiz_for_lesson`) |
 | `mcp/src/resources/instructions.ts` | Document required fields, update_block validation |
 
 ## What this does NOT change
@@ -217,6 +224,8 @@ This applies to the MCP server preview only — the learner-facing view and SCOR
 
 2. **Autosave with strict validation** — strict validation must NEVER block autosave. If validation fails, save the data anyway and set a warnings flag. Losing user work is worse than saving invalid data.
 
-3. **MCP `update_block` becoming strict** — existing MCP workflows that patch blocks with empty fields will start failing. This is intentional — the MCP tool descriptions will document the new requirements. The MCP instructions resource already tells callers to "always call get_course before editing," so they should know the current field values.
+3. **MCP write tools becoming strict** — existing MCP workflows that save blocks or courses with empty required fields will start failing. This applies to `update_block`, `save_course`, `add_block`, `rewrite_block`, `rewrite_lesson`, `generate_lesson`, and `generate_quiz_for_lesson`. This is intentional — the MCP tool descriptions will document the new requirements. The MCP instructions resource already tells callers to "always call get_course before editing," so they should know the current field values.
+
+5. **SCORM export with dismissed warnings** — authors who dismiss publish-time validation warnings can still publish and export SCORM packages containing broken media blocks (empty `<img>`, empty `<h2>`, etc.). The publish warnings are the safety net; SCORM export does not re-validate. This is acceptable — the author has been clearly warned.
 
 4. **Performance of publish-time validation** — validating every block in every lesson could be slow for very large courses. Mitigation: Zod validation is fast (microseconds per schema), and the iteration is O(n) over blocks. A course with 100 lessons × 10 blocks = 1000 validations, which completes in under 10ms.
