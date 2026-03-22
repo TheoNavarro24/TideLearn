@@ -2,9 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Plan-A Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/plan-a-mcp-schema-fixes && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
       "name": "Rockpool UI (worktree)",
       "runtimeExecutable": "/bin/bash",
       "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/rockpool-ui && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "Plan4 Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/feat-plan4-assessment && node node_modules/.bin/vite --port $PORT"],
       "autoPort": true
     },
     {
