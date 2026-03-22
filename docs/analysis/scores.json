@@ -1,7 +1,52 @@
 {
   "tools": ["tidelearn", "rise", "easygenerator", "elucidat", "sana", "courseau", "mindsmith"],
   "dimensions": ["onboarding", "visual", "editor", "blocks", "learner", "publishing", "extensibility"],
-  "scores": {},
+  "scores": {
+    "tidelearn": {
+      "onboarding": {
+        "score": 3,
+        "evidence": "[direct]",
+        "narrative": "The landing page is visually confident with a strong headline, clear value proposition (block-based authoring, SCORM export), and two clear CTAs. The auth page uses Google OAuth only — fast and frictionless, but offers no alternative sign-in and no onboarding tour or empty-state guidance once inside. The courses dashboard has an inline course-creation input which is clever, but new users get no template suggestions or getting-started prompt.",
+        "screenshots": ["tidelearn-onboarding-1.png", "tidelearn-onboarding-2.png", "tidelearn-onboarding-3.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[direct]",
+        "narrative": "TideLearn has a distinctive and coherent visual identity: deep forest-green brand colour, teal accents, clean serif/sans pairing, and confident use of whitespace. The editor and learner view both feel intentionally designed rather than scaffolded. The course card grid on the dashboard lacks cover image variety (letter-initial placeholders) and the block picker could be more visually rich, but the overall polish comfortably exceeds most indie tools and sits at the low end of the market leaders.",
+        "screenshots": ["tidelearn-visual-1.png", "tidelearn-editor-1.png", "tidelearn-learner-1.png"]
+      },
+      "editor": {
+        "score": 3,
+        "evidence": "[direct]",
+        "narrative": "The editor is clean and functional: two-panel layout with lesson sidebar on the left and block canvas on the right, Undo/Redo/Save/Publish in the top bar, and inline block forms that edit in place. The slash-command and block-picker UX are smooth. Weaknesses include no drag-to-reorder blocks visually (only up/down arrow buttons), no multi-select, no dark-mode preview, and the lesson sidebar becomes crowded with many lessons. The editor is genuinely usable but not yet at the ergonomic level of Rise or Articulate.",
+        "screenshots": ["tidelearn-editor-1.png", "tidelearn-editor-2.png", "tidelearn-editor-3.png"]
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[direct]",
+        "narrative": "TideLearn offers 15 block types across four categories: TEXT (Heading, Text, Code, List, Quote, Divider, Contents, Callout), MEDIA (Image, Video, Audio, Document), INTERACTIVE (Accordion, Tabs), and KNOWLEDGE CHECK (True/False, Short Answer, Multiple Choice). The text block has a capable rich-text toolbar including table support. Notable gaps: no hotspot/image interaction, no drag-and-drop quiz types, no flashcard block, no branching scenario block. The block set covers the essentials solidly but is thinner than market leaders.",
+        "screenshots": ["tidelearn-editor-2.png", "tidelearn-blocks-1.png", "tidelearn-feature-blocks-1.png"]
+      },
+      "learner": {
+        "score": 4,
+        "evidence": "[direct]",
+        "narrative": "The learner view is clean, fast, and well-structured: lesson sidebar, paged navigation with Paged/View-All toggle, progress indicator (Lesson N of N), Next/Previous controls, and embedded media rendered inline including YouTube videos and a full PDF viewer. The quiz block in learner view renders with clear A/B/C/D pill choices and Check/Reset buttons. The experience is genuinely polished and comparable to commercial tools. The main gap is the absence of completion certificates, learner progress persistence between sessions, and any gamification layer.",
+        "screenshots": ["tidelearn-learner-1.png", "tidelearn-learner-2.png", "tidelearn-learner-3.png"]
+      },
+      "publishing": {
+        "score": 4,
+        "evidence": "[direct]",
+        "narrative": "The publish flow is a standout: a single modal surfaces four options — shareable URL (one click to copy), SCORM 1.2 export (.zip), HTML self-hosted export (.html), and Course JSON (.json). This is a broad and competitive set for a tool at this stage. The modal also surfaces content validation warnings before publishing. Missing items include SCORM 2004, xAPI/Tin Can, password protection, and SSO-gated learner access.",
+        "screenshots": ["tidelearn-publishing-1.png", "tidelearn-feature-publishing-1.png"]
+      },
+      "extensibility": {
+        "score": 5,
+        "evidence": "[direct]",
+        "narrative": "TideLearn's MCP server is its primary differentiator and is best-in-class among authoring tools. The server exposes 32 tools covering the complete authoring lifecycle: auth (login/logout), courses (list, get, create, update, delete, save, restructure, review), lessons (add, update, delete, get, generate, rewrite), blocks (add, update, move, delete, rewrite, rewrite_all), assessment (add_assessment_lesson, list/add/update/delete/import/replace questions, update_assessment_config), media (upload_media), and preview (preview_course). Semantic/AI tools include generate_lesson, generate_quiz_for_lesson, rewrite_block, rewrite_lesson, restructure_course, and review_course. No other course authoring tool on the market exposes this depth of programmatic control via the Model Context Protocol.",
+        "screenshots": []
+      }
+    }
+  },
   "journeys": {},
   "methodology": {}
 }

@@ -1,0 +1,107 @@
+{
+  "tool": "tidelearn",
+  "evidence_source": "[direct]",
+  "accessed_via": "local_dev",
+  "blocks": {
+    "rich_text": {"presence": "yes", "notes": "Text block with toolbar: bold, italic, underline, H2/H3, lists, table, code, link, blockquote"},
+    "image": {"presence": "yes", "notes": "Image block with URL or upload; inline preview in editor"},
+    "video_embed": {"presence": "yes", "notes": "Video block accepts YouTube, Vimeo, or .mp4 URL; renders inline preview in editor and learner view"},
+    "video_upload": {"presence": "yes", "notes": "Upload button present on video block form alongside URL field"},
+    "audio": {"presence": "yes", "notes": "Audio block in MEDIA category"},
+    "quote_callout": {"presence": "yes", "notes": "Separate Quote and Callout blocks both present in TEXT category"},
+    "accordion": {"presence": "yes", "notes": "Accordion block in INTERACTIVE category"},
+    "tabs": {"presence": "yes", "notes": "Tabs block in INTERACTIVE category"},
+    "table": {"presence": "partial", "notes": "Table editing is inside the rich text block toolbar (+row, +col, del), not a standalone block"},
+    "timeline": {"presence": "no", "notes": "No timeline block visible in block picker"},
+    "embed_iframe": {"presence": "no", "notes": "No iframe/embed block in picker; Document block supports PDF but not arbitrary iframes"},
+    "code_block": {"presence": "yes", "notes": "Code block with language field (e.g. typescript) and syntax-highlighted textarea"},
+    "interactive_hotspot": {"presence": "no", "notes": "No hotspot block in picker"},
+    "flashcard": {"presence": "no", "notes": "No flashcard block in picker"}
+  },
+  "assessment": {
+    "mcq": {"presence": "yes", "notes": "Multiple Choice block in KNOWLEDGE CHECK category; 4 options A-D, radio select correct answer"},
+    "true_false": {"presence": "yes", "notes": "True/False block in KNOWLEDGE CHECK category"},
+    "fill_blank": {"presence": "no", "notes": "Short Answer block accepts free text but is not a fill-in-the-blank with embedded gap"},
+    "matching": {"presence": "no", "notes": "No matching question type"},
+    "hotspot_image": {"presence": "no", "notes": "No hotspot image question type"},
+    "drag_drop": {"presence": "no", "notes": "No drag-and-drop question type"},
+    "essay_open": {"presence": "partial", "notes": "Short Answer block provides open text entry in learner view, but no AI or rubric-based scoring"},
+    "knowledge_check_unscored": {"presence": "yes", "notes": "In-lesson quiz blocks (MCQ, T/F, Short Answer) are knowledge checks; separate Assessment lesson type exists for scored exams"},
+    "question_banks": {"presence": "yes", "notes": "Assessment lessons have a question bank; MCP tools include import_questions, replace_questions, list_questions"},
+    "randomisation": {"presence": "unknown", "notes": "Assessment config tool exists (update_assessment_config) but randomisation not confirmed from UI inspection"},
+    "passing_score": {"presence": "partial", "notes": "update_assessment_config MCP tool suggests configurable assessment settings; not surfaced prominently in UI editor"},
+    "multiple_attempts": {"presence": "unknown", "notes": "Not visible in UI; may be in assessment config"}
+  },
+  "ai": {
+    "ai_course_generation": {"presence": "yes", "notes": "generate_lesson MCP tool generates full lesson content; restructure_course for full course restructure; all via MCP not in-UI"},
+    "ai_content_rewrite": {"presence": "yes", "notes": "rewrite_block, rewrite_lesson, rewrite_blocks MCP tools for AI-powered content rewriting"},
+    "ai_quiz_generation": {"presence": "yes", "notes": "generate_quiz_for_lesson MCP tool generates quiz questions for a lesson"},
+    "ai_translation": {"presence": "no", "notes": "No translation tool in MCP or UI"},
+    "ai_image_generation": {"presence": "no", "notes": "No AI image generation in UI or MCP"},
+    "ai_learner_feedback": {"presence": "no", "notes": "No adaptive or AI feedback loop for learners"},
+    "ai_tutor_chat": {"presence": "no", "notes": "No in-course AI tutor chat for learners"}
+  },
+  "compliance": {
+    "scorm_12": {"presence": "yes", "notes": "SCORM 1.2 export as .zip in publish modal; description reads 'Upload to any LMS'"},
+    "scorm_2004": {"presence": "no", "notes": "Only SCORM 1.2 listed; no SCORM 2004 option visible"},
+    "xapi_tin_can": {"presence": "no", "notes": "No xAPI/Tin Can output visible in publish modal or export options"},
+    "lti_consumer": {"presence": "no", "notes": "No LTI support found"},
+    "lti_provider": {"presence": "no", "notes": "No LTI support found"},
+    "pdf_export": {"presence": "no", "notes": "No PDF export of full course; PDF Document block embeds PDFs as content"},
+    "video_export": {"presence": "no", "notes": "No video export"}
+  },
+  "analytics": {
+    "completion_tracking": {"presence": "no", "notes": "No analytics dashboard or completion tracking visible in UI"},
+    "quiz_score_analytics": {"presence": "no", "notes": "No score reporting or analytics"},
+    "time_on_task": {"presence": "no", "notes": "No time tracking"},
+    "learner_progress_view": {"presence": "no", "notes": "No learner-facing progress dashboard beyond current lesson indicator in header"},
+    "cohort_analytics": {"presence": "no", "notes": "No cohort or group analytics"},
+    "analytics_dashboard": {"presence": "no", "notes": "No analytics section in app"},
+    "report_export": {"presence": "no", "notes": "No report export"}
+  },
+  "collaboration": {
+    "multi_author": {"presence": "no", "notes": "Single-author tool; courses belong to one user_id"},
+    "inline_commenting": {"presence": "no", "notes": "No commenting system"},
+    "review_approval_workflow": {"presence": "no", "notes": "review_course is an MCP AI review tool, not a human workflow"},
+    "version_history": {"presence": "no", "notes": "No version history in UI"},
+    "roles_permissions": {"presence": "no", "notes": "No role or permission system"}
+  },
+  "templates": {
+    "course_templates": {"presence": "no", "notes": "No template library when creating a course; blank course creation only"},
+    "lesson_templates": {"presence": "no", "notes": "No lesson templates; blocks added individually"},
+    "theme_customisation": {"presence": "no", "notes": "No theme or branding customisation in course settings"},
+    "white_label": {"presence": "no", "notes": "No white-label option"},
+    "custom_domain": {"presence": "no", "notes": "No custom domain support"}
+  },
+  "branching": {
+    "conditional_navigation": {"presence": "no", "notes": "Linear lesson navigation only"},
+    "prerequisites": {"presence": "no", "notes": "No prerequisite gating between lessons"},
+    "personalised_paths": {"presence": "no", "notes": "No personalised learning paths; assessment lessons use Leitner-based adaptive question selection but this is not full branching"}
+  },
+  "media": {
+    "direct_video_upload": {"presence": "yes", "notes": "Upload button on video block; media stored in Supabase bucket (course-media)"},
+    "cdn_hosting": {"presence": "yes", "notes": "Media served from Supabase Storage which is CDN-backed"},
+    "stock_media_library": {"presence": "no", "notes": "No built-in stock media library"},
+    "in_product_image_editing": {"presence": "no", "notes": "No image editing tools"},
+    "subtitle_caption_support": {"presence": "no", "notes": "No subtitle or caption field on video block"}
+  },
+  "accessibility": {
+    "wcag_21_aa": {"presence": "unknown", "notes": "Not tested; no accessibility statement found in app"},
+    "keyboard_navigation": {"presence": "partial", "notes": "Block picker dismisses with Escape; slash-command works via keyboard; full keyboard audit not conducted"},
+    "screen_reader_support": {"presence": "unknown", "notes": "Not tested with screen reader"},
+    "alt_text_support": {"presence": "unknown", "notes": "Image block form not fully inspected for alt text field during audit"}
+  },
+  "publishing": {
+    "shareable_link_no_lms": {"presence": "yes", "notes": "Instant shareable URL on publish; one-click copy in publish modal"},
+    "password_protection": {"presence": "no", "notes": "No password protection; courses are either public (open URL) or private (requires login)"},
+    "sso_learner_access": {"presence": "no", "notes": "No SSO for learner access; learners use public URL or must have an account"},
+    "embed_in_external_site": {"presence": "partial", "notes": "HTML export can be self-hosted and embedded; no direct embed/iframe code snippet provided in UI"}
+  },
+  "extensibility": {
+    "rest_api": {"presence": "no", "notes": "No documented public REST API; Supabase backend exists but no public API layer"},
+    "webhooks": {"presence": "no", "notes": "No webhooks"},
+    "zapier_make": {"presence": "no", "notes": "No Zapier or Make integration"},
+    "mcp_server": {"presence": "yes", "notes": "Full MCP server at /mcp with 32 tools: list_courses, get_course, create_course, update_course, delete_course, save_course, restructure_course, review_course, add_lesson, update_lesson, delete_lesson, get_lesson, generate_lesson, rewrite_lesson, add_block, update_block, move_block, delete_block, rewrite_block, rewrite_blocks, add_assessment_lesson, list_questions, add_question, update_question, delete_question, import_questions, replace_questions, update_assessment_config, upload_media, preview_course, generate_quiz_for_lesson, tidelearn_login, tidelearn_logout"},
+    "sso_author_access": {"presence": "yes", "notes": "Google OAuth for author sign-in via Supabase Auth; tested end-to-end"}
+  }
+}

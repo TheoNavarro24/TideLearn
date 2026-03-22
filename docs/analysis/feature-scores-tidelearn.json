@@ -1,0 +1,53 @@
+{
+  "tool": "tidelearn",
+  "category_scores": {
+    "blocks": {
+      "score": 2,
+      "narrative": "15 block types covering text, media, and basic interactive elements (accordion, tabs). Rich text block includes table support. Gaps: no hotspot, no flashcard, no timeline, no iframe embed. Meets market baseline but falls short of category leaders like Rise (which has labelled graphics, sorting activities, etc.)."
+    },
+    "assessment": {
+      "score": 2,
+      "narrative": "Three knowledge-check types (MCQ, True/False, Short Answer) plus a dedicated Assessment lesson type with question bank and Leitner-based adaptive practice. MCP enables AI-generated questions. Gaps: no matching, drag-drop, fill-in-the-blank, or hotspot questions; passing score and attempt limits not surfaced in UI. Competitive for a personal tool but well behind enterprise tools."
+    },
+    "ai": {
+      "score": 3,
+      "narrative": "AI features are exclusively MCP-powered (generate_lesson, generate_quiz_for_lesson, rewrite_block, rewrite_lesson, restructure_course, review_course) — no in-UI AI buttons. For users operating via Claude + MCP this is genuinely powerful; for non-technical users the AI features are invisible. Translation and image generation are absent. The approach is novel and effective within its intended workflow."
+    },
+    "compliance": {
+      "score": 1,
+      "narrative": "SCORM 1.2 export is present and functional. No SCORM 2004, xAPI/Tin Can, LTI, PDF export, or video export. For a tool positioning toward L&D professionals this is a meaningful gap, though SCORM 1.2 covers most LMS compatibility needs."
+    },
+    "analytics": {
+      "score": 0,
+      "narrative": "No analytics, completion tracking, quiz score reporting, or learner progress dashboard of any kind. This is the most significant gap relative to market expectations for an L&D authoring tool. SCORM completion tracking passes to the LMS but there is no native reporting."
+    },
+    "collaboration": {
+      "score": 0,
+      "narrative": "Explicitly a single-author tool with no multi-author support, commenting, version history, or review workflow. The MCP review_course tool provides AI-based content review but no human collaboration layer exists."
+    },
+    "templates": {
+      "score": 0,
+      "narrative": "No course or lesson templates, no theme customisation, no white-labelling, no custom domain. Course creation starts from a blank slate every time."
+    },
+    "branching": {
+      "score": 0,
+      "narrative": "Strictly linear navigation. No conditional branching, prerequisites, or personalised paths. Assessment lessons use adaptive question ordering (Leitner) internally but this does not constitute learner path branching."
+    },
+    "media": {
+      "score": 2,
+      "narrative": "Direct video and file upload to Supabase CDN works well. No stock media library, no in-app image editing, no subtitle support. Meets the basic upload/host need but offers no media management experience."
+    },
+    "accessibility": {
+      "score": 1,
+      "narrative": "Basic keyboard interactions work (Escape to close modals, slash commands). No formal WCAG audit, no screen reader testing documented, alt text support unconfirmed. Needs dedicated accessibility work before L&D-compliance use cases."
+    },
+    "publishing": {
+      "score": 3,
+      "narrative": "Shareable URL, SCORM 1.2, HTML export, and Course JSON in a single publish modal is a strong set. Validation warnings surface before publish. Gaps are password protection, SSO-gated learner access, and SCORM 2004. A notable strength relative to tool's overall maturity."
+    },
+    "extensibility": {
+      "score": 4,
+      "narrative": "The MCP server with 32 tools is genuinely best-in-class across the authoring tool market. No other tool exposes full CRUD over courses, lessons, and blocks plus AI semantic operations via the Model Context Protocol. The intended workflow — L&D expert + Claude + MCP — is coherent and unique. The only limitation is that non-Claude users cannot access any of this capability."
+    }
+  }
+}
