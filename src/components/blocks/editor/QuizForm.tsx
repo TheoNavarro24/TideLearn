@@ -3,22 +3,45 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { FieldLabel } from "./FieldLabel";
+import { Trash2 } from "lucide-react";
 
 export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: QuizBlock) => void }) {
+  const addOption = () => onChange({ ...block, options: [...block.options, ""] });
+
+  const removeOption = (idx: number) => {
+    const next = block.options.filter((_, i) => i !== idx);
+    let ci = block.correctIndex;
+    if (idx === ci) ci = -1;
+    else if (idx < ci) ci--;
+    onChange({ ...block, options: next, correctIndex: ci });
+  };
+
   return (
     <div className="grid gap-3">
       <div className="space-y-2">
         <FieldLabel>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
+
+      {block.correctIndex === -1 && (
+        <p className="text-xs text-amber-600">Select the correct answer below.</p>
+      )}
+
       {block.options.map((opt, i) => (
         <div key={i} className="space-y-1">
-          <FieldLabel>
-            Option {String.fromCharCode(65 + i)}{i === block.correctIndex ? " ✓ Correct" : ""}
-          </FieldLabel>
-          <div className="flex gap-2">
+          <FieldLabel>Option {String.fromCharCode(65 + i)}</FieldLabel>
+          <div className="flex items-center gap-2">
+            <input
+              type="radio"
+              name={`correct-${block.id}`}
+              checked={i === block.correctIndex}
+              onChange={() => onChange({ ...block, correctIndex: i })}
+              className="accent-teal-600"
+            />
             <Input
+              className="flex-1"
               value={opt}
               onChange={(e) => {
                 const next = [...block.options];
@@ -28,25 +51,20 @@ export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: 
             />
             <button
               type="button"
-              onClick={() => onChange({ ...block, correctIndex: i })}
-              style={{
-                padding: "0 10px",
-                borderRadius: 6,
-                border: "1.5px solid",
-                borderColor: i === block.correctIndex ? "#0d9488" : "#e2e8f0",
-                background: i === block.correctIndex ? "#f0fdfb" : "transparent",
-                color: i === block.correctIndex ? "#0d9488" : "#94a3b8",
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
+              onClick={() => removeOption(i)}
+              disabled={block.options.length <= 2}
+              className="text-muted-foreground hover:text-destructive disabled:opacity-30"
+              title="Remove option"
             >
-              ✓
+              <Trash2 size={14} />
             </button>
           </div>
         </div>
       ))}
+
+      <Button variant="secondary" size="sm" onClick={addOption}>
+        Add option
+      </Button>
 
       {/* Feedback section */}
       <div style={{ borderTop: "1px solid #e0fdf4", paddingTop: 12, marginTop: 4 }}>
