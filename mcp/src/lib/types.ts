@@ -70,6 +70,14 @@ export type AudioBlock = {
   title?: string;
 };
 
+export type DocumentBlock = {
+  id: string;
+  type: "document";
+  src: string;
+  fileType: "pdf" | "docx" | "xlsx" | "pptx";
+  title?: string;
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -105,7 +113,8 @@ export type Block =
   | TocBlock
   | CalloutBlock
   | VideoBlock
-  | AudioBlock;
+  | AudioBlock
+  | DocumentBlock;
 
 export type AssessmentQuestion = {
   id: string;
@@ -251,6 +260,14 @@ export const audioBlockSchema = z.object({
   title: z.string().optional(),
 });
 
+export const documentBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("document"),
+  src: z.string(),
+  fileType: z.union([z.literal("pdf"), z.literal("docx"), z.literal("xlsx"), z.literal("pptx")]),
+  title: z.string().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -268,6 +285,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   calloutBlockSchema,
   videoBlockSchema,
   audioBlockSchema,
+  documentBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -338,6 +356,7 @@ export const factories = {
   audio: (): AudioBlock => ({ id: uid(), type: "audio", src: "https://www.w3schools.com/html/horse.mp3", title: "Audio clip" }),
   truefalse: (): TrueFalseBlock => ({ id: uid(), type: "truefalse", question: "Statement goes here.", correct: true, feedbackCorrect: "Correct!", feedbackIncorrect: "Not quite." }),
   shortanswer: (): ShortAnswerBlock => ({ id: uid(), type: "shortanswer", question: "Your question?", answer: "answer", acceptable: [], caseSensitive: false, trimWhitespace: true }),
+  document: (): DocumentBlock => ({ id: uid(), type: "document", src: "", fileType: "pdf", title: "" }),
 } as const;
 
 export type BlockType = keyof typeof factories;
