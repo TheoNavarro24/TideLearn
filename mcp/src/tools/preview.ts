@@ -43,6 +43,15 @@ function renderBlock(block: Block): string {
       return `<hr style="margin:1em 0"/>`;
     case "toc":
       return `<div style="background:#f0f0f0;padding:0.5em;margin:1em 0">[Table of Contents — auto-generated]</div>`;
+    case "document":
+      return `<div style="background:#f8f8f8;padding:1em;margin:1em 0;border-radius:4px;display:flex;align-items:center;gap:0.75em">
+    <span style="font-size:1.5em">📄</span>
+    <div>
+      ${block.title ? `<strong>${esc(block.title)}</strong><br/>` : ""}
+      <a href="${esc(block.src)}" target="_blank" style="color:#6366f1;font-size:0.875em">${esc(block.src)}</a>
+      <span style="font-size:0.75em;color:#888;margin-left:0.5em">(${esc(block.fileType.toUpperCase())})</span>
+    </div>
+  </div>`;
     default:
       return `<p>[Unknown block type]</p>`;
   }
