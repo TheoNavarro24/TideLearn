@@ -159,27 +159,27 @@ export type Course = { schemaVersion: 1; title: string; lessons: Lesson[] };
 export const headingBlockSchema = z.object({
   id: z.string(),
   type: z.literal("heading"),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const textBlockSchema = z.object({
   id: z.string(),
   type: z.literal("text"),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const imageBlockSchema = z.object({
   id: z.string(),
   type: z.literal("image"),
-  src: z.string(),
-  alt: z.string(),
+  src: z.string().min(1),
+  alt: z.string().min(1),
 });
 
 export const quizBlockSchema = z.object({
   id: z.string(),
   type: z.literal("quiz"),
-  question: z.string(),
-  options: z.array(z.string()),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2),
   correctIndex: z.number(),
   showFeedback: z.boolean().optional(),
   feedbackMessage: z.string().optional(),
@@ -188,7 +188,7 @@ export const quizBlockSchema = z.object({
 export const trueFalseBlockSchema = z.object({
   id: z.string(),
   type: z.literal("truefalse"),
-  question: z.string(),
+  question: z.string().min(1),
   correct: z.boolean(),
   showFeedback: z.boolean().optional(),
   feedbackCorrect: z.string().optional(),
@@ -198,8 +198,8 @@ export const trueFalseBlockSchema = z.object({
 export const shortAnswerBlockSchema = z.object({
   id: z.string(),
   type: z.literal("shortanswer"),
-  question: z.string(),
-  answer: z.string(),
+  question: z.string().min(1),
+  answer: z.string().min(1),
   acceptable: z.array(z.string()).optional(),
   caseSensitive: z.boolean().optional(),
   trimWhitespace: z.boolean().optional(),
@@ -211,26 +211,26 @@ export const listBlockSchema = z.object({
   id: z.string(),
   type: z.literal("list"),
   style: z.union([z.literal("bulleted"), z.literal("numbered")]),
-  items: z.array(z.string()),
+  items: z.array(z.string().min(1)).min(1),
 });
 
 export const quoteBlockSchema = z.object({
   id: z.string(),
   type: z.literal("quote"),
-  text: z.string(),
+  text: z.string().min(1),
   cite: z.string().optional(),
 });
 
 export const accordionBlockSchema = z.object({
   id: z.string(),
   type: z.literal("accordion"),
-  items: z.array(z.object({ id: z.string(), title: z.string(), content: z.string() })),
+  items: z.array(z.object({ id: z.string(), title: z.string().min(1), content: z.string() })).min(1),
 });
 
 export const tabsBlockSchema = z.object({
   id: z.string(),
   type: z.literal("tabs"),
-  items: z.array(z.object({ id: z.string(), label: z.string(), content: z.string() })),
+  items: z.array(z.object({ id: z.string(), label: z.string().min(1), content: z.string() })).min(1),
 });
 
 export const dividerBlockSchema = z.object({
@@ -248,26 +248,26 @@ export const calloutBlockSchema = z.object({
   type: z.literal("callout"),
   variant: z.union([z.literal("info"), z.literal("success"), z.literal("warning"), z.literal("danger")]),
   title: z.string().optional(),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const videoBlockSchema = z.object({
   id: z.string(),
   type: z.literal("video"),
-  url: z.string(),
+  url: z.string().min(1),
 });
 
 export const audioBlockSchema = z.object({
   id: z.string(),
   type: z.literal("audio"),
-  src: z.string(),
+  src: z.string().min(1),
   title: z.string().optional(),
 });
 
 export const documentBlockSchema = z.object({
   id: z.string(),
   type: z.literal("document"),
-  src: z.string(),
+  src: z.string().min(1),
   fileType: z.union([z.literal("pdf"), z.literal("docx"), z.literal("xlsx"), z.literal("pptx")]),
   title: z.string().optional(),
 });
@@ -320,6 +320,60 @@ export const courseSchema = z.object({
   schemaVersion: z.literal(1),
   title: z.string(),
   lessons: z.array(lessonSchema),
+});
+
+// ── Permissive schemas for read path (View.tsx) ──────────────────────────────
+// Same structure but accepts empty strings and empty arrays.
+// Only used in View.tsx to load existing courses that may have empty fields.
+
+const headingBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("heading"), text: z.string() });
+const textBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("text"), text: z.string() });
+const imageBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("image"), src: z.string(), alt: z.string() });
+const quizBlockSchemaPermissive = z.object({
+  id: z.string(), type: z.literal("quiz"), question: z.string(),
+  options: z.array(z.string()), correctIndex: z.number(),
+  showFeedback: z.boolean().optional(), feedbackMessage: z.string().optional(),
+});
+const codeBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("code"), language: z.string(), code: z.string() });
+const trueFalseBlockSchemaPermissive = z.object({
+  id: z.string(), type: z.literal("truefalse"), question: z.string(), correct: z.boolean(),
+  showFeedback: z.boolean().optional(), feedbackCorrect: z.string().optional(), feedbackIncorrect: z.string().optional(),
+});
+const shortAnswerBlockSchemaPermissive = z.object({
+  id: z.string(), type: z.literal("shortanswer"), question: z.string(), answer: z.string(),
+  acceptable: z.array(z.string()).optional(), caseSensitive: z.boolean().optional(),
+  trimWhitespace: z.boolean().optional(), showFeedback: z.boolean().optional(), feedbackMessage: z.string().optional(),
+});
+const listBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("list"), style: z.union([z.literal("bulleted"), z.literal("numbered")]), items: z.array(z.string()) });
+const quoteBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("quote"), text: z.string(), cite: z.string().optional() });
+const accordionBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("accordion"), items: z.array(z.object({ id: z.string(), title: z.string(), content: z.string() })) });
+const tabsBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("tabs"), items: z.array(z.object({ id: z.string(), label: z.string(), content: z.string() })) });
+const calloutBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("callout"), variant: z.union([z.literal("info"), z.literal("success"), z.literal("warning"), z.literal("danger")]), title: z.string().optional(), text: z.string() });
+const videoBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("video"), url: z.string() });
+const audioBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("audio"), src: z.string(), title: z.string().optional() });
+const documentBlockSchemaPermissive = z.object({ id: z.string(), type: z.literal("document"), src: z.string(), fileType: z.union([z.literal("pdf"), z.literal("docx"), z.literal("xlsx"), z.literal("pptx")]), title: z.string().optional() });
+
+export const blockSchemaPermissive = z.discriminatedUnion("type", [
+  headingBlockSchemaPermissive, textBlockSchemaPermissive, imageBlockSchemaPermissive,
+  quizBlockSchemaPermissive, codeBlockSchemaPermissive, trueFalseBlockSchemaPermissive,
+  shortAnswerBlockSchemaPermissive, listBlockSchemaPermissive, quoteBlockSchemaPermissive,
+  accordionBlockSchemaPermissive, tabsBlockSchemaPermissive, dividerBlockSchema, tocBlockSchema,
+  calloutBlockSchemaPermissive, videoBlockSchemaPermissive, audioBlockSchemaPermissive,
+  documentBlockSchemaPermissive,
+]);
+
+const contentLessonSchemaPermissive = z.object({
+  kind: z.literal("content"), id: z.string(), title: z.string(),
+  blocks: z.array(blockSchemaPermissive),
+}).passthrough();
+
+const lessonSchemaPermissive = z.discriminatedUnion("kind", [
+  contentLessonSchemaPermissive, assessmentLessonSchema,
+]);
+
+export const courseSchemaPermissive = z.object({
+  schemaVersion: z.literal(1), title: z.string(),
+  lessons: z.array(lessonSchemaPermissive),
 });
 
 export function uid() {
