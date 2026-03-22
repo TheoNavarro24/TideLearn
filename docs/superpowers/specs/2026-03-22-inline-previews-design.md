@@ -22,7 +22,7 @@ This is **Spec 2 of 3** in the Block Polish series:
 - When `block.src` is empty: show a light placeholder ("No image set")
 - When `block.src` is set but the image fails to load: show an error state ("Image failed to load — check the URL")
 
-Uses an `<img>` element with `onLoad` / `onError` handlers to detect success/failure. No external dependencies.
+Uses an `<img>` element with `onLoad` / `onError` handlers to detect success/failure. For CORS cases where `onError` may not fire, add a 10-second timeout that falls back to the error state. No external dependencies.
 
 **Files changed:**
 - `src/components/blocks/editor/ImageForm.tsx` — add preview section below inputs
@@ -33,7 +33,7 @@ Uses an `<img>` element with `onLoad` / `onError` handlers to detect success/fai
 
 **Current:** VideoForm shows a URL input. No visual feedback. The author cannot tell if a YouTube URL was pasted correctly.
 
-**After:** Below the URL input, show a live preview:
+**After:** Below the URL input, show a live preview (debounced — 500ms after last keystroke to avoid rapid iframe reloads while typing):
 - **YouTube URL detected:** render the YouTube embed iframe (same as VideoView does)
 - **Vimeo URL detected:** render the Vimeo embed iframe
 - **Direct .mp4/.webm URL:** render a `<video>` element with controls
@@ -48,8 +48,8 @@ The YouTube/Vimeo URL detection logic currently lives inline in `src/components/
 - `src/components/blocks/view/Video.tsx` — refactor to import from `src/lib/video.ts` instead of inline functions
 
 **Cascade:**
-- `src/components/blocks/view/Video.tsx` — import change only, no behaviour change. The view renders identically.
-- **SCORM export** (`src/lib/scorm12.ts`) — contains its own `videoEmbed()` function embedded as a string template inside `buildStaticIndexHtml()`. This cannot import from a shared module since it's runtime JS baked into the HTML output. **No change.** The duplication is unavoidable here.
+- `src/components/blocks/view/Video.tsx` — refactored to use `getVideoEmbed()`. **Minor behavioral change:** the current view treats ALL non-YouTube/non-Vimeo URLs as direct `<video>` elements (unconditional else fallback). After the refactor, only URLs matching `.mp4`/`.webm` extensions render as `<video>`. For the `"unknown"` type, `VideoView` should **preserve the current fallback** and render a `<video>` element (not the "unrecognised" hint — that's editor-only). This ensures existing courses with extensionless video URLs continue to work.
+- **SCORM export** (`src/lib/scorm12.ts`) — contains its own `videoEmbed()` function embedded as a string template inside `buildStaticIndexHtml()`. This cannot import from a shared module since it's runtime JS baked into the HTML output. **No change.** The duplication is unavoidable here. Note: the SCORM regex uses `[\w-]+` for YouTube IDs while the shared util uses `[^&#]+` — these are equivalent in practice but syntactically different. Do not attempt to synchronize them.
 - **MCP preview** (`mcp/src/tools/preview.ts`) — renders video as `[Video: ${url}]` placeholder text, does not embed. **No change.**
 
 ### 3. Shared video utility
@@ -97,7 +97,7 @@ This centralises all video URL handling. `VideoView` and `VideoForm` both call `
 |---|---|
 | `src/components/blocks/editor/ImageForm.tsx` | Add thumbnail preview |
 | `src/components/blocks/editor/VideoForm.tsx` | Add embed preview, import shared util |
-| `src/components/blocks/view/Video.tsx` | Refactor to import shared util (no behaviour change) |
+| `src/components/blocks/view/Video.tsx` | Refactor to import shared util (preserves current fallback for unknown URLs) |
 | `src/lib/video.ts` | **New file** — shared video URL detection |
 
 ## What this does NOT change
