@@ -8,12 +8,20 @@ export function registerCourseTools(server: McpServer) {
     withAuth(async (client, userId) => {
       const { data, error } = await client
         .from("courses")
-        .select("id, title, is_public, updated_at")
+        .select("id, title, is_public, updated_at, content")
         .eq("user_id", userId)
         .order("updated_at", { ascending: false });
 
       if (error) return err("query_failed", error.message);
-      return ok(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped = (data ?? []).map(row => ({
+        id: row.id,
+        title: row.title,
+        is_public: row.is_public,
+        updated_at: row.updated_at,
+        lesson_count: (row.content as any)?.lessons?.length ?? 0,
+      }));
+      return ok(mapped);
     })
   );
 
