@@ -2,12 +2,13 @@ import { TrueFalseBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { FieldLabel } from "./FieldLabel";
 
 export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onChange: (b: TrueFalseBlock) => void }) {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Question</label>
+        <FieldLabel>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
       <div className="flex items-center justify-between rounded-md border p-3">
@@ -33,7 +34,7 @@ export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onCh
         {block.showFeedback && (
           <div className="grid gap-2">
             <div className="space-y-1">
-              <label className="text-sm text-muted-foreground">Correct feedback</label>
+              <FieldLabel>Correct feedback</FieldLabel>
               <Input
                 value={block.feedbackCorrect ?? ""}
                 onChange={(e) => onChange({ ...block, feedbackCorrect: e.target.value })}
@@ -41,7 +42,7 @@ export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onCh
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm text-muted-foreground">Incorrect feedback</label>
+              <FieldLabel>Incorrect feedback</FieldLabel>
               <Input
                 value={block.feedbackIncorrect ?? ""}
                 onChange={(e) => onChange({ ...block, feedbackIncorrect: e.target.value })}

@@ -3,6 +3,7 @@ import { VideoBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
+import { FieldLabel } from "./FieldLabel";
 
 export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b: VideoBlock) => void }) {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b
 
   return (
     <div className="space-y-2">
-      <label className="text-sm text-muted-foreground">Video URL (YouTube, Vimeo, or .mp4)</label>
+      <FieldLabel>Video URL (YouTube, Vimeo, or .mp4)</FieldLabel>
       <div className="flex gap-2">
         <Input value={block.url} onChange={(e) => onChange({ ...block, url: e.target.value })} placeholder="https://..." />
         {user && (

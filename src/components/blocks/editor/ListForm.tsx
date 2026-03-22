@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/components/richtext/RichTextEditor";
+import { FieldLabel } from "./FieldLabel";
 
 export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: ListBlock) => void }) {
   const updateItem = (idx: number, val: string) => {
@@ -14,7 +15,7 @@ export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Style</label>
+        <FieldLabel>Style</FieldLabel>
         <Select value={block.style} onValueChange={(v) => onChange({ ...block, style: v as ListBlock["style"] })}>
           <SelectTrigger>
             <SelectValue placeholder="List style" />
@@ -28,7 +29,7 @@ export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: 
         </Select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Items</label>
+        <FieldLabel>Items</FieldLabel>
         <div className="space-y-2">
           {block.items.map((it, idx) => (
             <div key={idx} className="space-y-2">

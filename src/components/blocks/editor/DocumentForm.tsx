@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
+import { FieldLabel } from "./FieldLabel";
 
 const FILE_TYPES = [
   { value: "pdf", label: "PDF", accept: "application/pdf" },
@@ -36,7 +37,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
   return (
     <div className="grid gap-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Document type</label>
+        <FieldLabel>Document type</FieldLabel>
         <Select
           value={block.fileType}
           onValueChange={(v) => onChange({ ...block, fileType: v as DocumentBlock["fileType"] })}
@@ -51,7 +52,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Document URL</label>
+        <FieldLabel>Document URL</FieldLabel>
         <div className="flex gap-2">
           <Input
             value={block.src}
@@ -86,7 +87,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Caption (optional)</label>
+        <FieldLabel>Caption (optional)</FieldLabel>
         <Input
           value={block.title ?? ""}
           onChange={(e) => onChange({ ...block, title: e.target.value })}

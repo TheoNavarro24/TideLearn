@@ -3,19 +3,20 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FieldLabel } from "./FieldLabel";
 
 export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: QuizBlock) => void }) {
   return (
     <div className="grid gap-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Question</label>
+        <FieldLabel>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
       {block.options.map((opt, i) => (
         <div key={i} className="space-y-1">
-          <label className="text-sm text-muted-foreground">
+          <FieldLabel>
             Option {String.fromCharCode(65 + i)}{i === block.correctIndex ? " ✓ Correct" : ""}
-          </label>
+          </FieldLabel>
           <div className="flex gap-2">
             <Input
               value={opt}
@@ -61,7 +62,7 @@ export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: 
         </div>
         {block.showFeedback && (
           <div className="space-y-1">
-            <label className="text-sm text-muted-foreground">Feedback message</label>
+            <FieldLabel>Feedback message</FieldLabel>
             <Textarea
               value={block.feedbackMessage ?? ""}
               onChange={(e) => onChange({ ...block, feedbackMessage: e.target.value })}
