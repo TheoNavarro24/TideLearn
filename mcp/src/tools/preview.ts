@@ -30,7 +30,7 @@ function renderBlock(block: Block): string {
     case "code":
       return `<pre style="background:#1e1e1e;color:#d4d4d4;padding:1em;margin:1em 0;overflow:auto"><code>${esc(block.code)}</code></pre>`;
     case "quiz":
-      return `<div style="background:#f8f8f8;padding:1em;margin:1em 0"><strong>Quiz:</strong> ${esc(block.question)}<ul>${block.options.map((o, i) => `<li>${i === block.correctIndex ? "✓ " : ""}${esc(o)}</li>`).join("")}</ul></div>`;
+      return `<div style="background:#f8f8f8;padding:1em;margin:1em 0"><strong>Quiz:</strong> ${esc(block.question)}<ul>${block.options.map((o, i) => `<li>${block.correctIndex >= 0 && i === block.correctIndex ? "✓ " : ""}${esc(o)}</li>`).join("")}</ul>${block.correctIndex === -1 ? "<p><em>(no correct answer set)</em></p>" : ""}</div>`;
     case "truefalse":
       return `<div style="background:#f8f8f8;padding:1em;margin:1em 0"><strong>True/False:</strong> ${esc(block.question)} <em>(Answer: ${block.correct ? "True" : "False"})</em></div>`;
     case "shortanswer":
