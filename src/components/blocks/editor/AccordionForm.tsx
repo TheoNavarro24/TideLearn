@@ -15,7 +15,7 @@ export function AccordionForm({ block, onChange }: { block: AccordionBlock; onCh
   return (
     <div className="space-y-3">
       {block.items.map((it, idx) => (
-        <div key={it.id} className="grid gap-2 sm:grid-cols-2">
+        <div key={it.id} className="space-y-2 border-b border-border pb-3 last:border-0">
           <div className="space-y-2">
             <FieldLabel>Title</FieldLabel>
             <Input value={it.title} onChange={(e) => updateItem(idx, { title: e.target.value })} />
@@ -24,9 +24,7 @@ export function AccordionForm({ block, onChange }: { block: AccordionBlock; onCh
             <FieldLabel>Content</FieldLabel>
             <RichTextEditor value={it.content} onChange={(html) => updateItem(idx, { content: html })} placeholder="Section content..." />
           </div>
-          <div className="sm:col-span-2">
-            <Button variant="ghost" onClick={() => removeItem(idx)}>Remove section</Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => removeItem(idx)}>Remove section</Button>
         </div>
       ))}
       <Button variant="secondary" onClick={addItem}>Add section</Button>
