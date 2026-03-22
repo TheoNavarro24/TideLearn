@@ -209,7 +209,7 @@ Note: item \`id\` fields are injected automatically — do not provide them.
 ### Inline Knowledge Checks (for content lessons only)
 \`\`\`
 quiz        { type: "quiz",        question: "...",  options: ["A","B","C","D"],  correctIndex: 2,  showFeedback?: true,  feedbackMessage?: "..." }
-              ↑ correctIndex is a NUMBER (0-based index into options), never a string
+              ↑ correctIndex is a NUMBER (0-based index into options, or -1 for "not yet set"). Options need at least 2 entries.
 truefalse   { type: "truefalse",   question: "...",  correct: true | false,  showFeedback?: true,  feedbackCorrect?: "...",  feedbackIncorrect?: "..." }
 shortanswer { type: "shortanswer", question: "...",  answer: "...",  acceptable?: ["alt answer"],  caseSensitive?: false,  trimWhitespace?: true,  showFeedback?: true,  feedbackMessage?: "..." }
 \`\`\`
