@@ -154,3 +154,103 @@ describe("injectLessonIds", () => {
     expect(typeof result.blocks[0].items[0].id).toBe("string");
   });
 });
+
+describe("injectIds — edge cases", () => {
+  it("handles course with only assessment lessons (no kind:content injected)", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "assessment",
+        title: "Exam",
+        questions: [{ text: "Q1", options: ["A","B","C","D"], correctIndex: 0 }],
+        config: {},
+      }],
+    };
+    const result = injectIds(course);
+    expect(result.lessons[0].kind).toBe("assessment");
+  });
+
+  it("handles course with only content lessons (all get kind:content)", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [
+        { title: "L1", blocks: [] },
+        { title: "L2", blocks: [] },
+      ],
+    };
+    const result = injectIds(course);
+    expect(result.lessons.every((l: any) => l.kind === "content")).toBe(true);
+  });
+
+  it("handles mixed course: content and assessment lessons independently", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [
+        { title: "Content", blocks: [] },
+        { kind: "assessment", title: "Exam", questions: [], config: {} },
+      ],
+    };
+    const result = injectIds(course);
+    expect(result.lessons[0].kind).toBe("content");
+    expect(result.lessons[1].kind).toBe("assessment");
+  });
+
+  it("preserves existing lesson id", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{ id: "pre-existing", title: "L1", blocks: [] }],
+    };
+    const result = injectIds(course);
+    expect(result.lessons[0].id).toBe("pre-existing");
+  });
+
+  it("preserves existing question id", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "assessment",
+        title: "Exam",
+        questions: [{ id: "q-pre", text: "Q1", options: ["A","B","C","D"], correctIndex: 0 }],
+        config: {},
+      }],
+    };
+    const result = injectIds(course);
+    expect(result.lessons[0].questions[0].id).toBe("q-pre");
+  });
+
+  it("handles empty blocks array without crash", () => {
+    const course = { schemaVersion: 1, title: "Test", lessons: [{ title: "L1", blocks: [] }] };
+    expect(() => injectIds(course)).not.toThrow();
+  });
+
+  it("handles empty questions array without crash", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{ kind: "assessment", title: "Exam", questions: [], config: {} }],
+    };
+    expect(() => injectIds(course)).not.toThrow();
+  });
+
+  it("content lesson with accordion AND tabs: both get sub-item ids", () => {
+    const course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        title: "L1",
+        blocks: [
+          { type: "accordion", items: [{ title: "S1", content: "C1" }] },
+          { type: "tabs", items: [{ label: "T1", content: "C1" }] },
+        ],
+      }],
+    };
+    const result = injectIds(course);
+    expect(typeof result.lessons[0].blocks[0].items[0].id).toBe("string");
+    expect(typeof result.lessons[0].blocks[1].items[0].id).toBe("string");
+  });
+});
