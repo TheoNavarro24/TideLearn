@@ -1,0 +1,7 @@
+{
+  "tools": ["tidelearn", "rise", "easygenerator", "elucidat", "sana", "courseau", "mindsmith"],
+  "categories": ["blocks", "assessment", "ai", "compliance", "analytics", "collaboration", "templates", "branching", "media", "accessibility", "publishing", "extensibility"],
+  "feature_scores": {},
+  "strategic_tiers": {},
+  "methodology": {}
+}

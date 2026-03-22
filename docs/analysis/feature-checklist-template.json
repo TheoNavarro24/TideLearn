@@ -1,0 +1,107 @@
+{
+  "tool": "{tool-name}",
+  "evidence_source": "[direct|marketing|docs|review]",
+  "accessed_via": "free_trial|free_tier|marketing_only|mixed",
+  "blocks": {
+    "rich_text": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "image": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "video_embed": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "video_upload": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "audio": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "quote_callout": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "accordion": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "tabs": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "table": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "timeline": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "embed_iframe": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "code_block": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "interactive_hotspot": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "flashcard": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "assessment": {
+    "mcq": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "true_false": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "fill_blank": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "matching": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "hotspot_image": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "drag_drop": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "essay_open": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "knowledge_check_unscored": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "question_banks": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "randomisation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "passing_score": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "multiple_attempts": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "ai": {
+    "ai_course_generation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_content_rewrite": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_quiz_generation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_translation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_image_generation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_learner_feedback": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "ai_tutor_chat": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "compliance": {
+    "scorm_12": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "scorm_2004": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "xapi_tin_can": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "lti_consumer": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "lti_provider": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "pdf_export": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "video_export": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "analytics": {
+    "completion_tracking": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "quiz_score_analytics": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "time_on_task": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "learner_progress_view": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "cohort_analytics": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "analytics_dashboard": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "report_export": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "collaboration": {
+    "multi_author": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "inline_commenting": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "review_approval_workflow": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "version_history": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "roles_permissions": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "templates": {
+    "course_templates": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "lesson_templates": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "theme_customisation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "white_label": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "custom_domain": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "branching": {
+    "conditional_navigation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "prerequisites": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "personalised_paths": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "media": {
+    "direct_video_upload": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "cdn_hosting": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "stock_media_library": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "in_product_image_editing": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "subtitle_caption_support": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "accessibility": {
+    "wcag_21_aa": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "keyboard_navigation": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "screen_reader_support": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "alt_text_support": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "publishing": {
+    "shareable_link_no_lms": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "password_protection": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "sso_learner_access": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "embed_in_external_site": {"presence": "yes|partial|no|unknown", "notes": ""}
+  },
+  "extensibility": {
+    "rest_api": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "webhooks": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "zapier_make": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "mcp_server": {"presence": "yes|partial|no|unknown", "notes": ""},
+    "sso_author_access": {"presence": "yes|partial|no|unknown", "notes": ""}
+  }
+}
