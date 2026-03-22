@@ -256,7 +256,8 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
     if (fb && showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Incorrect — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
@@ -299,7 +300,8 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
     if (showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Not quite — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else { fb.textContent = ''; fb.className = 'feedback'; }
   }
@@ -598,7 +600,8 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
     if (fb && showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Incorrect — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
@@ -641,7 +644,8 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
     if (showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Not quite — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else { fb.textContent = ''; fb.className = 'feedback'; }
   }
