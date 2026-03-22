@@ -109,7 +109,7 @@ export function renderCourseToHtml(course: Course): string {
     <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2em auto;padding:0 1em;line-height:1.6;color:#222}</style>
   </head><body>
     <header style="margin-bottom:2em"><h1 style="font-size:2em">${esc(course.title)}</h1>
-    <p>${course.lessons.length} lessons · ${contentLessons.reduce((n, l) => n + (l as any).blocks.length, 0)} blocks</p></header>
+    <p>${course.lessons.length} lessons · ${contentLessons.reduce((n, l) => n + ((l as any).blocks?.length ?? 0), 0)} blocks</p></header>
     ${lessonHtml}
   </body></html>`;
 }
