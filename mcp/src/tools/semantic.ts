@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withAuth, ok, err } from "../lib/supabase.js";
+import { withAuth, ok, err, APP_URL } from "../lib/supabase.js";
 import { mutateCourse } from "../lib/mutate.js";
 import { uid, lessonSchema, blockSchema, type Block } from "../lib/types.js";
 import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
@@ -115,12 +115,12 @@ If unsure of schema, read the tidelearn://instructions resource for the full blo
           const { data: existing } = await client.from("courses").select("id").eq("id", course_id).eq("user_id", userId).single();
           if (!existing) return err("course_not_found", `No course with id ${course_id}`);
           await client.from("courses").update({ content: result.course, title: result.course.title }).eq("id", course_id).eq("user_id", userId);
-          return ok({ course_id });
+          return ok({ course_id, view_url: `${APP_URL}/view?id=${course_id}` });
         }
 
         const { data, error } = await client.from("courses").insert({ user_id: userId, title: result.course.title, content: result.course, is_public: false }).select("id").single();
         if (error || !data) return err("insert_failed", error?.message ?? "Unknown");
-        return ok({ course_id: data.id });
+        return ok({ course_id: data.id, view_url: `${APP_URL}/view?id=${data.id}` });
       })
   );
 

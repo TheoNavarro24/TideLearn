@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { withAuth, ok, err } from "../lib/supabase.js";
+import { withAuth, ok, err, APP_URL } from "../lib/supabase.js";
 import { uid } from "../lib/uid.js";
 
 export function registerCourseTools(server: McpServer) {
@@ -49,7 +49,7 @@ export function registerCourseTools(server: McpServer) {
           .single();
 
         if (error || !data) return err("insert_failed", error?.message ?? "Unknown error");
-        return ok({ course_id: data.id });
+        return ok({ course_id: data.id, view_url: `${APP_URL}/view?id=${data.id}` });
       })
   );
 
@@ -96,7 +96,12 @@ export function registerCourseTools(server: McpServer) {
           .eq("user_id", userId);
 
         if (updateError) return err("update_failed", updateError.message);
-        return ok({ updated: true });
+        const result: Record<string, unknown> = { updated: true };
+        if (is_public === true) {
+          result.view_url = `${APP_URL}/view?id=${course_id}`;
+          result.note = "Course is now public. Share view_url with learners.";
+        }
+        return ok(result);
       })
   );
 

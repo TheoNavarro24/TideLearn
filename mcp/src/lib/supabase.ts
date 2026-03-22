@@ -9,6 +9,7 @@ import {
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? "";
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+export const APP_URL = process.env.APP_URL ?? "https://tidelearn.com";
 
 if (!SUPABASE_URL) throw new Error("SUPABASE_URL env var is required");
 if (!SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY env var is required");
