@@ -2,6 +2,53 @@ import { describe, it, expect } from "vitest";
 import { blockSchema } from "../src/lib/types.js";
 import { injectSubItemIds } from "../src/tools/semantic.js";
 
+describe("strict block validation", () => {
+  it("rejects heading with empty text", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "heading", text: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects quiz with empty question", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "quiz", question: "", options: ["A", "B"], correctIndex: 0 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects quiz with fewer than 2 options", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "quiz", question: "Q?", options: ["A"], correctIndex: 0 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects quiz with empty option strings", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "quiz", question: "Q?", options: ["A", ""], correctIndex: 0 });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts quiz with correctIndex -1", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "quiz", question: "Q?", options: ["A", "B"], correctIndex: -1 });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects image with empty src", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "image", src: "", alt: "test" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects list with no items", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "list", style: "bulleted", items: [] });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects accordion with empty title", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "accordion", items: [{ id: "i1", title: "", content: "x" }] });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts accordion with empty content (content is optional-ish)", () => {
+    const result = blockSchema.safeParse({ id: "b1", type: "accordion", items: [{ id: "i1", title: "T", content: "" }] });
+    expect(result.success).toBe(true);
+  });
+});
+
 describe("blockSchema — document block", () => {
   it("accepts a valid document block", () => {
     const result = blockSchema.safeParse({

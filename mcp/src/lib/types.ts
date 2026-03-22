@@ -158,27 +158,27 @@ export type Course = { schemaVersion: 1; title: string; lessons: Lesson[] };
 export const headingBlockSchema = z.object({
   id: z.string(),
   type: z.literal("heading"),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const textBlockSchema = z.object({
   id: z.string(),
   type: z.literal("text"),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const imageBlockSchema = z.object({
   id: z.string(),
   type: z.literal("image"),
-  src: z.string(),
-  alt: z.string(),
+  src: z.string().min(1),
+  alt: z.string().min(1),
 });
 
 export const quizBlockSchema = z.object({
   id: z.string(),
   type: z.literal("quiz"),
-  question: z.string(),
-  options: z.array(z.string()),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2),
   correctIndex: z.number(),
   showFeedback: z.boolean().optional(),
   feedbackMessage: z.string().optional(),
@@ -187,14 +187,14 @@ export const quizBlockSchema = z.object({
 export const codeBlockSchema = z.object({
   id: z.string(),
   type: z.literal("code"),
-  language: z.string(),
-  code: z.string(),
+  language: z.string().min(1),
+  code: z.string().min(1),
 });
 
 export const trueFalseBlockSchema = z.object({
   id: z.string(),
   type: z.literal("truefalse"),
-  question: z.string(),
+  question: z.string().min(1),
   correct: z.boolean(),
   showFeedback: z.boolean().optional(),
   feedbackCorrect: z.string().optional(),
@@ -204,8 +204,8 @@ export const trueFalseBlockSchema = z.object({
 export const shortAnswerBlockSchema = z.object({
   id: z.string(),
   type: z.literal("shortanswer"),
-  question: z.string(),
-  answer: z.string(),
+  question: z.string().min(1),
+  answer: z.string().min(1),
   acceptable: z.array(z.string()).optional(),
   caseSensitive: z.boolean().optional(),
   trimWhitespace: z.boolean().optional(),
@@ -217,26 +217,26 @@ export const listBlockSchema = z.object({
   id: z.string(),
   type: z.literal("list"),
   style: z.union([z.literal("bulleted"), z.literal("numbered")]),
-  items: z.array(z.string()),
+  items: z.array(z.string().min(1)).min(1),
 });
 
 export const quoteBlockSchema = z.object({
   id: z.string(),
   type: z.literal("quote"),
-  text: z.string(),
+  text: z.string().min(1),
   cite: z.string().optional(),
 });
 
 export const accordionBlockSchema = z.object({
   id: z.string(),
   type: z.literal("accordion"),
-  items: z.array(z.object({ id: z.string(), title: z.string(), content: z.string() })),
+  items: z.array(z.object({ id: z.string(), title: z.string().min(1), content: z.string() })).min(1),
 });
 
 export const tabsBlockSchema = z.object({
   id: z.string(),
   type: z.literal("tabs"),
-  items: z.array(z.object({ id: z.string(), label: z.string(), content: z.string() })),
+  items: z.array(z.object({ id: z.string(), label: z.string().min(1), content: z.string() })).min(1),
 });
 
 export const dividerBlockSchema = z.object({
@@ -254,26 +254,26 @@ export const calloutBlockSchema = z.object({
   type: z.literal("callout"),
   variant: z.union([z.literal("info"), z.literal("success"), z.literal("warning"), z.literal("danger")]),
   title: z.string().optional(),
-  text: z.string(),
+  text: z.string().min(1),
 });
 
 export const videoBlockSchema = z.object({
   id: z.string(),
   type: z.literal("video"),
-  url: z.string(),
+  url: z.string().min(1),
 });
 
 export const audioBlockSchema = z.object({
   id: z.string(),
   type: z.literal("audio"),
-  src: z.string(),
+  src: z.string().min(1),
   title: z.string().optional(),
 });
 
 export const documentBlockSchema = z.object({
   id: z.string(),
   type: z.literal("document"),
-  src: z.string(),
+  src: z.string().min(1),
   fileType: z.union([z.literal("pdf"), z.literal("docx"), z.literal("xlsx"), z.literal("pptx")]),
   title: z.string().optional(),
 });
