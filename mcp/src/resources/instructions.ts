@@ -21,6 +21,7 @@ You interact with it entirely through these MCP tools — no direct database acc
 6. **Always call get_course before editing** — never guess block ids or lesson ids; fetch the course to get current ids.
 7. **Re-login if you get auth_required** — call tidelearn_login again then retry.
 8. **This MCP runs locally** — tidelearn_login and upload_media require local execution (Claude Desktop or Claude Code). They will not work if this MCP is deployed remotely.
+9. **Required fields must be non-empty** — blocks with required text fields (question, text, src, alt, code, language, answer) must have non-empty strings. Quiz options need at least 2 non-empty entries. List items need at least 1 non-empty entry. Accordion/tabs need at least 1 item with non-empty title/label. Empty required fields are rejected by all write tools.
 
 ---
 
@@ -159,7 +160,7 @@ The \`source\` field on questions is a topic tag (e.g. \`"Module 1"\`, \`"Health
 
 ### Blocks (content lessons only — not usable on assessment lessons)
 - add_block(course_id, lesson_id, block, position?) — add one block
-- update_block(course_id, lesson_id, block_id, fields) — patch specific fields on one block
+- update_block(course_id, lesson_id, block_id, fields) — patch specific fields on one block; the merged result is validated against the block schema and rejected if invalid
 - move_block(course_id, lesson_id, block_id, new_position, target_lesson_id?) — reorder or move between lessons
 - delete_block(course_id, lesson_id, block_id) — remove one block
 - rewrite_block(course_id, lesson_id, block_id, updated_block) — replace one block entirely
