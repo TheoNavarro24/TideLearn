@@ -3,7 +3,7 @@ import { decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourseFromCloud } from "@/lib/courses";
 import { getSpec } from "@/components/blocks/registry";
 
-import { courseSchema, type Course } from "@/types/course";
+import { courseSchemaPermissive as courseSchema, type Course } from "@/types/course";
 import { AssessmentView } from "@/pages/AssessmentView";
 
 interface QuizAnsweredDetail {
