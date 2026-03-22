@@ -11,6 +11,8 @@ import JSZip from "jszip";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
+import { validateCourseBlocks, type BlockWarning } from "@/lib/validate-blocks";
+
 // Shared types
 import { Block, ContentLesson, AssessmentLesson, Lesson, uid } from "@/types/course";
 import { AssessmentEditor } from "@/components/assessment/AssessmentEditor";
@@ -56,6 +58,14 @@ export default function Editor() {
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [publishWarnings, setPublishWarnings] = useState<BlockWarning[]>([]);
+
+  const openPublish = () => {
+    const contentLessons = lessons.filter(l => l.kind === "content") as ContentLesson[];
+    setPublishWarnings(validateCourseBlocks(contentLessons));
+    setPublishOpen(true);
+    setShowImportSection(false);
+  };
   const [showImportSection, setShowImportSection] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const courseId = useMemo(() => new URLSearchParams(window.location.search).get("courseId"), []);
@@ -632,7 +642,7 @@ export default function Editor() {
 
           {/* Publish button */}
           <button
-            onClick={() => { setPublishOpen(true); setShowImportSection(false); }}
+            onClick={openPublish}
             style={{
               background: "var(--gradient-primary)",
               border: "none",
@@ -772,7 +782,7 @@ export default function Editor() {
         {/* Footer */}
         <div style={{ borderTop: "1px solid rgba(20,184,166,0.12)", padding: "8px" }}>
           <button
-            onClick={() => { setPublishOpen(true); setShowImportSection(false); }}
+            onClick={openPublish}
             style={{
               width: "100%",
               background: "none",
@@ -959,6 +969,7 @@ export default function Editor() {
           onDragLeave={handleDragLeave}
           onDrop={handleDropImport}
           hasAssessments={lessons.some(l => l.kind === "assessment")}
+          warnings={publishWarnings}
         />
       )}
     </div>
@@ -1278,6 +1289,7 @@ interface PublishModalProps {
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
   hasAssessments: boolean;
+  warnings: BlockWarning[];
 }
 
 function PublishModal({
@@ -1300,6 +1312,7 @@ function PublishModal({
   onDragLeave,
   onDrop,
   hasAssessments,
+  warnings,
 }: PublishModalProps) {
   return (
     <div
@@ -1328,6 +1341,22 @@ function PublishModal({
 
         {/* Modal top */}
         <div style={{ padding: "28px 32px 24px" }}>
+          {warnings.length > 0 && (
+            <div style={{ background: "#fef9c3", border: "1px solid #f59e0b", borderRadius: 8, padding: "12px 16px", marginBottom: 16 }}>
+              <p style={{ fontWeight: 600, fontSize: 13, color: "#92400e", marginBottom: 8 }}>
+                ⚠ {warnings.reduce((n, w) => n + w.issues.length, 0)} issue{warnings.reduce((n, w) => n + w.issues.length, 0) !== 1 ? "s" : ""} found:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 12, color: "#78350f" }}>
+                {warnings.map((w, i) =>
+                  w.issues.map((issue, j) => (
+                    <li key={`${i}-${j}`}>
+                      Lesson "{w.lessonTitle}", block {w.blockIndex + 1} ({w.blockType}): {issue}
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          )}
           {/* Success circle */}
           <div style={{
             width: 52,
