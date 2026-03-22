@@ -97,6 +97,7 @@ BLOCK TYPES — pass exactly these fields in the 'block' object:
   quiz       { type:"quiz", question:"...", options:["A","B","C","D"], correctIndex:0 }
   truefalse  { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
   shortanswer { type:"shortanswer", question:"...", answer:"...", acceptable?:["alt1"], caseSensitive?:false, trimWhitespace?:true }
+  document   { type:"document", src:"https://...", fileType:"pdf"|"docx"|"xlsx"|"pptx", title?:"..." }
   divider    { type:"divider" }
   toc        { type:"toc" }
 
@@ -159,6 +160,7 @@ position is 1-based and optional; omit to append at the end.`,
       withAuth(async (client, userId) => {
         let assessmentError = false;
         let validationError: string | null = null;
+        let blockNotFound = false;
 
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const targetLesson = course.lessons.find((l) => l.id === lesson_id);
@@ -170,13 +172,15 @@ position is 1-based and optional; omit to append at the end.`,
           // Find the block, merge fields, validate the result
           const cl = targetLesson as any;
           const existingBlock = cl?.blocks?.find((b: any) => b.id === block_id);
-          if (existingBlock) {
-            const merged = { ...existingBlock, ...fields, id: existingBlock.id, type: existingBlock.type };
-            const parsed = blockSchema.safeParse(merged);
-            if (!parsed.success) {
-              validationError = `Validation failed:\n${formatZodErrors(parsed.error).map((e: string) => `- ${e}`).join("\n")}`;
-              return course;
-            }
+          if (!existingBlock) {
+            blockNotFound = true;
+            return course;
+          }
+          const merged = { ...existingBlock, ...fields, id: existingBlock.id, type: existingBlock.type };
+          const parsed = blockSchema.safeParse(merged);
+          if (!parsed.success) {
+            validationError = `Validation failed:\n${formatZodErrors(parsed.error).map((e: string) => `- ${e}`).join("\n")}`;
+            return course;
           }
 
           return {
@@ -194,6 +198,7 @@ position is 1-based and optional; omit to append at the end.`,
           };
         });
         if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
+        if (blockNotFound) return err("block_not_found", `No block with id ${block_id} in lesson ${lesson_id}`);
         if (validationError) return err("validation_error", validationError);
         if (mutError) return err(mutError, "Failed to update block");
         return ok({ message: "Block updated" });
@@ -262,22 +267,29 @@ position is 1-based and optional; omit to append at the end.`,
     async ({ course_id, lesson_id, block_id }) =>
       withAuth(async (client, userId) => {
         let assessmentError = false;
+        let blockNotFound = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const targetLesson = course.lessons.find((l) => l.id === lesson_id);
           if ((targetLesson as any)?.kind === "assessment") {
             assessmentError = true;
             return course;
           }
+          const cl = targetLesson as any;
+          if (!cl?.blocks?.some((b: any) => b.id === block_id)) {
+            blockNotFound = true;
+            return course;
+          }
           return {
             ...course,
             lessons: course.lessons.map((l) => {
               if (l.id !== lesson_id) return l;
-              const cl = l as any;
-              return { ...l, blocks: cl.blocks.filter((b: any) => b.id !== block_id) };
+              const cl2 = l as any;
+              return { ...l, blocks: cl2.blocks.filter((b: any) => b.id !== block_id) };
             }),
           };
         });
         if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
+        if (blockNotFound) return err("block_not_found", `No block with id ${block_id} in lesson ${lesson_id}`);
         if (mutError) return err(mutError, "Failed to delete block");
         return ok({ message: "Block deleted" });
       })

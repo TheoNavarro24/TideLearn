@@ -165,9 +165,9 @@ Every check below should return a meaningful error, not crash or return generic 
 | 9.9 | `save_course({ schemaVersion: 1, title: "T", lessons: [{ title: "No kind", blocks: [] }] })` | (After inject, kind is added — this may succeed. Test and document actual behaviour.) |
 | 9.10 | `add_block(course_id, lesson_id, { type: "banner", text: "hello" })` | `invalid_block_type` or similar — named error |
 | 9.11 | `add_question(course_id, lesson_id, { text: "Q", options: ["A","B","C"], correctIndex: 0 })` | Error (3 options, need 4) |
-| 9.12 | `update_block(valid_ids, "00000000-0000-0000-0000-000000000000", {})` | Named error, not a crash |
-| 9.13 | `delete_block(valid_ids, "00000000-0000-0000-0000-000000000000")` | Named error, not a crash |
-| 9.14 | `move_block(valid_ids, block_id, 9999)` | Error or clamped — document current behaviour |
+| 9.12 | `update_block(valid_ids, "00000000-0000-0000-0000-000000000000", {})` | `block_not_found` error |
+| 9.13 | `delete_block(valid_ids, "00000000-0000-0000-0000-000000000000")` | `block_not_found` error |
+| 9.14 | `move_block(valid_ids, block_id, 9999)` | Success — block clamped to end; verify with `get_lesson` |
 | 9.15 | `import_questions` with one invalid question (3 options) in a batch of 5 | All-or-nothing: 0 imported, error |
 
 ---

@@ -314,6 +314,9 @@ const assessmentLessonSchema = z.object({
     text: z.string(),
     options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
     correctIndex: z.number().int().min(0).max(3),
+    bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
+    feedback: z.string().optional(),
+    source: z.string().optional(),
   }).passthrough()),
   config: z.object({}).passthrough(),
 }).passthrough();
