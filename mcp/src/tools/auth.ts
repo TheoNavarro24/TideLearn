@@ -62,7 +62,7 @@ const LOGIN_PAGE = `<!DOCTYPE html>
 <body>
   <div class="card">
     <h1>TideLearn</h1>
-    <p class="sub">Sign in to continue to Claude</p>
+    <p class="sub">Sign in to continue</p>
     <form method="POST" action="/login">
       <label for="email">Email</label>
       <input id="email" name="email" type="email" autocomplete="email" required autofocus />

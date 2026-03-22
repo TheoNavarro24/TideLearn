@@ -39,7 +39,7 @@ export function isSessionValid(session: StoredSession): boolean {
 
 /**
  * Sign in with email and password.
- * Saves the session to macOS Keychain and returns it.
+ * Saves the session to ~/.tidelearn-session.json and returns it.
  */
 export async function signInWithEmailPassword(
   supabaseUrl: string,

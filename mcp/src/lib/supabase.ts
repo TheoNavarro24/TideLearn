@@ -75,7 +75,7 @@ export async function withAuth(
           type: "text",
           text: JSON.stringify({
             code: "auth_required",
-            message: "You are not logged in to TideLearn. Please call the tidelearn_login tool with your email and password first.",
+            message: "You are not logged in to TideLearn. Please call the tidelearn_login tool to open a browser login page.",
           }),
         },
       ],
