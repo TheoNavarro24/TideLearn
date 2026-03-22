@@ -1,7 +1,7 @@
 import { CalloutBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RichTextEditor } from "@/components/richtext/RichTextEditor";
 import { FieldLabel } from "./FieldLabel";
 
 export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange: (b: CalloutBlock) => void }) {
@@ -29,7 +29,7 @@ export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange
       </div>
       <div className="space-y-2">
         <FieldLabel>Text</FieldLabel>
-        <Textarea value={block.text} onChange={(e) => onChange({ ...block, text: e.target.value })} />
+        <RichTextEditor value={block.text} onChange={(html) => onChange({ ...block, text: html })} placeholder="Callout content..." />
       </div>
     </div>
   );
