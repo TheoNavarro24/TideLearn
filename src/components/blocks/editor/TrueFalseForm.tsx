@@ -13,7 +13,7 @@ export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onCh
       </div>
       <div className="flex items-center justify-between rounded-md border p-3">
         <div>
-          <p className="text-sm font-medium">Correct answer is True</p>
+          <p className="text-sm font-medium">The correct answer is: <strong>{block.correct ? "True" : "False"}</strong></p>
           <p className="text-xs text-muted-foreground">Toggle to set whether the statement is true.</p>
         </div>
         <Switch checked={block.correct} onCheckedChange={(v) => onChange({ ...block, correct: v })} />
