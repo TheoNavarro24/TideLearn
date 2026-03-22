@@ -39,7 +39,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
   return (
     <div className="grid gap-3">
       <div className="space-y-2">
-        <FieldLabel>Document type</FieldLabel>
+        <FieldLabel required>Document type</FieldLabel>
         <Select
           value={block.fileType}
           onValueChange={(v) => onChange({ ...block, fileType: v as DocumentBlock["fileType"] })}
@@ -54,7 +54,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
       </div>
 
       <div className="space-y-2">
-        <FieldLabel>Document URL</FieldLabel>
+        <FieldLabel required>Document URL</FieldLabel>
         <div className="flex gap-2">
           <Input
             value={block.src}

@@ -21,7 +21,7 @@ export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: 
   return (
     <div className="grid gap-3">
       <div className="space-y-2">
-        <FieldLabel>Question</FieldLabel>
+        <FieldLabel required>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
 
@@ -31,7 +31,7 @@ export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: 
 
       {block.options.map((opt, i) => (
         <div key={i} className="space-y-1">
-          <FieldLabel>Option {String.fromCharCode(65 + i)}</FieldLabel>
+          <FieldLabel required>Option {String.fromCharCode(65 + i)}</FieldLabel>
           <div className="flex items-center gap-2">
             <input
               type="radio"

@@ -30,7 +30,7 @@ export function ListForm({ block, onChange }: { block: ListBlock; onChange: (b: 
         </Select>
       </div>
       <div className="space-y-2">
-        <FieldLabel>Items</FieldLabel>
+        <FieldLabel required>Items</FieldLabel>
         <div className="space-y-2">
           {block.items.map((it, idx) => (
             <div key={idx} className="flex items-start gap-2">

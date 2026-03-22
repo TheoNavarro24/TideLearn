@@ -8,7 +8,7 @@ export function TrueFalseForm({ block, onChange }: { block: TrueFalseBlock; onCh
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <FieldLabel>Question</FieldLabel>
+        <FieldLabel required>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
       <div className="flex items-center justify-between rounded-md border p-3">

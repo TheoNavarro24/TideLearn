@@ -43,7 +43,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
     <div className="space-y-2">
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-2">
-          <FieldLabel>Image URL</FieldLabel>
+          <FieldLabel required>Image URL</FieldLabel>
           <div className="flex gap-2">
             <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} />
             {user && (
@@ -68,7 +68,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
           </div>
         </div>
         <div className="space-y-2">
-          <FieldLabel>Alt text</FieldLabel>
+          <FieldLabel required>Alt text</FieldLabel>
           <Input value={block.alt} onChange={(e) => onChange({ ...block, alt: e.target.value })} />
         </div>
       </div>

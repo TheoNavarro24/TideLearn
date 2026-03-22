@@ -7,11 +7,11 @@ export function CodeForm({ block, onChange }: { block: CodeBlock; onChange: (b: 
   return (
     <div className="space-y-2">
       <div className="space-y-2">
-        <FieldLabel>Language</FieldLabel>
+        <FieldLabel required>Language</FieldLabel>
         <Input value={block.language} onChange={(e) => onChange({ ...block, language: e.target.value })} placeholder="ts" />
       </div>
       <div className="space-y-2">
-        <FieldLabel>Code</FieldLabel>
+        <FieldLabel required>Code</FieldLabel>
         <Textarea
           value={block.code}
           onChange={(e) => onChange({ ...block, code: e.target.value })}

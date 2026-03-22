@@ -8,7 +8,7 @@ export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <FieldLabel>Variant</FieldLabel>
+        <FieldLabel required>Variant</FieldLabel>
         <Select value={block.variant} onValueChange={(v) => onChange({ ...block, variant: v as CalloutBlock["variant"] })}>
           <SelectTrigger>
             <SelectValue placeholder="Variant" />
@@ -28,7 +28,7 @@ export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange
         <Input value={block.title ?? ''} onChange={(e) => onChange({ ...block, title: e.target.value })} />
       </div>
       <div className="space-y-2">
-        <FieldLabel>Text</FieldLabel>
+        <FieldLabel required>Text</FieldLabel>
         <RichTextEditor value={block.text} onChange={(html) => onChange({ ...block, text: html })} placeholder="Callout content..." />
       </div>
     </div>

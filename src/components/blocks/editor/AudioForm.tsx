@@ -28,7 +28,7 @@ export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b
 
   return (
     <div className="space-y-2">
-      <FieldLabel>Audio URL</FieldLabel>
+      <FieldLabel required>Audio URL</FieldLabel>
       <div className="flex gap-2">
         <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} placeholder="https://..." />
         {user && (

@@ -17,7 +17,7 @@ export function AccordionForm({ block, onChange }: { block: AccordionBlock; onCh
       {block.items.map((it, idx) => (
         <div key={it.id} className="space-y-2 border-b border-border pb-3 last:border-0">
           <div className="space-y-2">
-            <FieldLabel>Title</FieldLabel>
+            <FieldLabel required>Title</FieldLabel>
             <Input value={it.title} onChange={(e) => updateItem(idx, { title: e.target.value })} />
           </div>
           <div className="space-y-2">

@@ -10,11 +10,11 @@ export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <FieldLabel>Question</FieldLabel>
+        <FieldLabel required>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
       <div className="space-y-2">
-        <FieldLabel>Correct answer</FieldLabel>
+        <FieldLabel required>Correct answer</FieldLabel>
         <Input value={block.answer} onChange={(e) => onChange({ ...block, answer: e.target.value })} />
       </div>
       <div className="space-y-2">

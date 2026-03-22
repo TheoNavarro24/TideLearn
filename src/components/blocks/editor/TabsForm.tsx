@@ -17,7 +17,7 @@ export function TabsForm({ block, onChange }: { block: TabsBlock; onChange: (b: 
       {block.items.map((it, idx) => (
         <div key={it.id} className="grid gap-2 sm:grid-cols-2">
           <div className="space-y-2">
-            <FieldLabel>Label</FieldLabel>
+            <FieldLabel required>Label</FieldLabel>
             <Input value={it.label} onChange={(e) => updateItem(idx, { label: e.target.value })} />
           </div>
           <div className="space-y-2">

@@ -38,7 +38,7 @@ export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b
 
   return (
     <div className="space-y-2">
-      <FieldLabel>Video URL (YouTube, Vimeo, or .mp4)</FieldLabel>
+      <FieldLabel required>Video URL (YouTube, Vimeo, or .mp4)</FieldLabel>
       <div className="flex gap-2">
         <Input value={block.url} onChange={(e) => onChange({ ...block, url: e.target.value })} placeholder="https://..." />
         {user && (
