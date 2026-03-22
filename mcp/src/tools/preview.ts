@@ -6,6 +6,13 @@ import { type Course, type Block, blockSchema } from "../lib/types.js";
 // ─── Pure rendering helpers ──────────────────────────────────────────────────
 
 function renderBlock(block: Block): string {
+  // Check required fields — render warning placeholder for broken blocks
+  const validation = blockSchema.safeParse(block);
+  if (!validation.success) {
+    const fields = validation.error.issues.map(i => i.path.join(".")).join(", ");
+    return `<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:4px;padding:1em;margin:1em 0">⚠ [${block.type} block] Missing required field: ${fields}</div>`;
+  }
+
   switch (block.type) {
     case "heading":
       return `<h2 style="font-size:1.4em;margin:1em 0 0.5em">${esc(block.text)}</h2>`;

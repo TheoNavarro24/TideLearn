@@ -197,6 +197,24 @@ describe("analyzeCourse — assessment lesson awareness", () => {
   });
 });
 
+it("renders warning placeholder for blocks with empty required fields", () => {
+  const course: Course = {
+    schemaVersion: 1,
+    title: "Test",
+    lessons: [{
+      kind: "content",
+      id: "l1",
+      title: "L1",
+      blocks: [
+        { id: "b1", type: "image", src: "", alt: "" },
+      ],
+    }],
+  };
+  const html = renderCourseToHtml(course);
+  expect(html).toContain("Missing required field");
+  expect(html).not.toContain("<img");
+});
+
 describe("analyzeCourse — empty field detection", () => {
   it("flags blocks with empty required fields", () => {
     const course: Course = {
