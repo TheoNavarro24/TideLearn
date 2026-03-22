@@ -1,0 +1,47 @@
+{
+  "tool": "elucidat",
+  "dimensions": {
+    "onboarding": {
+      "score": 3,
+      "evidence": "[marketing]",
+      "narrative": "Elucidat's marketing emphasizes that 'anyone' can get started quickly, with templates and guided workflows aimed at novice authors and SMEs. However, there is no self-serve free trial — you must book a demo first, and the 14-day trial is only unlocked post-demo. This gated entry creates friction and makes genuine onboarding assessment from public sources impossible. Note: scored from marketing/public sources only.",
+      "screenshots": ["elucidat-onboarding-1.png"]
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Marketing imagery shows polished, professional course output with clean UI, consistent branding, and well-designed components panels. G2 reviewers describe the interface as 'clean and intuitive.' The platform supports global brand control, customizable styles, and custom fonts — suggesting strong visual consistency for enterprise teams. Some reviewers note limited animation/design flexibility compared to Articulate Storyline. Note: scored from marketing/public sources only.",
+      "screenshots": ["elucidat-visual-1.png", "elucidat-editor-1.png"]
+    },
+    "editor": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "The dual authoring model (Author for advanced users, Create for SMEs) is a strong architectural choice. Marketing shows a component-based editor with a clear panel structure. G2 reviewers praise ease of use and speed of course creation, though some flag editing as 'clunky' for complex layouts. Built-in screen recording, text-to-speech, and AI generation reduce reliance on external tools. Note: no direct editor access; scored from marketing imagery and G2 reviews only.",
+      "screenshots": ["elucidat-editor-1.png", "elucidat-blocks-1.png"]
+    },
+    "blocks": {
+      "score": 3,
+      "evidence": "[marketing]",
+      "narrative": "The All Features page lists rich media blocks (text, image, video embed/upload, audio, polling, branching), but does not enumerate specific interactive block types like accordions, tabs, or timelines by name. The 'customizable page layouts' and 'best practice templates' suggest a wide range, but without direct access the precise block catalogue is unclear. G2 reviewers mention 'many features' and 'pre-built interactions.' Note: scored from marketing/public sources only.",
+      "screenshots": ["elucidat-blocks-1.png"]
+    },
+    "learner": {
+      "score": 4,
+      "evidence": "[marketing]",
+      "narrative": "Marketing imagery of published courses shows clean, modern, mobile-responsive learner interfaces with branding, imagery, and interactive elements visible. The 'Create' tool is designed specifically for fast, high-quality learner-facing output. Personalized learning paths, gamification (badges), and branching all target learner engagement. Offline access is mentioned for areas without connectivity. Note: scored from marketing/public sources only.",
+      "screenshots": ["elucidat-learner-1.png"]
+    },
+    "publishing": {
+      "score": 5,
+      "evidence": "[marketing]",
+      "narrative": "Elucidat's publishing story is one of its clearest strengths: SCORM 1.2 and SCORM 2004 export, xAPI/Tin Can support, URL release (no LMS needed), direct integrations with 15+ LMS platforms, instant re-release without re-uploading SCORM packages, and multi-language SCORM in a single package. This is enterprise-grade publishing with very broad compatibility. Note: scored from marketing/public sources only.",
+      "screenshots": ["elucidat-publishing-1.png"]
+    },
+    "extensibility": {
+      "score": 4,
+      "evidence": "[marketing|docs]",
+      "narrative": "Elucidat has a documented REST API (Account, Projects, Authors, Releases endpoints), Webhooks, and a TinCan/xAPI LRS API — confirming serious extensibility. SSO (SAML) is available for authors. Deep native integrations exist with Docebo and CrossKnowledge. No Zapier/Make connectors or MCP server found. API access is gated to higher tiers. Note: API details from public help docs; scored from marketing and docs only.",
+      "screenshots": ["elucidat-extensibility-1.png"]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "tool": "elucidat",
+  "category_scores": {
+    "blocks": {
+      "score": 3,
+      "narrative": "Core media types (rich text, image, video embed/upload, audio, iframe) are confirmed. Interactive types like polling and branching video are confirmed. However, specific named block types like accordion, tabs, timeline, table, flashcard, hotspot, and code block are not confirmed in public sources. The 'customizable page layouts' suggest breadth but the public feature list does not enumerate individual block types explicitly. Evidence: [marketing]"
+    },
+    "assessment": {
+      "score": 4,
+      "narrative": "Strong assessment capability confirmed: MCQ, surveys, passing score, question pools/randomization, open-text feedback, and interactive polling are all explicitly listed. Gamification via badges adds engagement. Gaps include no explicit confirmation of fill-in-the-blank, matching, drag-drop, or hotspot image question types in public sources — though these are common in enterprise tools of this calibre. Evidence: [marketing]"
+    },
+    "ai": {
+      "score": 3,
+      "narrative": "AI course generation from source material and content enhancement (intros/summaries) are confirmed and included on all plans. Auto-translate with AI (75 languages + glossary) is a strong, confirmed AI feature. An upcoming 'Elucidat Expert' AI design partner is announced as 'coming soon.' Missing: AI image generation, AI learner feedback, AI tutor/chat. AI quiz generation is implied but not confirmed standalone. Evidence: [marketing]"
+    },
+    "compliance": {
+      "score": 5,
+      "narrative": "Best-in-class compliance output: SCORM 1.2, SCORM 2004, xAPI/Tin Can all explicitly confirmed on all plans. Multi-language SCORM in a single package is a notable enterprise differentiator. Word export available for offline documentation. No LTI mentioned. Evidence: [marketing|docs]"
+    },
+    "analytics": {
+      "score": 3,
+      "narrative": "Analytics dashboards, learner-level data (completions, scores, responses), and data export are confirmed features. However, analytics dashboards are only included by default on Enterprise tier — they are add-ons on Growth and Team. Time-on-task and cohort analytics are not explicitly confirmed. The analytics story is solid but gated behind higher tiers. Evidence: [marketing]"
+    },
+    "collaboration": {
+      "score": 5,
+      "narrative": "Collaboration is one of Elucidat's strongest confirmed areas: multi-author support, inline review comments, external reviewers via time-limited links, comment audit trail, project locking, review workflow, and custom user roles are all explicitly listed. G2 reviews consistently praise the collaboration and review features. Evidence: [marketing|review]"
+    },
+    "templates": {
+      "score": 5,
+      "narrative": "Elucidat has a rich template story: ready-made best-practice templates (with inline guidance and storyboards), company templates for brand consistency, customizable page layouts, global brand control, custom fonts, and an asset library. Reviewers describe 'hundreds of templates.' Template-led production is core to the platform's value proposition. Evidence: [marketing|review]"
+    },
+    "branching": {
+      "score": 4,
+      "narrative": "Branching content, personalized learning paths, branching video, and content personalization using names/scores/responses are all explicitly confirmed. These are available on all plans. Prerequisites as a named feature are not confirmed. Evidence: [marketing]"
+    },
+    "media": {
+      "score": 4,
+      "narrative": "Direct video upload, YouTube/Brightcove embed, audio upload, text-to-speech, screen and camera recording, Pixabay stock library, and CDN hosting are all confirmed. In-product image editing and subtitle/caption support are not explicitly confirmed in public sources. The screen and camera recording built-in is a notable differentiator. Evidence: [marketing]"
+    },
+    "accessibility": {
+      "score": 5,
+      "narrative": "Comprehensive and explicit: WCAG 2.1 AA confirmed, Section 508 compliance confirmed, keyboard navigation, screen reader compatibility, alt text support, customizable colour contrast, logical content structure, readable fonts, and accessibility-ready page types all explicitly listed on the All Features page. Evidence: [marketing]"
+    },
+    "publishing": {
+      "score": 5,
+      "narrative": "Best-in-class publishing: SCORM 1.2 + 2004, xAPI, URL release (no LMS required), instant re-release, multi-language SCORM in a single package, 15+ LMS direct integrations, and offline access options all confirmed. This is Elucidat's clearest competitive strength. Evidence: [marketing]"
+    },
+    "extensibility": {
+      "score": 4,
+      "narrative": "Full REST API (Account, Projects, Authors, Releases), Webhooks, and xAPI LRS API are all confirmed in help documentation. SSO (SAML) for authors confirmed. Deep LMS integrations with Docebo and CrossKnowledge. No Zapier/Make native connectors, no MCP server. API access is gated to higher-tier plans, which is a limitation for smaller customers. Evidence: [marketing|docs]"
+    }
+  }
+}

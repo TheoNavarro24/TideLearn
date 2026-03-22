@@ -1,0 +1,117 @@
+{
+  "tool": "elucidat",
+  "evidence_source": "mixed",
+  "accessed_via": "marketing_only",
+  "screenshots": [
+    "elucidat-onboarding-1.png",
+    "elucidat-editor-1.png",
+    "elucidat-visual-1.png",
+    "elucidat-blocks-1.png",
+    "elucidat-learner-1.png",
+    "elucidat-publishing-1.png",
+    "elucidat-extensibility-1.png"
+  ],
+  "observations": "Elucidat is an enterprise-focused cloud-based elearning authoring platform, now owned by Learning Pool. It offers two distinct authoring modes: 'Author' (advanced, for learning teams wanting customization, interactivity, and creative control) and 'Create' (simplified, template-led mode for subject matter experts and novice authors). Key differentiators from marketing include one-click auto-translation into 75+ languages with a glossary, multi-language SCORM packages, instant course re-release without re-uploading to LMS, and a strong collaboration/review workflow. The platform targets enterprise organizations training thousands of employees — it explicitly states it is not suited for small teams.\n\nPricing is entirely quote-based with no public price except for the entry 'Growth' tier starting at $1,650/user/year for 3-5 users. There is a 14-day free trial available after booking a demo. The feature matrix is well-documented on the pricing page and reveals that analytics dashboards and learner data export are add-ons on Growth and Team tiers, and only included by default on Enterprise. SSO for authors is an add-on on Growth/Team and included on Enterprise. The platform is WCAG 2.1 AA compliant, ISO 27001 certified, and GDPR compliant.\n\nThe help center confirms a full REST API (Account API, Projects API, Authors API) plus Webhooks and a xAPI/TinCan LRS API. API access appears to be gated behind the 'Scale' tier (a legacy plan name). G2 reviews (4.4/5 from 184 reviewers, rated 'Enterprise Leader' by G2) praise ease of use, templates, collaboration, and support but flag editing clunkiness, limited animation/design flexibility compared to Articulate Storyline, and occasional performance issues on large projects. No mention of Zapier/Make integrations or an MCP server was found on any public page.",
+  "blocks": {
+    "rich_text": {"presence": "yes", "notes": "[marketing] Core content type mentioned throughout; text editing is foundational to both Author and Create modes"},
+    "image": {"presence": "yes", "notes": "[marketing] Built-in Pixabay stock library; image upload supported; asset library for reuse"},
+    "video_embed": {"presence": "yes", "notes": "[marketing] YouTube and Brightcove embed via iframe explicitly listed on integrations page"},
+    "video_upload": {"presence": "yes", "notes": "[marketing] 'Audio and video embed' feature supports direct file upload; screen and camera recording built-in"},
+    "audio": {"presence": "yes", "notes": "[marketing] Audio embed supported; text-to-speech built-in on all plans"},
+    "quote_callout": {"presence": "unknown", "notes": "Not explicitly mentioned in marketing or help docs; likely possible via custom page layouts but not confirmed as a named block type"},
+    "accordion": {"presence": "unknown", "notes": "Not explicitly listed by name; interactive/tabbed components implied by 'interactive components' but not confirmed"},
+    "tabs": {"presence": "unknown", "notes": "Not explicitly listed by name in public sources; custom page layouts and components likely support this but not confirmed"},
+    "table": {"presence": "unknown", "notes": "Not mentioned in any public marketing or feature list reviewed"},
+    "timeline": {"presence": "unknown", "notes": "Not mentioned in any public marketing or feature list reviewed"},
+    "embed_iframe": {"presence": "yes", "notes": "[marketing|docs] Iframe embedding explicitly listed for Brightcove, Colossyan, Synthesia, YouTube on integrations page"},
+    "code_block": {"presence": "no", "notes": "Not mentioned; G2 review notes difficulty with math/symbols, suggesting limited code/technical formatting support"},
+    "interactive_hotspot": {"presence": "unknown", "notes": "Not explicitly named in public sources; 'interactivity' is mentioned broadly but hotspot specifically not confirmed"},
+    "flashcard": {"presence": "unknown", "notes": "Not mentioned by name; question pools and quiz types cover assessment but flashcard as a content type not confirmed"}
+  },
+  "assessment": {
+    "mcq": {"presence": "yes", "notes": "[marketing] 'Assessments and surveys' listed on all plans; MCQ implied as core question type"},
+    "true_false": {"presence": "yes", "notes": "[marketing] Standard assessment type expected in enterprise authoring tools; listed under assessments feature"},
+    "fill_blank": {"presence": "unknown", "notes": "Not explicitly named in public marketing; likely available but not confirmed"},
+    "matching": {"presence": "unknown", "notes": "Not explicitly named in public marketing or feature list"},
+    "hotspot_image": {"presence": "unknown", "notes": "Not confirmed in public sources"},
+    "drag_drop": {"presence": "unknown", "notes": "Not explicitly named; 'interactive' experiences mentioned broadly but drag-drop not confirmed"},
+    "essay_open": {"presence": "yes", "notes": "[marketing] 'Gather live feedback — let learners share written feedback through text boxes' explicitly listed on All Features page"},
+    "knowledge_check_unscored": {"presence": "yes", "notes": "[marketing] 'Interactive polling' feature listed — poll learners and display results; surveys mentioned separately from graded assessments"},
+    "question_banks": {"presence": "yes", "notes": "[marketing] 'Question pools — randomize questions from a pool so each learner sees a fresh quiz' explicitly listed on All Features page"},
+    "randomisation": {"presence": "yes", "notes": "[marketing] Question pools feature explicitly supports randomization"},
+    "passing_score": {"presence": "yes", "notes": "[marketing] 'Require a passing score — set a minimum passing score and ensure results flow to your LMS/LXP/LRS' explicitly listed"},
+    "multiple_attempts": {"presence": "unknown", "notes": "Not explicitly confirmed in public sources; likely configurable but not mentioned"}
+  },
+  "ai": {
+    "ai_course_generation": {"presence": "yes", "notes": "[marketing] 'Generate using AI — provide source material and let AI quickly generate a comprehensive course' listed on All Features; 'Create using AI' included on all pricing plans; 'Elucidat Expert' AI partner announced as coming soon"},
+    "ai_content_rewrite": {"presence": "yes", "notes": "[marketing] 'Enhance with AI — automatically generate engaging introductions and concise summaries' listed on All Features page"},
+    "ai_quiz_generation": {"presence": "partial", "notes": "[marketing] AI course generation implied to include quiz generation; not confirmed as a standalone quiz-only AI feature"},
+    "ai_translation": {"presence": "yes", "notes": "[marketing] 'Auto-translate — use machine translation to convert your elearning into 75 languages' explicitly listed; includes glossary management and tone/brevity control"},
+    "ai_image_generation": {"presence": "no", "notes": "[marketing] Not mentioned; stock library (Pixabay) is the image source, not AI generation"},
+    "ai_learner_feedback": {"presence": "no", "notes": "[marketing] Learner feedback is gathered via text boxes and analytics; no AI-generated learner feedback mentioned"},
+    "ai_tutor_chat": {"presence": "no", "notes": "[marketing] No AI tutor or chat-with-course feature found in public sources; 'Elucidat Expert' is an authoring AI, not a learner-facing AI tutor"}
+  },
+  "compliance": {
+    "scorm_12": {"presence": "yes", "notes": "[marketing] 'Export SCORM 1.2 or SCORM 2004 packages' explicitly listed on All Features and Pricing pages"},
+    "scorm_2004": {"presence": "yes", "notes": "[marketing] SCORM 2004 explicitly listed alongside SCORM 1.2"},
+    "xapi_tin_can": {"presence": "yes", "notes": "[marketing|docs] xAPI listed on pricing page as included on all plans; API docs confirm a TinCan/xAPI LRS API; 'Sync course data into your LRS' on All Features page"},
+    "lti_consumer": {"presence": "unknown", "notes": "LTI not mentioned in any public source reviewed; SCORM is the primary standard used"},
+    "lti_provider": {"presence": "unknown", "notes": "LTI not mentioned in any public source reviewed"},
+    "pdf_export": {"presence": "no", "notes": "[marketing] Word export is available for offline review; no PDF export mentioned"},
+    "video_export": {"presence": "no", "notes": "Not mentioned in any public source"}
+  },
+  "analytics": {
+    "completion_tracking": {"presence": "yes", "notes": "[marketing] 'Learner trends — get a quick view of access and completion rates' listed on All Features; flows to LMS via SCORM/xAPI"},
+    "quiz_score_analytics": {"presence": "yes", "notes": "[marketing] 'Your data — access detailed learner data including completions, scores, and responses' listed on All Features"},
+    "time_on_task": {"presence": "unknown", "notes": "Not explicitly mentioned; SCORM tracking would include time data but time-on-task as a specific metric not confirmed"},
+    "learner_progress_view": {"presence": "yes", "notes": "[marketing] Analytics dashboards show learner-level data; included on Enterprise tier, add-on on Growth/Team"},
+    "cohort_analytics": {"presence": "partial", "notes": "[marketing] Analytics dashboards exist; cohort-level analysis not specifically named but learner trends across audiences mentioned"},
+    "analytics_dashboard": {"presence": "yes", "notes": "[marketing] 'Analytics dashboards' listed on pricing page; included on Enterprise, add-on on Growth/Team tiers"},
+    "report_export": {"presence": "yes", "notes": "[marketing] 'Learner data export' listed on pricing page; 'Export comments to CSV' also available; Word export for course content"}
+  },
+  "collaboration": {
+    "multi_author": {"presence": "yes", "notes": "[marketing] Multi-author explicitly supported; 'Collaborate in one place' and team workflows are core marketing messages"},
+    "inline_commenting": {"presence": "yes", "notes": "[marketing] 'Review workflow — invite collaborators to comment directly within projects' listed; comment audit trail also available"},
+    "review_approval_workflow": {"presence": "yes", "notes": "[marketing] 'Review workflow' and 'External reviewers — invite reviewers who do not have an account to share feedback using a time-limited link' explicitly listed"},
+    "version_history": {"presence": "unknown", "notes": "Project locking is listed; version history not explicitly mentioned in public sources"},
+    "roles_permissions": {"presence": "yes", "notes": "[marketing] 'Create your own roles', 'Editable user roles', 'Custom user roles', and 'Admin team dashboard' all explicitly listed; custom roles available on Team+ plans"}
+  },
+  "templates": {
+    "course_templates": {"presence": "yes", "notes": "[marketing] 'Ready-made course templates', 'Best practice templates', and 'Company templates' all listed; hundreds of templates mentioned by reviewers"},
+    "lesson_templates": {"presence": "yes", "notes": "[marketing] 'Customizable page layouts — create and save tailored page templates' explicitly listed"},
+    "theme_customisation": {"presence": "yes", "notes": "[marketing] 'Customizable styles', 'Global branding', 'Font options', 'Global brand control' all listed; on-brand themes are a core feature"},
+    "white_label": {"presence": "partial", "notes": "[marketing] Global branding and custom styles support on-brand courses; white-label of the platform itself not explicitly confirmed"},
+    "custom_domain": {"presence": "unknown", "notes": "Not mentioned in any public source; URL releases go through Elucidat's hosting"}
+  },
+  "branching": {
+    "conditional_navigation": {"presence": "yes", "notes": "[marketing] 'Branching content — create personalized content paths based on learner choices or quiz results' explicitly listed; branching video also available"},
+    "prerequisites": {"presence": "unknown", "notes": "Not explicitly named as a feature; branching/personalized paths exist but prerequisites as a gate not confirmed"},
+    "personalised_paths": {"presence": "yes", "notes": "[marketing] 'Personalized learning paths' and 'Content personalization — personalize each learner's experience using names, scores, and previous responses' explicitly listed"}
+  },
+  "media": {
+    "direct_video_upload": {"presence": "yes", "notes": "[marketing] 'Audio and video embed — upload files directly or add media from YouTube and Brightcove' explicitly stated on All Features page"},
+    "cdn_hosting": {"presence": "yes", "notes": "[marketing] Secure hosting with 99.9% uptime, ISO 27001 certified providers; URL releases hosted by Elucidat"},
+    "stock_media_library": {"presence": "yes", "notes": "[marketing|docs] Pixabay integration for stock images explicitly listed on integrations page; 'Library of stock imagery' on All Features"},
+    "in_product_image_editing": {"presence": "unknown", "notes": "Not mentioned; images are added from stock library or uploaded but editing tools not confirmed"},
+    "subtitle_caption_support": {"presence": "unknown", "notes": "Not explicitly mentioned in public sources; WCAG compliance suggests some caption support but not confirmed"}
+  },
+  "accessibility": {
+    "wcag_21_aa": {"presence": "yes", "notes": "[marketing] 'WCAG 2.1 & Section 508' explicitly listed on All Features page; Author platform page states 'Meets WCAG 2.1 AA standards'"},
+    "keyboard_navigation": {"presence": "yes", "notes": "[marketing] 'Keyboard navigation — support learners who navigate using only the keyboard' explicitly listed on All Features"},
+    "screen_reader_support": {"presence": "yes", "notes": "[marketing] 'Screen reader compatibility' explicitly listed on All Features page"},
+    "alt_text_support": {"presence": "yes", "notes": "[marketing] 'Alternative text — add descriptive alternative text for images' explicitly listed on All Features page"}
+  },
+  "publishing": {
+    "shareable_link_no_lms": {"presence": "yes", "notes": "[marketing] 'URL release' explicitly listed on All Features and Pricing; courses can be shared via URL without an LMS"},
+    "password_protection": {"presence": "unknown", "notes": "Not explicitly mentioned in public sources for URL releases"},
+    "sso_learner_access": {"presence": "unknown", "notes": "SSO listed for authors (SAML); learner-facing SSO not explicitly confirmed in public sources"},
+    "embed_in_external_site": {"presence": "partial", "notes": "[marketing] URL releases can be embedded; iframe embedding of third-party content into courses is supported but embedding courses into external sites not explicitly confirmed"}
+  },
+  "extensibility": {
+    "rest_api": {"presence": "yes", "notes": "[docs] Full REST API confirmed in help center: Account API, Projects API, Authors API, Projects and Releases API; access gated behind 'Scale' tier"},
+    "webhooks": {"presence": "yes", "notes": "[docs] Webhooks explicitly listed in help center API documentation; 'API: List subscriptions' article confirms webhook subscription management"},
+    "zapier_make": {"presence": "no", "notes": "No mention of Zapier or Make integration in any public source"},
+    "mcp_server": {"presence": "no", "notes": "No MCP server found in any public source"},
+    "sso_author_access": {"presence": "yes", "notes": "[marketing] 'Single sign-on (SSO) — allow authors to log in securely using SAML authentication' explicitly listed; included on Enterprise, add-on on lower tiers"}
+  }
+}
