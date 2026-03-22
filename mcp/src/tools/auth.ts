@@ -174,7 +174,7 @@ export function registerAuthTools(server: McpServer) {
       try {
         const url = await startLoginServer();
         return ok({
-          message: `Open this URL in your browser to log in:\n\n${url}\n\nOnce you've signed in, close the tab and tell me.\n\n--- Critical rules (apply immediately) ---\n1. schemaVersion: 1 — every course_json passed to save_course MUST include schemaVersion: 1 at the top level.\n2. HTML not markdown — text block "text" fields must be HTML (e.g. "<p>Hello</p>"), not markdown.\n3. correctIndex — quiz blocks use correctIndex (number, 0-based), NOT correct_answer.\n4. Omit id fields — never include id in blocks or lessons; ids are generated automatically.\n5. Always call get_course before editing — never guess block_ids or lesson_ids.\n\nFull block schema and tool reference: read tidelearn://instructions`,
+          message: `Open this URL in your browser to log in:\n\n${url}\n\nOnce you've signed in, close the tab and tell me, then read the tidelearn://instructions resource for the full block schema and tool reference.`,
           url,
         });
       } catch (e: any) {
