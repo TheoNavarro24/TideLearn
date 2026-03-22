@@ -65,6 +65,13 @@ export function injectLessonIds(lesson: any) {
   };
 }
 
+export function checkRestructureOrder(existingIds: string[], providedIds: string[]): string | null {
+  const provided = new Set(providedIds);
+  const missing = existingIds.filter(id => !provided.has(id));
+  if (missing.length === 0) return null;
+  return `lesson_order must include all ${existingIds.length} lesson(s). Missing: ${missing.join(", ")}`;
+}
+
 export function registerSemanticTools(server: McpServer) {
   // ── save_course ──────────────────────────────────────────────────────────
   server.tool(
@@ -287,14 +294,21 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
   // ── restructure_course ────────────────────────────────────────────────────
   server.tool(
     "restructure_course",
-    "Reorder and/or rename lessons. Claude should provide lesson_order as an array of {lesson_id, title} in the desired order. Does not add or remove lessons.",
+    "Reorder and/or rename lessons. lesson_order must contain ALL lessons in the course — omitting any will return an error. Pass every lesson_id with its desired title in the new order.",
     {
       course_id: z.string().uuid(),
       lesson_order: z.array(z.object({ lesson_id: z.string().uuid(), title: z.string() })),
     },
     async ({ course_id, lesson_order }) =>
       withAuth(async (client, userId) => {
+        let orderError: string | null = null;
+
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const existingIds = course.lessons.map((l: any) => l.id);
+          const providedIds = lesson_order.map(l => l.lesson_id);
+          orderError = checkRestructureOrder(existingIds, providedIds);
+          if (orderError) return course;
+
           const lessonMap = new Map(course.lessons.map((l) => [l.id, l]));
           const reordered = lesson_order
             .map(({ lesson_id, title }) => {
@@ -305,6 +319,8 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
             .filter(Boolean) as typeof course.lessons;
           return { ...course, lessons: reordered };
         });
+
+        if (orderError) return err("incomplete_lesson_order", orderError);
         if (mutError) return err(mutError, "Failed to restructure course");
         return ok({ message: "Course restructured" });
       })
