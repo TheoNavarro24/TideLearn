@@ -13,15 +13,17 @@ import { registerInstructionsResource } from "./resources/instructions.js";
 const server = new McpServer(
   { name: "tidelearn", version: "1.0.0" },
   {
-    instructions: `TideLearn MCP — critical rules (read before calling any tool):
-1. schemaVersion: 1 — every course_json passed to save_course MUST include schemaVersion: 1 at the top level.
-2. HTML not markdown — text block "text" fields must be HTML (e.g. "<p>Hello</p>"), not markdown.
-3. correctIndex — quiz blocks use correctIndex (number, 0-based), NOT correct_answer.
-4. Omit id fields — never include id in blocks or lessons; ids are generated automatically.
-5. Always call get_course before editing — never guess block_ids or lesson_ids.
-6. Re-login on auth_required — call tidelearn_login again then retry.
+    instructions: `TideLearn MCP — course authoring tools for eLearning professionals.
 
-Full block schema and tool reference: read the tidelearn://instructions resource.`,
+Critical: read the tidelearn://instructions resource before calling any other tools. It contains the complete block schema, tool reference, workflows, and rules.
+
+Quick reminders:
+1. schemaVersion: 1 required in all course_json.
+2. Content lessons need kind: "content"; assessment lessons need kind: "assessment".
+3. Text fields accept HTML or markdown (callout text: use HTML).
+4. quiz blocks use correctIndex (number, 0-based).
+5. Omit id fields — generated automatically.
+6. Always call get_course before editing to get current ids.`,
   }
 );
 
