@@ -10,6 +10,8 @@ export type QuizBlock = {
   question: string;
   options: string[];
   correctIndex: number;
+  showFeedback?: boolean;
+  feedbackMessage?: string;
 };
 
 export type CodeBlock = {
@@ -83,6 +85,7 @@ export type TrueFalseBlock = {
   type: "truefalse";
   question: string;
   correct: boolean;
+  showFeedback?: boolean;
   feedbackCorrect?: string;
   feedbackIncorrect?: string;
 };
@@ -95,6 +98,8 @@ export type ShortAnswerBlock = {
   acceptable?: string[];
   caseSensitive?: boolean;
   trimWhitespace?: boolean;
+  showFeedback?: boolean;
+  feedbackMessage?: string;
 };
 
 export type Block =
@@ -175,6 +180,8 @@ export const quizBlockSchema = z.object({
   question: z.string(),
   options: z.array(z.string()),
   correctIndex: z.number(),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
 });
 
 export const codeBlockSchema = z.object({
@@ -189,6 +196,7 @@ export const trueFalseBlockSchema = z.object({
   type: z.literal("truefalse"),
   question: z.string(),
   correct: z.boolean(),
+  showFeedback: z.boolean().optional(),
   feedbackCorrect: z.string().optional(),
   feedbackIncorrect: z.string().optional(),
 });
@@ -201,6 +209,8 @@ export const shortAnswerBlockSchema = z.object({
   acceptable: z.array(z.string()).optional(),
   caseSensitive: z.boolean().optional(),
   trimWhitespace: z.boolean().optional(),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
 });
 
 export const listBlockSchema = z.object({
