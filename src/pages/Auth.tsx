@@ -4,6 +4,18 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
+/** Redirect to the MCP callback URL with session tokens. */
+async function redirectToMcpCallback(cb: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  sessionStorage.removeItem("mcp_callback");
+  const url = new URL(cb);
+  url.searchParams.set("access_token", session.access_token);
+  url.searchParams.set("refresh_token", session.refresh_token);
+  url.searchParams.set("expires_at", String(session.expires_at ?? Math.floor(Date.now() / 1000) + 3600));
+  window.location.href = url.toString();
+}
+
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,10 +26,24 @@ export default function Auth() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Save mcp_callback to sessionStorage on mount (survives OAuth page navigation)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cb = params.get("mcp_callback");
+    if (cb) {
+      sessionStorage.setItem("mcp_callback", cb);
+    }
+  }, []);
+
+  // Redirect if already authenticated — check for MCP callback first
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/");
+      const cb = sessionStorage.getItem("mcp_callback");
+      if (cb) {
+        redirectToMcpCallback(cb);
+      } else {
+        navigate("/");
+      }
     }
   }, [user, authLoading, navigate]);
 
@@ -75,6 +101,11 @@ export default function Auth() {
         if (error) throw error;
 
         if (data.user) {
+          const cb = sessionStorage.getItem("mcp_callback");
+          if (cb) {
+            await redirectToMcpCallback(cb);
+            return;
+          }
           // Force page reload for clean state
           window.location.href = "/";
         }
@@ -98,7 +129,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth`,
         },
       });
 
