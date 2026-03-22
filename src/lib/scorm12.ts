@@ -176,7 +176,7 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
         return '<blockquote>' + esc(b.text) + (b.cite ? '<cite>— '+esc(b.cite)+'</cite>' : '') + '</blockquote>';
       case 'divider': return '<hr>';
       case 'callout':
-        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + esc(b.text) + '</div>';
+        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + (b.text || '') + '</div>';
       case 'code': return '<pre><code>' + esc(b.code) + '</code></pre>';
       case 'accordion':
         return '<div class="accordion">' + (b.items||[]).map(function(item){
@@ -508,7 +508,7 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
         return '<blockquote>' + esc(b.text) + (b.cite ? '<cite>— '+esc(b.cite)+'</cite>' : '') + '</blockquote>';
       case 'divider': return '<hr>';
       case 'callout':
-        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + esc(b.text) + '</div>';
+        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + (b.text || '') + '</div>';
       case 'code': return '<pre><code>' + esc(b.code) + '</code></pre>';
       case 'accordion':
         return '<div class="accordion">' + (b.items||[]).map(function(item){
