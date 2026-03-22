@@ -196,3 +196,43 @@ describe("analyzeCourse — assessment lesson awareness", () => {
     expect(noAssessmentGaps).toHaveLength(1);
   });
 });
+
+describe("analyzeCourse — empty field detection", () => {
+  it("flags blocks with empty required fields", () => {
+    const course: Course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "content",
+        id: "l1",
+        title: "Intro",
+        blocks: [
+          { id: "b1", type: "heading", text: "" },
+          { id: "b2", type: "image", src: "", alt: "test" },
+        ],
+      }],
+    };
+    const result = analyzeCourse(course);
+    const emptyFieldGaps = result.gaps.filter(g => g.type === "empty_required_field");
+    expect(emptyFieldGaps.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not flag valid blocks as empty", () => {
+    const course: Course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "content",
+        id: "l1",
+        title: "Intro",
+        blocks: [
+          { id: "b1", type: "heading", text: "Hello" },
+          { id: "b2", type: "image", src: "https://example.com/img.jpg", alt: "test" },
+        ],
+      }],
+    };
+    const result = analyzeCourse(course);
+    const emptyFieldGaps = result.gaps.filter(g => g.type === "empty_required_field");
+    expect(emptyFieldGaps).toHaveLength(0);
+  });
+});

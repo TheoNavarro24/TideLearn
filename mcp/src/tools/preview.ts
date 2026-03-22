@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { withAuth, ok, err } from "../lib/supabase.js";
-import { type Course, type Block } from "../lib/types.js";
+import { type Course, type Block, blockSchema } from "../lib/types.js";
 
 // ─── Pure rendering helpers ──────────────────────────────────────────────────
 
@@ -150,6 +150,21 @@ export function analyzeCourse(course: Course) {
     if (!hasAssessment && !hasAssessmentLesson) gaps.push({ type: "no_assessment", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no knowledge checks` });
     if (!hasMedia) gaps.push({ type: "no_media", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no media blocks` });
     if (cl.blocks.length > 10) gaps.push({ type: "too_long", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has ${cl.blocks.length} blocks (max recommended: 10)` });
+
+    // Check required fields
+    for (let bi = 0; bi < cl.blocks.length; bi++) {
+      const block = cl.blocks[bi];
+      const result = blockSchema.safeParse(block);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          gaps.push({
+            type: "empty_required_field",
+            lesson_id: lesson.id,
+            message: `Lesson "${lesson.title}", block ${bi + 1} (${(block as any).type}): ${issue.path.join(".")} — ${issue.message}`,
+          });
+        }
+      }
+    }
   }
 
   return {
