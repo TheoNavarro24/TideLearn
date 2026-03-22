@@ -5,6 +5,7 @@ export function QuizView({ block }: { block: QuizBlock }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
 
+  const unset = block.correctIndex === -1;
   const isCorrect = selected !== null && selected === block.correctIndex;
 
   const optBg = (i: number) => {
@@ -69,21 +70,21 @@ export function QuizView({ block }: { block: QuizBlock }) {
       <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "center" }}>
         <button
           onClick={() => {
-            if (revealed || selected == null) return;
+            if (revealed || selected == null || unset) return;
             setRevealed(true);
             const ok = selected === block.correctIndex;
             window.dispatchEvent(new CustomEvent("quiz:answered", { detail: { blockId: block.id, correct: ok } }));
           }}
-          disabled={revealed || selected == null}
+          disabled={revealed || selected == null || unset}
           style={{
-            background: (revealed || selected == null) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
+            background: (revealed || selected == null || unset) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
             border: "none",
             borderRadius: 7,
-            color: (revealed || selected == null) ? "#94a3b8" : "#fff",
+            color: (revealed || selected == null || unset) ? "#94a3b8" : "#fff",
             fontSize: 12,
             fontWeight: 700,
             padding: "6px 14px",
-            cursor: (revealed || selected == null) ? "not-allowed" : "pointer",
+            cursor: (revealed || selected == null || unset) ? "not-allowed" : "pointer",
             fontFamily: "Inter, sans-serif",
           }}
         >
@@ -105,12 +106,17 @@ export function QuizView({ block }: { block: QuizBlock }) {
         >
           Reset
         </button>
+        {unset && (
+          <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
+            No correct answer has been set for this question.
+          </span>
+        )}
         {revealed && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
               {isCorrect ? "Correct!" : "Try again."}
             </span>
-            {block.showFeedback && block.feedbackMessage && !isCorrect && (
+            {block.showFeedback && block.feedbackMessage && (
               <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
                 {block.feedbackMessage}
               </span>
