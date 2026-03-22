@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { blockSchema } from "../src/lib/types.js";
 import { injectSubItemIds } from "../src/tools/semantic.js";
+import { ALL_BLOCKS } from "./fixtures/blocks.js";
 
 describe("strict block validation", () => {
   it("rejects heading with empty text", () => {
@@ -163,5 +164,44 @@ describe("injectSubItemIds", () => {
     };
     const result = injectSubItemIds(block);
     expect(result.items[0].id).toBe("existing-id");
+  });
+});
+
+describe("blockSchema — all 17 block types", () => {
+  ALL_BLOCKS.forEach((block) => {
+    it(`accepts valid ${block.type} block`, () => {
+      const result = blockSchema.safeParse(block);
+      expect(result.success).toBe(true);
+    });
+  });
+});
+
+describe("blockSchema — invalid cases", () => {
+  it("rejects quiz with string correctIndex", () => {
+    expect(blockSchema.safeParse({ id: "q1", type: "quiz", question: "Q?", options: ["A","B","C","D"], correctIndex: "1" }).success).toBe(false);
+  });
+  it("rejects truefalse with string correct", () => {
+    expect(blockSchema.safeParse({ id: "tf1", type: "truefalse", question: "Q?", correct: "true" }).success).toBe(false);
+  });
+  it("rejects accordion item missing title", () => {
+    expect(blockSchema.safeParse({ id: "a1", type: "accordion", items: [{ id: "i1", content: "C" }] }).success).toBe(false);
+  });
+  it("rejects tabs item missing label", () => {
+    expect(blockSchema.safeParse({ id: "t1", type: "tabs", items: [{ id: "i1", content: "C" }] }).success).toBe(false);
+  });
+  it("rejects image missing alt", () => {
+    expect(blockSchema.safeParse({ id: "i1", type: "image", src: "https://example.com/img.jpg" }).success).toBe(false);
+  });
+  it("rejects callout with invalid variant", () => {
+    expect(blockSchema.safeParse({ id: "c1", type: "callout", variant: "purple", text: "Hey" }).success).toBe(false);
+  });
+  it("rejects list with invalid style", () => {
+    expect(blockSchema.safeParse({ id: "l1", type: "list", style: "ordered", items: ["A"] }).success).toBe(false);
+  });
+  it("rejects code block missing language", () => {
+    expect(blockSchema.safeParse({ id: "c1", type: "code", code: "const x = 1" }).success).toBe(false);
+  });
+  it("rejects unknown block type", () => {
+    expect(blockSchema.safeParse({ id: "x1", type: "banner", text: "Hello" }).success).toBe(false);
   });
 });
