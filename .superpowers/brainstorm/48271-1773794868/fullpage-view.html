@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Fire Hazards — TideLearn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Progress bar — very top of page */
+    .progress-stripe {
+      height: 3px;
+      background: #e0fdf4;
+      flex-shrink: 0;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, #14b8a6, #0891b2);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* Topbar */
+    .topbar {
+      height: 48px;
+      background: #0f1f1d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .logo-name {
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.02em;
+    }
+    .topbar-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+    .topbar-exit {
+      background: none;
+      border: none;
+      color: #14b8a6;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .topbar-exit:hover {
+      background: rgba(20,184,166,0.1);
+    }
+
+    /* Main layout */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: #f8fffe;
+      border-right: 1px solid #e0fdf4;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .sidebar-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #14b8a6;
+      padding: 0 16px 10px;
+    }
+    .lesson-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 16px 8px 12px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.12s;
+      position: relative;
+    }
+    .lesson-item:hover {
+      background: #f0fdfb;
+    }
+    .lesson-item.active {
+      border-left-color: #14b8a6;
+      background: #f0fdfb;
+    }
+    .lesson-dot-wrap {
+      flex-shrink: 0;
+      width: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 3px;
+    }
+    /* Completed dot */
+    .dot-complete {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #14b8a6;
+    }
+    /* Current dot — pulsing ring */
+    .dot-current {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #14b8a6;
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.25);
+      animation: pulse-ring 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(20,184,166,0.25); }
+      50% { box-shadow: 0 0 0 5px rgba(20,184,166,0.1); }
+    }
+    /* Upcoming dot */
+    .dot-upcoming {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid #b2d8d0;
+      background: transparent;
+    }
+    .lesson-num {
+      font-size: 9px;
+      font-weight: 600;
+      color: #94a3b8;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .lesson-text {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #475569;
+    }
+    .lesson-item.active .lesson-text {
+      color: #0d9488;
+      font-weight: 600;
+    }
+    .lesson-item.active .lesson-num {
+      color: #0d9488;
+    }
+
+    /* Reading column */
+    .reading-area {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+    }
+    .reading-inner {
+      width: 100%;
+      max-width: 680px;
+      padding: 40px 64px 120px;
+    }
+
+    /* Lesson breadcrumb */
+    .lesson-breadcrumb {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 12px;
+    }
+
+    /* Lesson title */
+    .lesson-title {
+      font-family: 'Lora', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #0d2926;
+      line-height: 1.3;
+      margin-bottom: 32px;
+      letter-spacing: -0.01em;
+    }
+
+    /* Content blocks */
+    .block-heading {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0d2926;
+      letter-spacing: -0.02em;
+      margin: 32px 0 10px;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.3;
+    }
+
+    .block-text {
+      font-size: 15px;
+      line-height: 1.75;
+      color: #334155;
+      margin-bottom: 20px;
+    }
+
+    .block-callout {
+      border-left: 3px solid #14b8a6;
+      background: #f0fdfb;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 24px 0;
+    }
+    .callout-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .callout-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+    .callout-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0d9488;
+      letter-spacing: 0.01em;
+    }
+    .callout-body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #334155;
+    }
+
+    .block-image {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(13,41,38,0.08), 0 1px 4px rgba(13,41,38,0.04);
+      margin: 24px 0;
+      display: block;
+      overflow: hidden;
+    }
+    .image-placeholder {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #e0fdf4 0%, #ccfbf1 40%, #cffafe 100%);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(13,41,38,0.08);
+    }
+    .image-placeholder-icon {
+      font-size: 36px;
+      opacity: 0.6;
+    }
+    .image-placeholder-label {
+      font-size: 12px;
+      color: #0d9488;
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    /* True / False block */
+    .block-tf {
+      margin: 32px 0 24px;
+      padding: 24px;
+      background: #fafffe;
+      border: 1px solid #e0fdf4;
+      border-radius: 12px;
+    }
+    .tf-tag {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 10px;
+    }
+    .tf-question {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0d2926;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .tf-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tf-btn {
+      padding: 16px;
+      border: 1.5px solid #e0fdf4;
+      border-radius: 10px;
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .tf-btn:hover {
+      border-color: #14b8a6;
+      color: #0d9488;
+      background: #f0fdfb;
+    }
+    .tf-btn .tf-icon {
+      font-size: 18px;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #fff;
+      border-top: 1px solid #e0fdf4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 100;
+    }
+    .nav-prev {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.12s, color 0.12s;
+    }
+    .nav-prev:hover {
+      background: #f0fdfb;
+      color: #0d9488;
+    }
+    .nav-count {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .nav-next {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      transition: opacity 0.15s;
+    }
+    .nav-next:hover {
+      opacity: 0.9;
+    }
+
+    /* Scrollbar */
+    .reading-area::-webkit-scrollbar,
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .reading-area::-webkit-scrollbar-track,
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .reading-area::-webkit-scrollbar-thumb { background: #e0fdf4; border-radius: 2px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #cce8e1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Progress stripe -->
+  <div class="progress-stripe">
+    <div class="progress-fill"></div>
+  </div>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="#" class="topbar-logo">
+      <div class="logo-mark">🌊</div>
+      <span class="logo-name">TideLearn</span>
+    </a>
+    <div class="topbar-title">Fire Safety Induction</div>
+    <button class="topbar-exit">Exit</button>
+  </header>
+
+  <!-- Main layout -->
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-label">Lessons</div>
+
+      <!-- Lesson 1 — complete -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-complete"></div></div>
+        <div class="lesson-num">1</div>
+        <div class="lesson-text">Introduction to Fire Safety</div>
+      </div>
+
+      <!-- Lesson 2 — complete -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-complete"></div></div>
+        <div class="lesson-num">2</div>
+        <div class="lesson-text">Understanding Fire Behaviour</div>
+      </div>
+
+      <!-- Lesson 3 — active/current -->
+      <div class="lesson-item active">
+        <div class="lesson-dot-wrap"><div class="dot-current"></div></div>
+        <div class="lesson-num">3</div>
+        <div class="lesson-text">Common Fire Hazards</div>
+      </div>
+
+      <!-- Lesson 4 — upcoming -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-upcoming"></div></div>
+        <div class="lesson-num">4</div>
+        <div class="lesson-text">Fire Prevention Strategies</div>
+      </div>
+
+      <!-- Lesson 5 — upcoming -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-upcoming"></div></div>
+        <div class="lesson-num">5</div>
+        <div class="lesson-text">Using a Fire Extinguisher</div>
+      </div>
+
+      <!-- Lesson 6 — upcoming -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-upcoming"></div></div>
+        <div class="lesson-num">6</div>
+        <div class="lesson-text">Evacuation Procedures</div>
+      </div>
+
+      <!-- Lesson 7 — upcoming -->
+      <div class="lesson-item">
+        <div class="lesson-dot-wrap"><div class="dot-upcoming"></div></div>
+        <div class="lesson-num">7</div>
+        <div class="lesson-text">Emergency Contacts &amp; Reporting</div>
+      </div>
+    </nav>
+
+    <!-- Reading area -->
+    <main class="reading-area">
+      <div class="reading-inner">
+
+        <div class="lesson-breadcrumb">Lesson 3</div>
+        <h1 class="lesson-title">Common Fire Hazards</h1>
+
+        <!-- Heading block -->
+        <h2 class="block-heading">What creates a fire risk?</h2>
+
+        <!-- Text block 1 -->
+        <p class="block-text">
+          Fire requires three elements to exist: heat, fuel, and oxygen — commonly known as the fire triangle. In most workplace environments, all three are present to some degree. Understanding where hazards concentrate, and how everyday activities can bring these elements together, is the foundation of effective fire prevention.
+        </p>
+
+        <!-- Text block 2 -->
+        <p class="block-text">
+          The most common sources of ignition in commercial buildings include faulty or overloaded electrical equipment, improperly stored flammable liquids, and unattended heat sources such as industrial machinery or kitchen appliances. Human behaviour — like blocking fire exits with stock, or leaving equipment running overnight — significantly increases the likelihood that a small ignition becomes a serious incident.
+        </p>
+
+        <!-- Image block -->
+        <div class="image-placeholder">
+          <div class="image-placeholder-icon">🔥</div>
+          <div class="image-placeholder-label">Diagram: The Fire Triangle</div>
+        </div>
+
+        <!-- Heading block 2 -->
+        <h2 class="block-heading">Electrical hazards in the workplace</h2>
+
+        <p class="block-text">
+          Electrical faults account for approximately 25% of all workplace fires in the UK. Overloaded sockets, damaged cables, and equipment left on standby are the leading causes. A key habit to develop is a visual check of your workspace at the end of each shift — looking for frayed cables, warm plug sockets, or adapters carrying more than their rated load.
+        </p>
+
+        <!-- Callout block -->
+        <div class="block-callout">
+          <div class="callout-header">
+            <span class="callout-icon">💡</span>
+            <span class="callout-title">Did you know?</span>
+          </div>
+          <p class="callout-body">
+            A single overloaded extension lead can carry enough heat to ignite nearby materials within minutes. The UK Fire Service recommends never exceeding 13 amps across any single socket adapter — check the wattage of each device before plugging in.
+          </p>
+        </div>
+
+        <!-- True / False block -->
+        <div class="block-tf">
+          <div class="tf-tag">True or False</div>
+          <div class="tf-question">
+            Blocking a fire exit with stock or equipment is only a minor safety concern, provided the blockage is temporary.
+          </div>
+          <div class="tf-buttons">
+            <button class="tf-btn">
+              <span class="tf-icon">✓</span> True
+            </button>
+            <button class="tf-btn">
+              <span class="tf-icon">✗</span> False
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-prev">← Previous lesson</button>
+    <span class="nav-count">Lesson 3 of 7</span>
+    <button class="nav-next">Next lesson →</button>
+  </nav>
+
+</body>
+</html>

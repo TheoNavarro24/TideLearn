@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Block Form UX Worktree",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/block-form-ux && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
       "name": "Plan-A Worktree Dev Server",
       "runtimeExecutable": "/bin/bash",
       "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/plan-a-mcp-schema-fixes && node node_modules/.bin/vite --port $PORT"],

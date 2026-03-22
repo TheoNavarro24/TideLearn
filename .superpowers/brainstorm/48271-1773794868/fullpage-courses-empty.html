@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Courses — TideLearn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      background: #0f2822;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: #1e4a44;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 18px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .logo-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .sidebar-section {
+      padding: 16px 12px 6px;
+    }
+    .sidebar-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      padding: 0 8px 8px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      margin-bottom: 2px;
+    }
+    .sidebar-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.85);
+    }
+    .sidebar-item.active {
+      background: rgba(20,184,166,0.15);
+      color: #5eead4;
+      font-weight: 600;
+    }
+    .sidebar-item .item-icon {
+      font-size: 14px;
+      opacity: 0.8;
+      width: 18px;
+      text-align: center;
+    }
+    .sidebar-spacer { flex: 1; }
+    .sidebar-user {
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+    .user-plan {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ── Main area ── */
+    .main {
+      flex: 1;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Topbar */
+    .topbar {
+      height: 56px;
+      border-bottom: 1px solid #e0fdf4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0d2926;
+      letter-spacing: -0.01em;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-secondary {
+      background: #fff;
+      border: 1.5px solid #e0fdf4;
+      color: #0d9488;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .btn-secondary:hover {
+      border-color: #14b8a6;
+      background: #f0fdfb;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+
+    /* Prompt input */
+    .prompt-bar {
+      padding: 20px 28px 0;
+      flex-shrink: 0;
+    }
+    .prompt-wrap {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid #e0fdf4;
+      border-radius: 10px;
+      background: #fafffe;
+      padding: 10px 14px;
+      gap: 10px;
+      transition: border-color 0.15s;
+    }
+    .prompt-wrap:focus-within {
+      border-color: #14b8a6;
+    }
+    .prompt-icon {
+      font-size: 16px;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .prompt-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #334155;
+      outline: none;
+    }
+    .prompt-input::placeholder { color: #94a3b8; }
+    .prompt-submit {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      border-radius: 7px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* ── Empty state ── */
+    .empty-state-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 28px;
+    }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 360px;
+    }
+    .empty-icon-circle {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: #e0fdf7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 0 12px rgba(224,253,247,0.4);
+    }
+    .empty-title {
+      font-family: 'Lora', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0d2926;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .empty-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .empty-ctas {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .cta-primary {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px 22px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .cta-primary:hover { opacity: 0.88; }
+    .cta-secondary {
+      background: #fff;
+      border: 1.5px solid #14b8a6;
+      color: #0d9488;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.12s;
+    }
+    .cta-secondary:hover { background: #f0fdfb; }
+    .empty-import {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .empty-import a {
+      color: #0d9488;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .empty-import a:hover { text-decoration: underline; }
+
+    /* Scrollbar */
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: #e0fdf4; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">🌊</div>
+      <span class="logo-name">TideLearn</span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Workspace</div>
+      <div class="sidebar-item active">
+        <span class="item-icon">📚</span> My Courses
+      </div>
+      <div class="sidebar-item">
+        <span class="item-icon">📁</span> Shared with me
+      </div>
+      <div class="sidebar-item">
+        <span class="item-icon">📊</span> Analytics
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Tools</div>
+      <div class="sidebar-item">
+        <span class="item-icon">🤖</span> AI Builder
+      </div>
+      <div class="sidebar-item">
+        <span class="item-icon">🎨</span> Templates
+      </div>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">TN</div>
+      <div>
+        <div class="user-name">Theo Navarro</div>
+        <div class="user-plan">Free plan</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">My Courses</div>
+      <div class="topbar-actions">
+        <button class="btn-secondary">⬆ Import</button>
+        <button class="btn-primary">+ New Course</button>
+      </div>
+    </div>
+
+    <!-- AI prompt bar -->
+    <div class="prompt-bar">
+      <div class="prompt-wrap">
+        <span class="prompt-icon">✨</span>
+        <input class="prompt-input" type="text" placeholder="Describe a course and let AI build it for you…" />
+        <button class="prompt-submit">Build with AI</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state-container">
+      <div class="empty-state">
+        <div class="empty-icon-circle">🌊</div>
+        <h2 class="empty-title">Your ocean is empty</h2>
+        <p class="empty-subtitle">Create your first course to get started.<br>It only takes a minute.</p>
+        <div class="empty-ctas">
+          <button class="cta-primary">+ Create a course</button>
+          <button class="cta-secondary">🤖 Build with AI</button>
+        </div>
+        <p class="empty-import">or <a href="#">import an existing JSON file</a></p>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

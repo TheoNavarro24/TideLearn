@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — Editor v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body { font-family:'Inter',system-ui,sans-serif; background:#0e2d29; display:flex; flex-direction:column; overflow:hidden; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+
+/* ══ TOPBAR ══ */
+.topbar {
+  grid-column: 1 / -1;
+  background: #0f1f1d;
+  border-bottom: 1px solid rgba(20,184,166,0.15);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+  z-index: 10;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+  color: rgba(94,234,212,0.5);
+  cursor: pointer; border: none; background: none; font-family: inherit;
+}
+.topbar-back:hover { color: #5eead4; }
+.topbar-divider { width:1px; height:20px; background:rgba(20,184,166,0.15); margin:0 12px; }
+.course-title-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-size: 13px; font-weight: 600; color: white; font-family: inherit;
+}
+.course-title-input::placeholder { color: rgba(94,234,212,0.3); }
+.topbar-right { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.save-indicator { font-size:11px; color:rgba(94,234,212,0.4); font-weight:500; display:flex; align-items:center; gap:5px; }
+.save-dot { width:5px;height:5px;border-radius:50%;background:#14b8a6;box-shadow:0 0 6px rgba(20,184,166,0.6); }
+.btn-preview { background:rgba(20,184,166,0.1);color:#5eead4;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid rgba(20,184,166,0.2);cursor:pointer;font-family:inherit; }
+.btn-publish { background:linear-gradient(135deg,#0d9488,#0891b2);color:white;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit; }
+
+/* ══ SIDEBAR ══ */
+.sidebar {
+  background: #1e4a44;
+  border-right: 1px solid rgba(20,184,166,0.18);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-header { padding:14px 14px 10px; border-bottom:1px solid rgba(20,184,166,0.12); }
+.sidebar-section-label { font-size:9.5px;font-weight:700;color:rgba(94,234,212,0.45);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px; }
+.lesson-list { flex:1; overflow-y:auto; padding:8px 10px; }
+.lesson-item {
+  display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;
+  font-size:12.5px;font-weight:500;color:rgba(209,250,229,0.6);margin-bottom:1px;
+  transition:background 0.12s,color 0.12s;
+}
+.lesson-item:hover { background:rgba(20,184,166,0.1);color:#ccfbf1; }
+.lesson-item.active { background:rgba(20,184,166,0.18);color:#ccfbf1;font-weight:600; }
+.lesson-num { font-size:10px;font-weight:700;color:rgba(94,234,212,0.4);width:16px;flex-shrink:0;text-align:right; }
+.lesson-item.active .lesson-num { color:#14b8a6; }
+.lesson-name { flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.lesson-block-count { font-size:10px;color:rgba(94,234,212,0.3);flex-shrink:0; }
+.lesson-item.active .lesson-block-count { color:rgba(94,234,212,0.5); }
+.add-lesson-btn {
+  margin:6px 10px;display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:6px;
+  border:1.5px dashed rgba(20,184,166,0.25);background:transparent;color:rgba(94,234,212,0.45);
+  font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;
+}
+.sidebar-footer { padding:12px;border-top:1px solid rgba(20,184,166,0.15);display:flex;flex-direction:column;gap:4px; }
+.sidebar-footer-btn {
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;
+  font-size:12px;font-weight:500;color:rgba(209,250,229,0.45);cursor:pointer;background:none;border:none;font-family:inherit;width:100%;text-align:left;
+}
+
+/* ══ CANVAS ══ */
+.canvas-wrap { background:#f5fffe; overflow-y:auto; display:flex; flex-direction:column; }
+.canvas-lesson-header {
+  background:white;border-bottom:1px solid #e0fdf4;padding:16px 32px 14px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.lesson-title-input {
+  font-size:17px;font-weight:700;color:#0d2926;background:transparent;
+  border:none;outline:none;font-family:inherit;flex:1;letter-spacing:-0.02em;
+}
+.lesson-meta { font-size:11px;color:#94a3b8;font-weight:500;flex-shrink:0; }
+
+.canvas { flex:1;padding:24px 0 80px;display:flex;flex-direction:column;align-items:center; }
+
+/* Add block row */
+.add-block-row {
+  width:100%;max-width:720px;display:flex;align-items:center;gap:10px;
+  padding:4px 0;position:relative;
+}
+.add-block-row.dim { opacity:0.35; }
+.add-block-line { flex:1;height:1px;background:#d1faf4; }
+.add-block-line.active { background:#14b8a6; }
+.add-block-btn {
+  display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;
+  background:white;border:1.5px solid #99f6e4;color:#0d9488;
+  font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(13,148,136,0.1);
+}
+.add-block-row.active-row .add-block-btn {
+  background:#0d9488;color:white;border-color:#0d9488;
+  box-shadow:0 4px 14px rgba(13,148,136,0.3);
+}
+.add-block-row.active-row .add-block-line { background:#14b8a6; }
+
+/* block picker popup */
+.block-picker {
+  position:absolute;
+  top:calc(100% + 4px);
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  border:1px solid #d1faf4;
+  border-radius:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.12),0 4px 16px rgba(13,148,136,0.08);
+  width:420px;
+  z-index:200;
+  overflow:hidden;
+}
+.picker-search { padding:10px 12px 8px;border-bottom:1px solid #f0fdf4;position:relative; }
+.picker-search-icon { position:absolute;left:22px;top:50%;transform:translateY(-54%);font-size:11px;color:#94a3b8; }
+.picker-search input {
+  width:100%;border:1px solid #e0fdf4;border-radius:6px;padding:6px 10px 6px 28px;
+  font-size:12px;font-family:inherit;color:#0f172a;outline:none;background:#f8fffe;
+}
+.picker-search input::placeholder { color:#b0c4c0; }
+.picker-body { padding:8px 8px 10px; }
+.cat-label {
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;
+  color:#94a3b8;padding:5px 5px 3px;display:flex;align-items:center;gap:7px;
+}
+.cat-label::after { content:'';flex:1;height:1px;background:#f0f4f3; }
+.block-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:1px; }
+.bt {
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;
+  border-radius:7px;cursor:pointer;border:1.5px solid transparent;
+  transition:background 0.1s,border-color 0.1s;
+}
+.bt:hover { background:#f0fdfb;border-color:#99f6e4; }
+.bt.sel { background:#e0fdf7;border-color:#14b8a6; }
+.bt-icon {
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  border-radius:7px;font-size:15px;font-weight:700;color:#475569;
+}
+/* category tints */
+.cat-text   .bt-icon { background:#f0fdf4;color:#0d9488; }
+.cat-media  .bt-icon { background:#eff6ff;color:#3b82f6; }
+.cat-inter  .bt-icon { background:#faf5ff;color:#8b5cf6; }
+.cat-know   .bt-icon { background:#fff7ed;color:#ea580c; }
+.bt.sel .bt-icon { background:#ccfbf1 !important;color:#0d9488 !important; }
+.bt-lbl { font-size:10px;font-weight:600;color:#334155;text-align:center;line-height:1.2; }
+.bt.sel .bt-lbl { color:#0d9488; }
+
+/* Block card */
+.block-item { width:100%;max-width:720px;position:relative;margin-bottom:2px; }
+.block-item:hover .block-controls { opacity:1; }
+.block-controls {
+  position:absolute;right:-44px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity 0.15s;
+}
+.bc {
+  width:26px;height:26px;border-radius:5px;background:white;border:1px solid #e0fdf4;
+  display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;color:#94a3b8;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.bc:hover { border-color:#5eead4;color:#0d9488; }
+.bc.danger:hover { border-color:#fca5a5;color:#ef4444; }
+.block-card {
+  background:white;border:1.5px solid transparent;border-radius:8px;padding:16px 20px;
+  transition:border-color 0.15s,box-shadow 0.15s;
+}
+.block-card:hover { border-color:#d1faf4; }
+.block-card.focused { border-color:#5eead4;box-shadow:0 0 0 3px rgba(20,184,166,0.08); }
+.block-type-chip {
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.09em;
+  color:#14b8a6;margin-bottom:6px;
+}
+.block-heading { font-size:21px;font-weight:800;color:#0d2926;letter-spacing:-0.02em;line-height:1.25; }
+.block-text { font-size:14px;line-height:1.65;color:#334155; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="topbar-back">← My Courses</button>
+    <div class="topbar-divider"></div>
+    <input class="course-title-input" value="Fire Safety Induction" />
+    <div class="topbar-right">
+      <div class="save-indicator"><div class="save-dot"></div>Saved</div>
+      <button class="btn-preview">👁 Preview</button>
+      <button class="btn-publish">↗ Publish</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header"><div class="sidebar-section-label">Lessons</div></div>
+    <div class="lesson-list">
+      <div class="lesson-item active"><span class="lesson-num">1</span><span class="lesson-name">Introduction</span><span class="lesson-block-count">3</span></div>
+      <div class="lesson-item"><span class="lesson-num">2</span><span class="lesson-name">Fire Hazards</span><span class="lesson-block-count">5</span></div>
+      <div class="lesson-item"><span class="lesson-num">3</span><span class="lesson-name">Evacuation Procedure</span><span class="lesson-block-count">4</span></div>
+      <div class="lesson-item"><span class="lesson-num">4</span><span class="lesson-name">Using a Fire Extinguisher</span><span class="lesson-block-count">6</span></div>
+      <div class="lesson-item"><span class="lesson-num">5</span><span class="lesson-name">Knowledge Check</span><span class="lesson-block-count">2</span></div>
+    </div>
+    <button class="add-lesson-btn">＋ Add lesson</button>
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn">⚙️ Course settings</button>
+      <button class="sidebar-footer-btn">📦 Export SCORM</button>
+    </div>
+  </aside>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <div class="canvas-lesson-header">
+      <input class="lesson-title-input" value="Introduction" />
+      <span class="lesson-meta">3 blocks</span>
+    </div>
+
+    <div class="canvas">
+
+      <!-- top gap -->
+      <div class="add-block-row dim">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+      </div>
+
+      <!-- Block 1: Heading -->
+      <div class="block-item">
+        <div class="block-card">
+          <div class="block-type-chip">Heading</div>
+          <div class="block-heading">Welcome to Fire Safety Induction</div>
+        </div>
+        <div class="block-controls">
+          <button class="bc">↑</button><button class="bc">↓</button>
+          <button class="bc">⧉</button><button class="bc danger">✕</button>
+        </div>
+      </div>
+
+      <!-- Gap between 1 and 2 -->
+      <div class="add-block-row dim">
+        <div class="add-block-line"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line"></div>
+      </div>
+
+      <!-- Block 2: Text -->
+      <div class="block-item">
+        <div class="block-card focused">
+          <div class="block-type-chip">Text</div>
+          <div class="block-text">This course covers essential fire safety knowledge for all staff. By the end, you'll know how to identify hazards, respond to alarms, and use basic firefighting equipment safely.</div>
+        </div>
+        <div class="block-controls" style="opacity:1;">
+          <button class="bc">↑</button><button class="bc">↓</button>
+          <button class="bc">⧉</button><button class="bc danger">✕</button>
+        </div>
+      </div>
+
+      <!-- ★ ACTIVE add-block row with picker open -->
+      <div class="add-block-row active-row">
+        <div class="add-block-line active"></div>
+        <button class="add-block-btn">＋ Add block</button>
+        <div class="add-block-line active"></div>
+
+        <!-- PICKER POPUP -->
+        <div class="block-picker">
+          <div class="picker-search">
+            <span class="picker-search-icon">🔍</span>
+            <input placeholder="Search blocks…" />
+          </div>
+          <div class="picker-body">
+
+            <div class="cat-label">Text</div>
+            <div class="block-grid cat-text">
+              <div class="bt sel"><div class="bt-icon">H</div><span class="bt-lbl">Heading</span></div>
+              <div class="bt"><div class="bt-icon">¶</div><span class="bt-lbl">Text</span></div>
+              <div class="bt"><div class="bt-icon">≡</div><span class="bt-lbl">List</span></div>
+              <div class="bt"><div class="bt-icon">❝</div><span class="bt-lbl">Quote</span></div>
+              <div class="bt"><div class="bt-icon">💡</div><span class="bt-lbl">Callout</span></div>
+              <div class="bt"><div class="bt-icon">&lt;/&gt;</div><span class="bt-lbl">Code</span></div>
+              <div class="bt"><div class="bt-icon">—</div><span class="bt-lbl">Divider</span></div>
+              <div class="bt"><div class="bt-icon">📋</div><span class="bt-lbl">Contents</span></div>
+            </div>
+
+            <div class="cat-label">Media</div>
+            <div class="block-grid cat-media">
+              <div class="bt"><div class="bt-icon">🖼</div><span class="bt-lbl">Image</span></div>
+              <div class="bt"><div class="bt-icon">▶</div><span class="bt-lbl">Video</span></div>
+              <div class="bt"><div class="bt-icon">🎵</div><span class="bt-lbl">Audio</span></div>
+            </div>
+
+            <div class="cat-label">Interactive</div>
+            <div class="block-grid cat-inter">
+              <div class="bt"><div class="bt-icon">＋</div><span class="bt-lbl">Accordion</span></div>
+              <div class="bt"><div class="bt-icon">⊡</div><span class="bt-lbl">Tabs</span></div>
+            </div>
+
+            <div class="cat-label">Knowledge Check</div>
+            <div class="block-grid cat-know">
+              <div class="bt"><div class="bt-icon">✅</div><span class="bt-lbl">True / False</span></div>
+              <div class="bt"><div class="bt-icon">⊙</div><span class="bt-lbl">Multiple Choice</span></div>
+              <div class="bt"><div class="bt-icon">✏️</div><span class="bt-lbl">Short Answer</span></div>
+            </div>
+
+          </div>
+        </div>
+        <!-- /PICKER -->
+      </div>
+
+      <!-- Block 3: dimmed below the popup -->
+      <div class="block-item" style="opacity:0.4;pointer-events:none;">
+        <div class="block-card">
+          <div class="block-type-chip">Image</div>
+          <div style="height:80px;background:#e0fdf4;border-radius:6px;border:2px dashed #99f6e4;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0d9488;font-weight:600;">Click to add an image</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

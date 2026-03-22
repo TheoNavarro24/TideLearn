@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "manning-education": {
+      "type": "streamable-http",
+      "url": "https://mcp-server-sigma-sooty.vercel.app/mcp"
+    }
+  }
+}

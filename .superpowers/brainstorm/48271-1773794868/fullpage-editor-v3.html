@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TideLearn — Editor v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body { font-family:'Inter',system-ui,sans-serif; background:#0e2d29; overflow:hidden; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  grid-column: 1/-1; background:#0f1f1d;
+  border-bottom:1px solid rgba(20,184,166,0.15);
+  display:flex; align-items:center; padding:0 16px; gap:0; z-index:10;
+}
+.topbar-back { display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:6px;font-size:12px;font-weight:600;color:rgba(94,234,212,0.5);cursor:pointer;border:none;background:none;font-family:inherit; }
+.topbar-div { width:1px;height:20px;background:rgba(20,184,166,0.15);margin:0 12px; }
+.course-title { flex:1;background:transparent;border:none;outline:none;font-size:13px;font-weight:600;color:white;font-family:inherit; }
+.topbar-right { display:flex;align-items:center;gap:8px;margin-left:auto; }
+.save-indicator { font-size:11px;color:rgba(94,234,212,0.4);font-weight:500;display:flex;align-items:center;gap:5px; }
+.save-dot { width:5px;height:5px;border-radius:50%;background:#14b8a6;box-shadow:0 0 6px rgba(20,184,166,0.6); }
+.btn-preview { background:rgba(20,184,166,0.1);color:#5eead4;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid rgba(20,184,166,0.2);cursor:pointer;font-family:inherit; }
+.btn-publish { background:linear-gradient(135deg,#0d9488,#0891b2);color:white;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit; }
+
+/* SIDEBAR */
+.sidebar { background:#1e4a44;border-right:1px solid rgba(20,184,166,0.18);display:flex;flex-direction:column;overflow:hidden; }
+.sidebar-header { padding:14px 14px 10px;border-bottom:1px solid rgba(20,184,166,0.12); }
+.sec-label { font-size:9.5px;font-weight:700;color:rgba(94,234,212,0.45);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px; }
+.lesson-list { flex:1;overflow-y:auto;padding:8px 10px; }
+.li { display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;font-weight:500;color:rgba(209,250,229,0.6);margin-bottom:1px; }
+.li:hover { background:rgba(20,184,166,0.1);color:#ccfbf1; }
+.li.active { background:rgba(20,184,166,0.18);color:#ccfbf1;font-weight:600; }
+.li-num { font-size:10px;font-weight:700;color:rgba(94,234,212,0.4);width:16px;flex-shrink:0;text-align:right; }
+.li.active .li-num { color:#14b8a6; }
+.li-name { flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.li-count { font-size:10px;color:rgba(94,234,212,0.3);flex-shrink:0; }
+.li.active .li-count { color:rgba(94,234,212,0.5); }
+.add-lesson { margin:6px 10px;display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:6px;border:1.5px dashed rgba(20,184,166,0.25);background:transparent;color:rgba(94,234,212,0.45);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit; }
+.sf { padding:12px;border-top:1px solid rgba(20,184,166,0.15);display:flex;flex-direction:column;gap:4px; }
+.sf-btn { display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;font-size:12px;font-weight:500;color:rgba(209,250,229,0.45);cursor:pointer;background:none;border:none;font-family:inherit;width:100%;text-align:left; }
+
+/* CANVAS */
+.canvas-wrap { background:#f5fffe;overflow-y:auto;display:flex;flex-direction:column; }
+.lesson-header { background:white;border-bottom:1px solid #e0fdf4;padding:16px 32px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0; }
+.lesson-title { font-size:19px;font-weight:700;color:#0d2926;background:transparent;border:none;outline:none;font-family:'Lora',Georgia,serif;flex:1;letter-spacing:-0.01em; }
+.lesson-meta-text { font-size:11px;color:#94a3b8;font-weight:500; }
+
+.canvas { flex:1;padding:20px 64px 80px;display:flex;flex-direction:column;align-items:center; }
+
+/* add-block gap rows */
+.abr {
+  width:100%;max-width:700px;display:flex;align-items:center;gap:10px;
+  padding:3px 0;opacity:0;transition:opacity 0.15s;position:relative;
+}
+.abr:hover, .abr.open { opacity:1; }
+.abr.dim { opacity:0.3; }
+.abl { flex:1;height:1px;background:#d1faf4; }
+.abr.open .abl { background:#14b8a6; }
+.abb {
+  display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;
+  background:white;border:1.5px solid #99f6e4;color:#0d9488;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+  box-shadow:0 2px 8px rgba(13,148,136,0.08);white-space:nowrap;
+}
+.abr.open .abb { background:#0d9488;color:white;border-color:#0d9488;box-shadow:0 4px 14px rgba(13,148,136,0.3); }
+
+/* Block items */
+.bi { width:100%;max-width:700px;position:relative;margin-bottom:1px; }
+.bi:hover .bctrl { opacity:1; }
+.bctrl { position:absolute;right:-40px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity 0.15s; }
+.bc { width:26px;height:26px;border-radius:5px;background:white;border:1px solid #e0fdf4;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;color:#94a3b8; }
+.bc:hover { border-color:#5eead4;color:#0d9488; }
+.bc.del:hover { border-color:#fca5a5;color:#ef4444; }
+
+/* Block cards */
+.bcard {
+  background:white;border:1.5px solid transparent;border-radius:8px;
+  padding:16px 20px;transition:border-color 0.12s;
+}
+.bcard:hover { border-color:#e0fdf4; }
+.bcard.focused { border-color:#5eead4;box-shadow:0 0 0 3px rgba(20,184,166,0.07); }
+
+.chip { font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.09em;color:#14b8a6;margin-bottom:6px; }
+
+/* block content types */
+.b-heading { font-size:21px;font-weight:800;color:#0d2926;letter-spacing:-0.025em;line-height:1.25; }
+.b-text { font-size:14px;line-height:1.7;color:#334155; }
+.b-callout {
+  background:#f0fdfb;border-left:3px solid #14b8a6;border-radius:0 6px 6px 0;
+  padding:12px 16px;
+}
+.b-callout-icon { font-size:14px;margin-bottom:5px; }
+.b-callout-title { font-size:12px;font-weight:700;color:#0d9488;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em; }
+.b-callout-text { font-size:13.5px;color:#0f2e2b;line-height:1.6; }
+
+.b-image { height:120px;background:#e8fdf9;border:2px dashed #99f6e4;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:10px;color:#0d9488;font-size:12px;font-weight:600; }
+
+.b-list { padding-left:0; }
+.b-list li { font-size:14px;color:#334155;line-height:1.6;list-style:none;display:flex;align-items:flex-start;gap:8px;padding:2px 0; }
+.b-list li::before { content:'•';color:#14b8a6;font-weight:700;font-size:16px;line-height:1.4;flex-shrink:0; }
+
+.b-truefalse { }
+.b-tf-q { font-size:14px;font-weight:600;color:#0d2926;margin-bottom:10px;line-height:1.45; }
+.b-tf-opts { display:flex;gap:8px; }
+.b-tf-opt {
+  flex:1;padding:9px 14px;border-radius:7px;border:1.5px solid #e0fdf4;
+  font-size:13px;font-weight:600;color:#475569;text-align:center;cursor:pointer;
+}
+.b-tf-opt.correct { border-color:#14b8a6;background:#f0fdfb;color:#0d9488; }
+.b-tf-opt.wrong { border-color:#e2e8f0;background:white;color:#94a3b8; }
+
+/* Dimmed blocks below open picker */
+.dimmed { opacity:0.25;pointer-events:none; }
+
+/* ── BLOCK PICKER ── */
+.picker {
+  position:absolute;
+  top:calc(100% + 6px);
+  left:50%;transform:translateX(-50%);
+  background:white;
+  border:1px solid #c7f5ee;
+  border-radius:12px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.13),0 4px 16px rgba(13,148,136,0.09);
+  width:420px;
+  z-index:200;
+  overflow:hidden;
+}
+.picker-search { padding:10px 12px 8px;border-bottom:1px solid #f0fdf4;position:relative; }
+.picker-search-icon { position:absolute;left:22px;top:50%;transform:translateY(-54%);font-size:11px;color:#94a3b8; }
+.picker-search input {
+  width:100%;border:1px solid #e0fdf4;border-radius:6px;padding:6px 10px 6px 28px;
+  font-size:12px;font-family:inherit;color:#0f172a;outline:none;background:#f8fffe;
+}
+.picker-search input::placeholder { color:#b0c4c0; }
+.picker-body { padding:8px 8px 10px; }
+.pcat { font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#94a3b8;padding:5px 5px 3px;display:flex;align-items:center;gap:7px; }
+.pcat::after { content:'';flex:1;height:1px;background:#f0f4f3; }
+.pgrid { display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:1px; }
+.pt {
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;
+  border-radius:7px;cursor:pointer;border:1.5px solid transparent;transition:background 0.1s,border-color 0.1s;
+}
+.pt:hover { background:#f0fdfb;border-color:#99f6e4; }
+.pt.sel { background:#e0fdf7;border-color:#14b8a6; }
+.pi { width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:14px;font-weight:700; }
+.ptext .pi  { background:#f0fdf4;color:#0d9488; }
+.pmedia .pi { background:#eff6ff;color:#3b82f6; }
+.pinter .pi { background:#faf5ff;color:#8b5cf6; }
+.pknow  .pi { background:#fff7ed;color:#ea580c; }
+.pt.sel .pi { background:#ccfbf1 !important;color:#0d9488 !important; }
+.pl { font-size:10px;font-weight:600;color:#334155;text-align:center;line-height:1.2; }
+.pt.sel .pl { color:#0d9488; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <button class="topbar-back">← My Courses</button>
+    <div class="topbar-div"></div>
+    <input class="course-title" value="Fire Safety Induction" />
+    <div class="topbar-right">
+      <div class="save-indicator"><div class="save-dot"></div>Saved</div>
+      <button class="btn-preview">👁 Preview</button>
+      <button class="btn-publish">↗ Publish</button>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-header"><div class="sec-label">Lessons</div></div>
+    <div class="lesson-list">
+      <div class="li"><span class="li-num">1</span><span class="li-name">Introduction</span><span class="li-count">6</span></div>
+      <div class="li active"><span class="li-num">2</span><span class="li-name">Fire Hazards</span><span class="li-count">5</span></div>
+      <div class="li"><span class="li-num">3</span><span class="li-name">Evacuation Procedure</span><span class="li-count">4</span></div>
+      <div class="li"><span class="li-num">4</span><span class="li-name">Using a Fire Extinguisher</span><span class="li-count">6</span></div>
+      <div class="li"><span class="li-num">5</span><span class="li-name">Knowledge Check</span><span class="li-count">2</span></div>
+    </div>
+    <button class="add-lesson">＋ Add lesson</button>
+    <div class="sf">
+      <button class="sf-btn">⚙️ Course settings</button>
+      <button class="sf-btn">📦 Export SCORM</button>
+    </div>
+  </aside>
+
+  <div class="canvas-wrap">
+    <div class="lesson-header">
+      <input class="lesson-title" value="Fire Hazards" />
+      <span class="lesson-meta-text">5 blocks</span>
+    </div>
+
+    <div class="canvas">
+
+      <!-- gap 0 -->
+      <div class="abr"><div class="abl"></div><button class="abb">＋ Add block</button><div class="abl"></div></div>
+
+      <!-- Block 1: Heading -->
+      <div class="bi">
+        <div class="bcard">
+          <div class="chip">Heading</div>
+          <div class="b-heading">Common Fire Hazards in the Workplace</div>
+        </div>
+        <div class="bctrl">
+          <button class="bc">↑</button><button class="bc">↓</button><button class="bc">⧉</button><button class="bc del">✕</button>
+        </div>
+      </div>
+
+      <!-- gap 1 -->
+      <div class="abr"><div class="abl"></div><button class="abb">＋ Add block</button><div class="abl"></div></div>
+
+      <!-- Block 2: Text -->
+      <div class="bi">
+        <div class="bcard">
+          <div class="chip">Text</div>
+          <div class="b-text">Understanding where fires start is the first step in preventing them. The most common causes in workplaces are electrical faults, improper storage of flammable materials, and human error such as leaving heat sources unattended.</div>
+        </div>
+        <div class="bctrl">
+          <button class="bc">↑</button><button class="bc">↓</button><button class="bc">⧉</button><button class="bc del">✕</button>
+        </div>
+      </div>
+
+      <!-- gap 2 -->
+      <div class="abr"><div class="abl"></div><button class="abb">＋ Add block</button><div class="abl"></div></div>
+
+      <!-- Block 3: List -->
+      <div class="bi">
+        <div class="bcard focused">
+          <div class="chip">List</div>
+          <ul class="b-list">
+            <li>Overloaded or faulty electrical sockets and extension leads</li>
+            <li>Flammable liquids stored near ignition sources</li>
+            <li>Blocked or obstructed fire exits and evacuation routes</li>
+            <li>Unattended cooking equipment or hot surfaces</li>
+          </ul>
+        </div>
+        <div class="bctrl" style="opacity:1;">
+          <button class="bc">↑</button><button class="bc">↓</button><button class="bc">⧉</button><button class="bc del">✕</button>
+        </div>
+      </div>
+
+      <!-- gap 3: OPEN with picker -->
+      <div class="abr open">
+        <div class="abl"></div>
+        <button class="abb">＋ Add block</button>
+        <div class="abl"></div>
+
+        <div class="picker">
+          <div class="picker-search">
+            <span class="picker-search-icon">🔍</span>
+            <input placeholder="Search blocks…" />
+          </div>
+          <div class="picker-body">
+            <div class="pcat">Text</div>
+            <div class="pgrid ptext">
+              <div class="pt"><div class="pi">H</div><span class="pl">Heading</span></div>
+              <div class="pt"><div class="pi">¶</div><span class="pl">Text</span></div>
+              <div class="pt"><div class="pi">≡</div><span class="pl">List</span></div>
+              <div class="pt"><div class="pi">❝</div><span class="pl">Quote</span></div>
+              <div class="pt sel"><div class="pi">💡</div><span class="pl">Callout</span></div>
+              <div class="pt"><div class="pi">&lt;/&gt;</div><span class="pl">Code</span></div>
+              <div class="pt"><div class="pi">—</div><span class="pl">Divider</span></div>
+              <div class="pt"><div class="pi">📋</div><span class="pl">Contents</span></div>
+            </div>
+            <div class="pcat">Media</div>
+            <div class="pgrid pmedia">
+              <div class="pt"><div class="pi">🖼</div><span class="pl">Image</span></div>
+              <div class="pt"><div class="pi">▶</div><span class="pl">Video</span></div>
+              <div class="pt"><div class="pi">🎵</div><span class="pl">Audio</span></div>
+            </div>
+            <div class="pcat">Interactive</div>
+            <div class="pgrid pinter">
+              <div class="pt"><div class="pi">＋</div><span class="pl">Accordion</span></div>
+              <div class="pt"><div class="pi">⊡</div><span class="pl">Tabs</span></div>
+            </div>
+            <div class="pcat">Knowledge Check</div>
+            <div class="pgrid pknow">
+              <div class="pt"><div class="pi">✅</div><span class="pl">True / False</span></div>
+              <div class="pt"><div class="pi">⊙</div><span class="pl">Multiple Choice</span></div>
+              <div class="pt"><div class="pi">✏️</div><span class="pl">Short Answer</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Block 4: Callout (dimmed — will appear once Callout is picked) -->
+      <div class="bi dimmed">
+        <div class="bcard">
+          <div class="chip">Callout</div>
+          <div class="b-callout">
+            <div class="b-callout-icon">💡</div>
+            <div class="b-callout-title">Did you know?</div>
+            <div class="b-callout-text">In the UK, workplaces are legally required to conduct fire risk assessments under the Regulatory Reform (Fire Safety) Order 2005.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- gap 4 dimmed -->
+      <div class="abr dim"><div class="abl"></div><button class="abb">＋ Add block</button><div class="abl"></div></div>
+
+      <!-- Block 5: True/False (dimmed) -->
+      <div class="bi dimmed">
+        <div class="bcard">
+          <div class="chip">True / False</div>
+          <div class="b-truefalse">
+            <div class="b-tf-q">Overloaded electrical sockets are a leading cause of workplace fires.</div>
+            <div class="b-tf-opts">
+              <div class="b-tf-opt correct">✓ True</div>
+              <div class="b-tf-opt wrong">False</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- final gap dimmed -->
+      <div class="abr dim"><div class="abl"></div><button class="abb">＋ Add block</button><div class="abl"></div></div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

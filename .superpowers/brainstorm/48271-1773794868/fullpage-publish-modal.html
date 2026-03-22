@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publish Course — TideLearn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      background: #0f2822;
+    }
+
+    /* ── Editor shell (blurred background) ── */
+    .editor-shell {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      filter: blur(2px);
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Editor topbar */
+    .editor-topbar {
+      height: 52px;
+      background: #0f1f1d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .editor-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .logo-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .editor-course-name {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+    .editor-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .etb-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 7px;
+      color: rgba(255,255,255,0.7);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .etb-btn-primary {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      border-radius: 7px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      cursor: pointer;
+    }
+
+    /* Editor body */
+    .editor-body {
+      flex: 1;
+      display: flex;
+      background: #f8fffe;
+    }
+
+    /* Block panel */
+    .editor-panel {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e0fdf4;
+      padding: 16px 12px;
+      flex-shrink: 0;
+    }
+    .panel-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .panel-block {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+    .panel-block:hover { background: #f0fdfb; }
+    .panel-block-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: #f0fdfb;
+      border: 1px solid #e0fdf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .panel-block-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #475569;
+    }
+
+    /* Editor canvas */
+    .editor-canvas {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .canvas-lesson {
+      width: 100%;
+      max-width: 620px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e0fdf4;
+      padding: 32px 40px;
+      box-shadow: 0 2px 12px rgba(13,41,38,0.04);
+    }
+    .canvas-title {
+      font-family: 'Lora', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0d2926;
+      margin-bottom: 18px;
+    }
+    .canvas-block {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #475569;
+      margin-bottom: 14px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #e0fdf4;
+    }
+    .canvas-block-heading {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0d2926;
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    .canvas-callout {
+      border-left: 3px solid #14b8a6;
+      background: #f0fdfb;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #334155;
+      margin-bottom: 14px;
+    }
+
+    /* Lesson list panel */
+    .editor-lessons {
+      width: 200px;
+      background: #fff;
+      border-left: 1px solid #e0fdf4;
+      padding: 16px 12px;
+      flex-shrink: 0;
+    }
+    .lesson-add-btn {
+      width: 100%;
+      padding: 8px;
+      border: 1.5px dashed #d1faf4;
+      border-radius: 8px;
+      background: transparent;
+      color: #0d9488;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .lesson-list-item {
+      padding: 8px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lesson-list-item.active-lesson {
+      background: rgba(20,184,166,0.1);
+      color: #0d9488;
+      font-weight: 600;
+    }
+    .lesson-num-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f0fdfb;
+      border: 1px solid #d1faf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #0d9488;
+      flex-shrink: 0;
+    }
+    .lesson-list-item.active-lesson .lesson-num-dot {
+      background: #14b8a6;
+      border-color: #14b8a6;
+      color: #fff;
+    }
+
+    /* ── Dark overlay ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 22, 18, 0.6);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Modal card ── */
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 480px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(13,148,136,0.1);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top gradient stripe */
+    .modal-stripe {
+      height: 3px;
+      background: linear-gradient(90deg, #14b8a6, #0891b2);
+    }
+
+    .modal-body {
+      padding: 36px;
+    }
+
+    /* Success icon */
+    .modal-icon-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .modal-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d9488, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(13,148,136,0.3);
+    }
+    .modal-icon-check {
+      font-size: 28px;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .modal-title {
+      font-family: 'Lora', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0d2926;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .modal-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Share URL section */
+    .share-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 8px;
+    }
+    .share-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .share-url {
+      flex: 1;
+      background: #f8fffe;
+      border: 1.5px solid #d1faf4;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      color: #0d9488;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .copy-btn {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border: none;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .copy-btn:hover { opacity: 0.88; }
+
+    /* Secondary actions */
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .action-btn-outline-teal {
+      background: #fff;
+      border: 1.5px solid #14b8a6;
+      color: #0d9488;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.12s;
+    }
+    .action-btn-outline-teal:hover { background: #f0fdfb; }
+    .action-btn-outline-gray {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      color: #64748b;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: border-color 0.12s;
+    }
+    .action-btn-outline-gray:hover { border-color: #cbd5e1; }
+
+    /* Done button */
+    .modal-done-wrap {
+      display: flex;
+      justify-content: center;
+    }
+    .done-btn {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0d9488;
+      cursor: pointer;
+      padding: 6px 16px;
+      border-radius: 6px;
+      transition: background 0.12s;
+    }
+    .done-btn:hover { background: #f0fdfb; }
+  </style>
+</head>
+<body>
+
+  <!-- Editor background (blurred) -->
+  <div class="editor-shell">
+
+    <!-- Editor topbar -->
+    <div class="editor-topbar" style="position:relative;">
+      <div class="editor-logo">
+        <div class="logo-mark">🌊</div>
+        <span class="logo-name">TideLearn</span>
+      </div>
+      <div class="editor-course-name">Fire Safety Induction</div>
+      <div class="editor-topbar-actions">
+        <button class="etb-btn">Preview</button>
+        <button class="etb-btn">Save</button>
+        <button class="etb-btn-primary">Publish</button>
+      </div>
+    </div>
+
+    <!-- Editor body -->
+    <div class="editor-body">
+
+      <!-- Block panel -->
+      <div class="editor-panel">
+        <div class="panel-label">Add Block</div>
+        <div class="panel-block">
+          <div class="panel-block-icon">T</div>
+          <div class="panel-block-name">Heading</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">¶</div>
+          <div class="panel-block-name">Text</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">💡</div>
+          <div class="panel-block-name">Callout</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">🖼</div>
+          <div class="panel-block-name">Image</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">✓✗</div>
+          <div class="panel-block-name">True / False</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">◉</div>
+          <div class="panel-block-name">Multiple Choice</div>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block-icon">▶</div>
+          <div class="panel-block-name">Video</div>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="editor-canvas">
+        <div class="canvas-lesson">
+          <div class="canvas-title">Common Fire Hazards</div>
+          <div class="canvas-block-heading">What creates a fire risk?</div>
+          <div class="canvas-block">Fire requires three elements to exist: heat, fuel, and oxygen — commonly known as the fire triangle. Understanding where hazards concentrate, and how everyday activities can bring these elements together, is the foundation of effective fire prevention.</div>
+          <div class="canvas-callout">💡 A single overloaded extension lead can carry enough heat to ignite nearby materials within minutes.</div>
+          <div class="canvas-block-heading">Electrical hazards in the workplace</div>
+          <div class="canvas-block">Electrical faults account for approximately 25% of all workplace fires in the UK. Overloaded sockets, damaged cables, and equipment left on standby are the leading causes.</div>
+        </div>
+      </div>
+
+      <!-- Lesson list -->
+      <div class="editor-lessons">
+        <div class="panel-label">Lessons</div>
+        <div class="lesson-list-item">
+          <div class="lesson-num-dot">1</div> Introduction
+        </div>
+        <div class="lesson-list-item">
+          <div class="lesson-num-dot">2</div> Fire Behaviour
+        </div>
+        <div class="lesson-list-item active-lesson">
+          <div class="lesson-num-dot">3</div> Fire Hazards
+        </div>
+        <div class="lesson-list-item">
+          <div class="lesson-num-dot">4</div> Prevention
+        </div>
+        <div class="lesson-list-item">
+          <div class="lesson-num-dot">5</div> Extinguishers
+        </div>
+        <button class="lesson-add-btn">+ Add lesson</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Dark overlay + modal -->
+  <div class="modal-overlay">
+    <div class="modal">
+
+      <!-- Top stripe -->
+      <div class="modal-stripe"></div>
+
+      <div class="modal-body">
+
+        <!-- Success icon -->
+        <div class="modal-icon-wrap">
+          <div class="modal-icon">
+            <span class="modal-icon-check">✓</span>
+          </div>
+        </div>
+
+        <!-- Title & subtitle -->
+        <h2 class="modal-title">Your course is live</h2>
+        <p class="modal-subtitle">Fire Safety Induction is published and ready to share.</p>
+
+        <!-- Share URL -->
+        <div class="share-label">Share Link</div>
+        <div class="share-row">
+          <div class="share-url">https://tidelearn.app/view?id=abc123</div>
+          <button class="copy-btn">Copy</button>
+        </div>
+
+        <!-- Secondary actions -->
+        <div class="modal-actions">
+          <button class="action-btn-outline-teal">Open in new tab →</button>
+          <button class="action-btn-outline-gray">&lt;/&gt; Embed code</button>
+        </div>
+
+        <!-- Done -->
+        <div class="modal-done-wrap">
+          <button class="done-btn">Done</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build with AI — TideLearn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f1f1d;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: #1e4a44;
+      border-right: 1px solid #245a52;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo {
+      padding: 20px 18px 18px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: #14b8a6;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: 1px solid #245a52;
+    }
+
+    .sidebar-nav {
+      padding: 14px 0;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #5eead4;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 8px 18px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .nav-item:hover {
+      background: rgba(20,184,166,0.07);
+      color: #e2f4f1;
+    }
+
+    .nav-item.active {
+      background: rgba(20,184,166,0.14);
+      color: #f0fdfa;
+      border-left-color: #14b8a6;
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      font-size: 14px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: 1px solid #245a52;
+    }
+
+    .sidebar-user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f4f1;
+    }
+
+    .sidebar-user-email {
+      font-size: 11px;
+      color: #5eead4;
+      margin-top: 2px;
+    }
+
+    /* ── Main content ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f8fffe;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Topbar */
+    .main-topbar {
+      background: white;
+      border-bottom: 1px solid #e8f5f3;
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .main-topbar-title {
+      font-family: 'Lora', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #0d2926;
+    }
+
+    .claude-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #0d9488;
+      background: rgba(20, 184, 166, 0.12);
+      border-radius: 20px;
+      padding: 3px 9px;
+      text-transform: uppercase;
+    }
+
+    /* ── Prompt section ── */
+    .prompt-section {
+      background: white;
+      border-bottom: 1px solid #e0fdf4;
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .prompt-inner {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .prompt-card {
+      background: white;
+      border: 1.5px solid #d1faf4;
+      border-radius: 12px;
+      padding: 20px 24px;
+      min-height: 120px;
+      box-shadow: 0 2px 16px rgba(13,148,136,0.07);
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .prompt-placeholder {
+      font-size: 13px;
+      color: #b2d8d4;
+      line-height: 1.6;
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      right: 24px;
+      pointer-events: none;
+      white-space: pre-line;
+    }
+
+    .prompt-text {
+      font-size: 13px;
+      color: #0d2926;
+      line-height: 1.7;
+      font-weight: 400;
+      position: relative;
+      z-index: 1;
+    }
+
+    .prompt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .prompt-chip {
+      background: #f0fdfb;
+      border: 1px solid #d1faf4;
+      border-radius: 20px;
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #0d9488;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .prompt-chip:hover {
+      background: #ccfbf1;
+      border-color: #5eead4;
+    }
+
+    .generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0d9488, #0891b2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.25);
+    }
+
+    .generate-btn:hover {
+      opacity: 0.93;
+      transform: translateY(-1px);
+    }
+
+    /* Section divider */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 32px;
+      background: #f8fffe;
+    }
+
+    .section-divider hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid #e0fdf4;
+    }
+
+    .section-divider span {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    /* ── Outline section ── */
+    .outline-section {
+      background: #f8fffe;
+      padding: 0 32px 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .outline-inner {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .outline-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .outline-title {
+      font-family: 'Lora', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #0d2926;
+    }
+
+    .outline-meta {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Lesson cards */
+    .lesson-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .lesson-card {
+      background: white;
+      border: 1.5px solid #e2f4f1;
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .lesson-card:hover {
+      border-color: #5eead4;
+      box-shadow: 0 2px 10px rgba(13,148,136,0.08);
+    }
+
+    .lesson-num-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d9488, #0891b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .lesson-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lesson-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0d2926;
+      margin-bottom: 2px;
+    }
+
+    .lesson-sub {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .lesson-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: #0d9488;
+      background: rgba(13,148,136,0.1);
+      border-radius: 12px;
+      padding: 3px 9px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .build-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0d9488, #0891b2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.25);
+    }
+
+    .build-btn:hover {
+      opacity: 0.93;
+      transform: translateY(-1px);
+    }
+
+    .regen-btn {
+      width: 100%;
+      background: white;
+      color: #0d9488;
+      border: 1.5px solid #0d9488;
+      border-radius: 8px;
+      padding: 11px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .regen-btn:hover {
+      background: #f0fdfb;
+    }
+
+    .outline-note {
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">🌊 TideLearn</div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📚</span> My Courses
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">⚡</span> Quick Draft
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📥</span> Import JSON
+      </a>
+      <a class="nav-item active" href="#">
+        <span class="nav-icon">✨</span> Build with AI
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user-name">Theo Navarro</div>
+      <div class="sidebar-user-email">theo@example.com</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="main-topbar">
+      <span class="main-topbar-title">Build with AI</span>
+      <span class="claude-badge">Powered by Claude</span>
+    </div>
+
+    <!-- Prompt section -->
+    <div class="prompt-section">
+      <div class="prompt-inner">
+
+        <div class="prompt-card">
+          <div class="prompt-placeholder">Describe the course you want to build…
+
+e.g. A 4-lesson fire safety induction for new warehouse staff. Cover hazard identification, evacuation procedures, and a short quiz at the end.</div>
+          <div class="prompt-text">Create a 5-lesson course on manual handling safety for warehouse operatives. Include the legal requirements, correct lifting technique, risk assessment basics, and end with a knowledge check.</div>
+        </div>
+
+        <div class="prompt-chips">
+          <div class="prompt-chip">🔥 Fire safety induction</div>
+          <div class="prompt-chip">📋 Onboarding checklist</div>
+          <div class="prompt-chip">🏗️ Site safety basics</div>
+          <div class="prompt-chip">🧪 COSHH awareness</div>
+        </div>
+
+        <button class="generate-btn">Generate course →</button>
+
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="section-divider">
+      <hr>
+      <span>Generated outline</span>
+      <hr>
+    </div>
+
+    <!-- Outline section -->
+    <div class="outline-section">
+      <div class="outline-inner">
+
+        <div class="outline-header">
+          <div class="outline-title">Manual Handling Safety</div>
+          <div class="outline-meta">5 lessons · estimated 20 min</div>
+        </div>
+
+        <div class="lesson-list">
+
+          <div class="lesson-card">
+            <div class="lesson-num-circle">1</div>
+            <div class="lesson-info">
+              <div class="lesson-title">Introduction to Manual Handling</div>
+              <div class="lesson-sub">Why manual handling matters and legal duties</div>
+            </div>
+            <div class="lesson-badge">2 blocks</div>
+          </div>
+
+          <div class="lesson-card">
+            <div class="lesson-num-circle">2</div>
+            <div class="lesson-info">
+              <div class="lesson-title">Identifying Hazards</div>
+              <div class="lesson-sub">Common risks: posture, load weight, environment</div>
+            </div>
+            <div class="lesson-badge">4 blocks</div>
+          </div>
+
+          <div class="lesson-card">
+            <div class="lesson-num-circle">3</div>
+            <div class="lesson-info">
+              <div class="lesson-title">Correct Lifting Technique</div>
+              <div class="lesson-sub">Step-by-step safe lifting with visual guide</div>
+            </div>
+            <div class="lesson-badge">5 blocks</div>
+          </div>
+
+          <div class="lesson-card">
+            <div class="lesson-num-circle">4</div>
+            <div class="lesson-info">
+              <div class="lesson-title">Risk Assessment Basics</div>
+              <div class="lesson-sub">How to spot and reduce manual handling risks</div>
+            </div>
+            <div class="lesson-badge">3 blocks</div>
+          </div>
+
+          <div class="lesson-card">
+            <div class="lesson-num-circle">5</div>
+            <div class="lesson-info">
+              <div class="lesson-title">Knowledge Check</div>
+              <div class="lesson-sub">6-question quiz to confirm understanding</div>
+            </div>
+            <div class="lesson-badge">2 blocks</div>
+          </div>
+
+        </div>
+
+        <div class="action-buttons">
+          <button class="build-btn">✓ Build this course</button>
+          <button class="regen-btn">Regenerate outline</button>
+        </div>
+
+        <div class="outline-note">The AI will create lessons and placeholder blocks. You can edit everything afterwards.</div>
+
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>
