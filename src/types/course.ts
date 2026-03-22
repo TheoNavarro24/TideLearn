@@ -352,7 +352,7 @@ export const factories = {
     type: "quiz",
     question: "Your question?",
     options: ["Option A", "Option B", "Option C", "Option D"],
-    correctIndex: 0,
+    correctIndex: -1,
   }),
   list: (): ListBlock => ({ id: uid(), type: "list", style: "bulleted", items: ["First point", "Second point"] }),
   quote: (): QuoteBlock => ({ id: uid(), type: "quote", text: "A relevant quote.", cite: "Source" }),

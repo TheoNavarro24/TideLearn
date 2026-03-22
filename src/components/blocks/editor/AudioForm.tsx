@@ -3,6 +3,8 @@ import { AudioBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
+import { FieldLabel } from "./FieldLabel";
+import { toast } from "@/hooks/use-toast";
 
 export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b: AudioBlock) => void }) {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b
       onChange({ ...block, src: url });
     } catch (e) {
       console.error("Upload failed", e);
+      toast({ title: "Upload failed", description: e instanceof Error ? e.message : "Please try again." });
     } finally {
       setUploading(false);
     }
@@ -25,7 +28,7 @@ export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b
 
   return (
     <div className="space-y-2">
-      <label className="text-sm text-muted-foreground">Audio URL</label>
+      <FieldLabel>Audio URL</FieldLabel>
       <div className="flex gap-2">
         <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} placeholder="https://..." />
         {user && (
@@ -48,7 +51,7 @@ export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b
           </>
         )}
       </div>
-      <label className="text-sm text-muted-foreground">Title (optional)</label>
+      <FieldLabel>Title (optional)</FieldLabel>
       <Input value={block.title ?? ''} onChange={(e) => onChange({ ...block, title: e.target.value })} />
     </div>
   );

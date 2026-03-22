@@ -3,6 +3,8 @@ import { ImageBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
+import { FieldLabel } from "./FieldLabel";
+import { toast } from "@/hooks/use-toast";
 
 export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b: ImageBlock) => void }) {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
       onChange({ ...block, src: url });
     } catch (e) {
       console.error("Upload failed", e);
+      toast({ title: "Upload failed", description: e instanceof Error ? e.message : "Please try again." });
     } finally {
       setUploading(false);
     }
@@ -26,7 +29,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Image URL</label>
+        <FieldLabel>Image URL</FieldLabel>
         <div className="flex gap-2">
           <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} />
           {user && (
@@ -51,7 +54,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
         </div>
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Alt text</label>
+        <FieldLabel>Alt text</FieldLabel>
         <Input value={block.alt} onChange={(e) => onChange({ ...block, alt: e.target.value })} />
       </div>
     </div>

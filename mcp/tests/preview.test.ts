@@ -125,6 +125,28 @@ describe("renderCourseToHtml — assessment lesson", () => {
   });
 });
 
+it("renders quiz with correctIndex -1 as unset", () => {
+  const course: Course = {
+    schemaVersion: 1,
+    title: "Test",
+    lessons: [{
+      kind: "content",
+      id: "l1",
+      title: "L1",
+      blocks: [{
+        id: "b1",
+        type: "quiz",
+        question: "Q?",
+        options: ["A", "B"],
+        correctIndex: -1,
+      }],
+    }],
+  };
+  const html = renderCourseToHtml(course);
+  expect(html).toContain("no correct answer set");
+  expect(html).not.toContain("✓");
+});
+
 describe("analyzeCourse — assessment lesson awareness", () => {
   it("does not flag no_assessment when course has an assessment lesson", () => {
     const course: Course = {

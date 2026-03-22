@@ -176,7 +176,7 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
         return '<blockquote>' + esc(b.text) + (b.cite ? '<cite>— '+esc(b.cite)+'</cite>' : '') + '</blockquote>';
       case 'divider': return '<hr>';
       case 'callout':
-        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + esc(b.text) + '</div>';
+        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + (b.text || '') + '</div>';
       case 'code': return '<pre><code>' + esc(b.code) + '</code></pre>';
       case 'accordion':
         return '<div class="accordion">' + (b.items||[]).map(function(item){
@@ -234,19 +234,30 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
+    if (b.correctIndex === -1) {
+      html += '<p style="color:#94a3b8;font-size:13px;font-style:italic">No correct answer has been set for this question.</p>';
+      html += '<div class="feedback" id="'+id+'-fb"></div></div>';
+      return html;
+    }
     html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
   function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
+    if (correctIndex === -1) {
+      var fb = document.getElementById(id+'-fb');
+      if (fb) { fb.textContent = 'No correct answer set.'; fb.className = 'feedback incorrect'; }
+      return;
+    }
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
     if (fb && showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Incorrect — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
@@ -289,7 +300,8 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
     if (showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Not quite — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else { fb.textContent = ''; fb.className = 'feedback'; }
   }
@@ -508,7 +520,7 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
         return '<blockquote>' + esc(b.text) + (b.cite ? '<cite>— '+esc(b.cite)+'</cite>' : '') + '</blockquote>';
       case 'divider': return '<hr>';
       case 'callout':
-        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + esc(b.text) + '</div>';
+        return '<div class="callout ' + b.variant + '">' + (b.title ? '<div class="callout-title">'+esc(b.title)+'</div>' : '') + (b.text || '') + '</div>';
       case 'code': return '<pre><code>' + esc(b.code) + '</code></pre>';
       case 'accordion':
         return '<div class="accordion">' + (b.items||[]).map(function(item){
@@ -566,19 +578,30 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
+    if (b.correctIndex === -1) {
+      html += '<p style="color:#94a3b8;font-size:13px;font-style:italic">No correct answer has been set for this question.</p>';
+      html += '<div class="feedback" id="'+id+'-fb"></div></div>';
+      return html;
+    }
     html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
   function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
+    if (correctIndex === -1) {
+      var fb = document.getElementById(id+'-fb');
+      if (fb) { fb.textContent = 'No correct answer set.'; fb.className = 'feedback incorrect'; }
+      return;
+    }
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
     if (!sel) { if(fb) fb.textContent = 'Please select an answer.'; return; }
     var correct = parseInt(sel.value) === correctIndex;
     if (fb && showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Incorrect — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Incorrect — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
     if (btn && correct) btn.disabled = true;
@@ -621,7 +644,8 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     if (!caseSensitive) { val = val.toLowerCase(); ans = ans.toLowerCase(); }
     var correct = val === ans;
     if (showFeedback) {
-      fb.textContent = correct ? (feedbackMessage || '✓ Correct!') : '✗ Not quite — try again.';
+      var prefix = correct ? '✓ Correct!' : '✗ Not quite — try again.';
+      fb.textContent = feedbackMessage ? prefix + ' ' + feedbackMessage : prefix;
       fb.className = 'feedback ' + (correct?'correct':'incorrect');
     } else { fb.textContent = ''; fb.className = 'feedback'; }
   }

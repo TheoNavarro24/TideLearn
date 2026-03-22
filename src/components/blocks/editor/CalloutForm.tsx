@@ -1,13 +1,14 @@
 import { CalloutBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RichTextEditor } from "@/components/richtext/RichTextEditor";
+import { FieldLabel } from "./FieldLabel";
 
 export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange: (b: CalloutBlock) => void }) {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Variant</label>
+        <FieldLabel>Variant</FieldLabel>
         <Select value={block.variant} onValueChange={(v) => onChange({ ...block, variant: v as CalloutBlock["variant"] })}>
           <SelectTrigger>
             <SelectValue placeholder="Variant" />
@@ -23,12 +24,12 @@ export function CalloutForm({ block, onChange }: { block: CalloutBlock; onChange
         </Select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Title (optional)</label>
+        <FieldLabel>Title (optional)</FieldLabel>
         <Input value={block.title ?? ''} onChange={(e) => onChange({ ...block, title: e.target.value })} />
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Text</label>
-        <Textarea value={block.text} onChange={(e) => onChange({ ...block, text: e.target.value })} />
+        <FieldLabel>Text</FieldLabel>
+        <RichTextEditor value={block.text} onChange={(html) => onChange({ ...block, text: html })} placeholder="Callout content..." />
       </div>
     </div>
   );

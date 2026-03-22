@@ -87,7 +87,7 @@ export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
             </span>
           )}
         </div>
-        {block.showFeedback && block.feedbackMessage && revealed && !correct && (
+        {block.showFeedback && block.feedbackMessage && revealed && (
           <span style={{ fontSize: 13, color: "#475569" }}>
             {block.feedbackMessage}
           </span>

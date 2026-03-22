@@ -3,21 +3,22 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FieldLabel } from "./FieldLabel";
 
 export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; onChange: (b: ShortAnswerBlock) => void }) {
   const acceptableCSV = (block.acceptable ?? []).join(", ");
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Question</label>
+        <FieldLabel>Question</FieldLabel>
         <Input value={block.question} onChange={(e) => onChange({ ...block, question: e.target.value })} />
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Correct answer</label>
+        <FieldLabel>Correct answer</FieldLabel>
         <Input value={block.answer} onChange={(e) => onChange({ ...block, answer: e.target.value })} />
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Additional accepted answers (comma-separated)</label>
+        <FieldLabel>Additional accepted answers (comma-separated)</FieldLabel>
         <Input
           value={acceptableCSV}
           onChange={(e) => onChange({
@@ -61,7 +62,7 @@ export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; 
         </div>
         {block.showFeedback && (
           <div className="space-y-1">
-            <label className="text-sm text-muted-foreground">Feedback message</label>
+            <FieldLabel>Feedback message</FieldLabel>
             <Textarea
               value={block.feedbackMessage ?? ""}
               onChange={(e) => onChange({ ...block, feedbackMessage: e.target.value })}
