@@ -96,3 +96,31 @@ it("renders a document block", () => {
   expect(html).toContain("Annual Report");
   expect(html).not.toContain("[Unknown block type]");
 });
+
+describe("renderCourseToHtml — assessment lesson", () => {
+  it("renders assessment question text", () => {
+    const course: Course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "assessment",
+        id: "l1",
+        title: "Final Exam",
+        questions: [{
+          id: "q1",
+          text: "What does PASS stand for?",
+          options: ["Pull Aim Squeeze Sweep", "Press Activate Spray Stop", "Point Attack Spray Stand", "Push Aim Spray Sweep"],
+          correctIndex: 0,
+          feedback: "PASS is the standard technique.",
+        }],
+        config: { passingScore: 80, examSize: 20 },
+      }],
+    };
+    const html = renderCourseToHtml(course);
+    expect(html).toContain("What does PASS stand for?");
+    expect(html).toContain("Pull Aim Squeeze Sweep");
+    expect(html).toContain("PASS is the standard technique.");
+    // Correct answer should be visually distinguished
+    expect(html).toContain("✓");
+  });
+});

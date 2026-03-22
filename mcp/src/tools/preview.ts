@@ -61,14 +61,36 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+function renderAssessmentLesson(lesson: any): string {
+  const questions = lesson.questions ?? [];
+  if (questions.length === 0) {
+    return `<p style="color:#888;font-style:italic">No questions in bank yet.</p>`;
+  }
+  return questions.map((q: any, i: number) => `
+    <div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0">
+      <p style="font-weight:600;margin:0 0 0.5em">${i + 1}. ${esc(q.text)}</p>
+      <ul style="margin:0 0 0.5em 1.25em;padding:0">
+        ${(q.options ?? []).map((opt: string, idx: number) =>
+          `<li style="${idx === q.correctIndex ? "color:#0d9488;font-weight:600" : ""}">${idx === q.correctIndex ? "✓ " : ""}${esc(opt)}</li>`
+        ).join("")}
+      </ul>
+      ${q.feedback ? `<p style="font-size:0.875em;color:#64748b;margin:0;font-style:italic">Feedback: ${esc(q.feedback)}</p>` : ""}
+      ${q.bloomLevel ? `<span style="font-size:0.75em;background:#e0fdf4;color:#0d9488;padding:2px 6px;border-radius:4px">${esc(q.bloomLevel)}</span>` : ""}
+      ${q.source ? `<span style="font-size:0.75em;background:#f1f5f9;color:#64748b;padding:2px 6px;border-radius:4px;margin-left:4px">${esc(q.source)}</span>` : ""}
+    </div>`
+  ).join("\n");
+}
+
 export function renderCourseToHtml(course: Course): string {
   const lessonHtml = course.lessons
     .map(
       (lesson, i) => {
         const contentHtml = (lesson as any).kind === "assessment"
-          ? `<div style="background:#f0fdf4;padding:1em;border-radius:4px;border:1px solid #ccfbf1">
+          ? `<div style="background:#f0fdf4;padding:1em;border-radius:4px;border:1px solid #ccfbf1;margin-bottom:0.5em">
       <strong>Assessment lesson</strong> — ${(lesson as any).questions?.length ?? 0} questions
-     </div>`
+      · Pass: ${(lesson as any).config?.passingScore ?? 80}%
+      · Exam draws: ${(lesson as any).config?.examSize ?? 20}
+    </div>${renderAssessmentLesson(lesson as any)}`
           : (lesson as any).blocks.map(renderBlock).join("\n");
         return `
       <section style="margin-bottom:2em;padding:1em;border:1px solid #e0e0e0;border-radius:6px">
