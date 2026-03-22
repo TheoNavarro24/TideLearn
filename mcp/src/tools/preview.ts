@@ -124,6 +124,8 @@ export function analyzeCourse(course: Course) {
   let word_count = 0;
   const gaps: Array<{ type: string; lesson_id: string; message: string }> = [];
 
+  const hasAssessmentLesson = course.lessons.some(l => (l as any).kind === "assessment");
+
   for (const lesson of course.lessons) {
     if ((lesson as any).kind === "assessment") {
       const qCount = (lesson as any).questions?.length ?? 0;
@@ -145,7 +147,7 @@ export function analyzeCourse(course: Course) {
       }
     }
 
-    if (!hasAssessment) gaps.push({ type: "no_assessment", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no knowledge checks` });
+    if (!hasAssessment && !hasAssessmentLesson) gaps.push({ type: "no_assessment", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no knowledge checks` });
     if (!hasMedia) gaps.push({ type: "no_media", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has no media blocks` });
     if (cl.blocks.length > 10) gaps.push({ type: "too_long", lesson_id: lesson.id, message: `Lesson "${lesson.title}" has ${cl.blocks.length} blocks (max recommended: 10)` });
   }

@@ -124,3 +124,53 @@ describe("renderCourseToHtml — assessment lesson", () => {
     expect(html).toContain("✓");
   });
 });
+
+describe("analyzeCourse — assessment lesson awareness", () => {
+  it("does not flag no_assessment when course has an assessment lesson", () => {
+    const course: Course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [
+        {
+          kind: "content",
+          id: "l1",
+          title: "Introduction",
+          blocks: [
+            { id: "b1", type: "heading", text: "Hello" },
+            { id: "b2", type: "text", text: "<p>Content</p>" },
+            { id: "b3", type: "image", src: "https://example.com/img.jpg", alt: "img" },
+          ],
+        },
+        {
+          kind: "assessment",
+          id: "l2",
+          title: "Final Exam",
+          questions: [{ id: "q1", text: "Q?", options: ["A","B","C","D"], correctIndex: 0 }],
+          config: { passingScore: 80, examSize: 10 },
+        },
+      ],
+    };
+    const result = analyzeCourse(course);
+    const noAssessmentGaps = result.gaps.filter(g => g.type === "no_assessment");
+    expect(noAssessmentGaps).toHaveLength(0);
+  });
+
+  it("still flags no_assessment when no assessment lesson exists", () => {
+    const course: Course = {
+      schemaVersion: 1,
+      title: "Test",
+      lessons: [{
+        kind: "content",
+        id: "l1",
+        title: "Introduction",
+        blocks: [
+          { id: "b1", type: "heading", text: "Hello" },
+          { id: "b2", type: "image", src: "https://example.com/img.jpg", alt: "img" },
+        ],
+      }],
+    };
+    const result = analyzeCourse(course);
+    const noAssessmentGaps = result.gaps.filter(g => g.type === "no_assessment");
+    expect(noAssessmentGaps).toHaveLength(1);
+  });
+});
