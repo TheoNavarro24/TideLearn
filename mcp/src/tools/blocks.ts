@@ -158,20 +158,35 @@ position is 1-based and optional; omit to append at the end.`,
     async ({ course_id, lesson_id, block_id, fields }) =>
       withAuth(async (client, userId) => {
         let assessmentError = false;
+        let validationError: string | null = null;
+
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const targetLesson = course.lessons.find((l) => l.id === lesson_id);
           if ((targetLesson as any)?.kind === "assessment") {
             assessmentError = true;
             return course;
           }
+
+          // Find the block, merge fields, validate the result
+          const cl = targetLesson as any;
+          const existingBlock = cl?.blocks?.find((b: any) => b.id === block_id);
+          if (existingBlock) {
+            const merged = { ...existingBlock, ...fields, id: existingBlock.id, type: existingBlock.type };
+            const parsed = blockSchema.safeParse(merged);
+            if (!parsed.success) {
+              validationError = `Validation failed:\n${formatZodErrors(parsed.error).map((e: string) => `- ${e}`).join("\n")}`;
+              return course;
+            }
+          }
+
           return {
             ...course,
             lessons: course.lessons.map((l) => {
               if (l.id !== lesson_id) return l;
-              const cl = l as any;
+              const cl2 = l as any;
               return {
                 ...l,
-                blocks: cl.blocks.map((b: any) =>
+                blocks: cl2.blocks.map((b: any) =>
                   b.id === block_id ? ({ ...b, ...fields, id: b.id, type: b.type } as Block) : b
                 ),
               };
@@ -179,6 +194,7 @@ position is 1-based and optional; omit to append at the end.`,
           };
         });
         if (assessmentError) return err("assessment_lesson", "Block operations cannot be used on assessment lessons. Use add_question / update_question instead.");
+        if (validationError) return err("validation_error", validationError);
         if (mutError) return err(mutError, "Failed to update block");
         return ok({ message: "Block updated" });
       })
