@@ -492,7 +492,7 @@ In `mcp/src/tools/preview.ts`, import `blockSchema`:
 import { type Course, type Block, blockSchema } from "../lib/types.js";
 ```
 
-Inside `analyzeCourse()`, after the existing block loop (after `if (cl.blocks.length > 10)` line), add a second pass for empty-field detection:
+Inside `analyzeCourse()`, still inside the `for (const lesson of course.lessons)` loop, after the `if (cl.blocks.length > 10)` gap push (around line 152), add a second pass for empty-field detection. The variables `lesson`, `cl`, and `gaps` are already in scope:
 
 ```typescript
 // Check required fields
