@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
 import { FieldLabel } from "./FieldLabel";
+import { toast } from "@/hooks/use-toast";
 
 export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b: VideoBlock) => void }) {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b
       onChange({ ...block, url });
     } catch (e) {
       console.error("Upload failed", e);
+      toast({ title: "Upload failed", description: e instanceof Error ? e.message : "Please try again." });
     } finally {
       setUploading(false);
     }

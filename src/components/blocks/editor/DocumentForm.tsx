@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
 import { FieldLabel } from "./FieldLabel";
+import { toast } from "@/hooks/use-toast";
 
 const FILE_TYPES = [
   { value: "pdf", label: "PDF", accept: "application/pdf" },
@@ -29,6 +30,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
       onChange({ ...block, src: url });
     } catch (e) {
       console.error("Upload failed", e);
+      toast({ title: "Upload failed", description: e instanceof Error ? e.message : "Please try again." });
     } finally {
       setUploading(false);
     }
