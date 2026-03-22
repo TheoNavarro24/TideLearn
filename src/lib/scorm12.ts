@@ -234,12 +234,22 @@ function buildStaticIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
+    if (b.correctIndex === -1) {
+      html += '<p style="color:#94a3b8;font-size:13px;font-style:italic">No correct answer has been set for this question.</p>';
+      html += '<div class="feedback" id="'+id+'-fb"></div></div>';
+      return html;
+    }
     html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
   function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
+    if (correctIndex === -1) {
+      var fb = document.getElementById(id+'-fb');
+      if (fb) { fb.textContent = 'No correct answer set.'; fb.className = 'feedback incorrect'; }
+      return;
+    }
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
@@ -566,12 +576,22 @@ function buildScormIndexHtml(courseJson: string, title: string): string {
     (b.options||[]).forEach(function(opt,i){
       html += '<label><input type="radio" name="'+id+'" value="'+i+'"> '+esc(opt)+'</label>';
     });
+    if (b.correctIndex === -1) {
+      html += '<p style="color:#94a3b8;font-size:13px;font-style:italic">No correct answer has been set for this question.</p>';
+      html += '<div class="feedback" id="'+id+'-fb"></div></div>';
+      return html;
+    }
     html += '<br><button onclick="checkQuiz(\\''+id+'\\','+b.correctIndex+','+!!b.showFeedback+',\\''+esc(b.feedbackMessage||'')+'\\')\\u0022 id="'+id+'-btn">Submit</button>';
     html += '<div class="feedback" id="'+id+'-fb"></div></div>';
     return html;
   }
 
   function checkQuiz(id, correctIndex, showFeedback, feedbackMessage) {
+    if (correctIndex === -1) {
+      var fb = document.getElementById(id+'-fb');
+      if (fb) { fb.textContent = 'No correct answer set.'; fb.className = 'feedback incorrect'; }
+      return;
+    }
     var sel = document.querySelector('input[name="'+id+'"]:checked');
     var fb = document.getElementById(id+'-fb');
     var btn = document.getElementById(id+'-btn');
