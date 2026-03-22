@@ -212,6 +212,38 @@ export function registerAssessmentTools(server: McpServer) {
       })
   );
 
+  // ── replace_questions ──────────────────────────────────────────────────────
+  server.tool(
+    "replace_questions",
+    "Replace the entire question bank for an assessment lesson with a new set. All incoming questions are validated before any are committed — no partial replacements. Existing questions are discarded.",
+    {
+      course_id: z.string().uuid(),
+      lesson_id: z.string().uuid(),
+      questions: z.array(questionSchema).min(1),
+    },
+    async ({ course_id, lesson_id, questions }) =>
+      withAuth(async (client, userId) => {
+        const withIds = questions.map((q) => ({ ...q, id: uid() }));
+        let notAssessment = false;
+        let lessonNotFound = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const lesson = course.lessons.find((l) => l.id === lesson_id) as any;
+          if (!lesson) { lessonNotFound = true; return course; }
+          if (lesson.kind !== "assessment") { notAssessment = true; return course; }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) =>
+              l.id !== lesson_id ? l : { ...l, questions: withIds }
+            ),
+          };
+        });
+        if (lessonNotFound) return err("lesson_not_found", `No lesson with id ${lesson_id}`);
+        if (notAssessment) return err("not_assessment", "Target lesson is not an assessment lesson");
+        if (mutError) return err(mutError, "Failed to replace questions");
+        return ok({ replaced: withIds.length, question_ids: withIds.map((q) => q.id) });
+      })
+  );
+
   // ── update_assessment_config ──────────────────────────────────────────────
   server.tool(
     "update_assessment_config",
