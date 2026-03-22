@@ -5,30 +5,63 @@ import { mutateCourse } from "../lib/mutate.js";
 import { uid, lessonSchema, blockSchema, type Block } from "../lib/types.js";
 import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
 
-function injectIds(course: any) {
+export function injectSubItemIds(block: any): any {
+  if (block.type === "accordion" || block.type === "tabs") {
+    return {
+      ...block,
+      items: (block.items ?? []).map((item: any) => ({
+        ...item,
+        id: item.id ?? uid(),
+      })),
+    };
+  }
+  return block;
+}
+
+export function injectIds(course: any) {
   return {
     ...course,
     lessons: (course.lessons ?? []).map((l: any) => {
       if (l.kind === "assessment") {
-        return { ...l, id: uid() };
+        return {
+          ...l,
+          id: l.id ?? uid(),
+          questions: (l.questions ?? []).map((q: any) => ({
+            ...q,
+            id: q.id ?? uid(),
+          })),
+        };
       }
       return {
         ...l,
-        id: uid(),
-        blocks: (l.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
+        kind: "content",
+        id: l.id ?? uid(),
+        blocks: (l.blocks ?? []).map((b: any) =>
+          injectSubItemIds({ ...b, id: b.id ?? uid() })
+        ),
       };
     }),
   };
 }
 
-function injectLessonIds(lesson: any) {
+export function injectLessonIds(lesson: any) {
   if (lesson.kind === "assessment") {
-    return { ...lesson, id: uid() };
+    return {
+      ...lesson,
+      id: uid(),
+      questions: (lesson.questions ?? []).map((q: any) => ({
+        ...q,
+        id: q.id ?? uid(),
+      })),
+    };
   }
   return {
     ...lesson,
+    kind: "content",
     id: uid(),
-    blocks: (lesson.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
+    blocks: (lesson.blocks ?? []).map((b: any) =>
+      injectSubItemIds({ ...b, id: uid() })
+    ),
   };
 }
 
