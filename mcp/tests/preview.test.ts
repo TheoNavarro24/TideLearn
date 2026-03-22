@@ -74,3 +74,25 @@ describe("analyzeCourse", () => {
     expect(gap).toBeDefined();
   });
 });
+
+it("renders a document block", () => {
+  const course: Course = {
+    schemaVersion: 1,
+    title: "Docs Course",
+    lessons: [{
+      kind: "content",
+      id: "l1",
+      title: "L1",
+      blocks: [{
+        id: "b1",
+        type: "document",
+        src: "https://example.com/file.pdf",
+        fileType: "pdf",
+        title: "Annual Report",
+      }],
+    }],
+  };
+  const html = renderCourseToHtml(course);
+  expect(html).toContain("Annual Report");
+  expect(html).not.toContain("[Unknown block type]");
+});

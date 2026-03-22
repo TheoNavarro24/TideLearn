@@ -5,31 +5,71 @@ import { mutateCourse } from "../lib/mutate.js";
 import { uid, lessonSchema, blockSchema, type Block } from "../lib/types.js";
 import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
 
-function injectIds(course: any) {
+export function injectSubItemIds(block: any): any {
+  if (block.type === "accordion" || block.type === "tabs") {
+    return {
+      ...block,
+      items: (block.items ?? []).map((item: any) => ({
+        ...item,
+        id: item.id ?? uid(),
+      })),
+    };
+  }
+  return block;
+}
+
+export function injectIds(course: any) {
   return {
     ...course,
     lessons: (course.lessons ?? []).map((l: any) => {
       if (l.kind === "assessment") {
-        return { ...l, id: uid() };
+        return {
+          ...l,
+          id: l.id ?? uid(),
+          questions: (l.questions ?? []).map((q: any) => ({
+            ...q,
+            id: q.id ?? uid(),
+          })),
+        };
       }
       return {
         ...l,
-        id: uid(),
-        blocks: (l.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
+        kind: "content",
+        id: l.id ?? uid(),
+        blocks: (l.blocks ?? []).map((b: any) =>
+          injectSubItemIds({ ...b, id: b.id ?? uid() })
+        ),
       };
     }),
   };
 }
 
-function injectLessonIds(lesson: any) {
+export function injectLessonIds(lesson: any) {
   if (lesson.kind === "assessment") {
-    return { ...lesson, id: uid() };
+    return {
+      ...lesson,
+      id: uid(),
+      questions: (lesson.questions ?? []).map((q: any) => ({
+        ...q,
+        id: q.id ?? uid(),
+      })),
+    };
   }
   return {
     ...lesson,
+    kind: "content",
     id: uid(),
-    blocks: (lesson.blocks ?? []).map((b: any) => ({ ...b, id: uid() })),
+    blocks: (lesson.blocks ?? []).map((b: any) =>
+      injectSubItemIds({ ...b, id: uid() })
+    ),
   };
+}
+
+export function checkRestructureOrder(existingIds: string[], providedIds: string[]): string | null {
+  const provided = new Set(providedIds);
+  const missing = existingIds.filter(id => !provided.has(id));
+  if (missing.length === 0) return null;
+  return `lesson_order must include all ${existingIds.length} lesson(s). Missing: ${missing.join(", ")}`;
 }
 
 export function registerSemanticTools(server: McpServer) {
@@ -254,14 +294,21 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
   // ── restructure_course ────────────────────────────────────────────────────
   server.tool(
     "restructure_course",
-    "Reorder and/or rename lessons. Claude should provide lesson_order as an array of {lesson_id, title} in the desired order. Does not add or remove lessons.",
+    "Reorder and/or rename lessons. lesson_order must contain ALL lessons in the course — omitting any will return an error. Pass every lesson_id with its desired title in the new order.",
     {
       course_id: z.string().uuid(),
       lesson_order: z.array(z.object({ lesson_id: z.string().uuid(), title: z.string() })),
     },
     async ({ course_id, lesson_order }) =>
       withAuth(async (client, userId) => {
+        let orderError: string | null = null;
+
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const existingIds = course.lessons.map((l: any) => l.id);
+          const providedIds = lesson_order.map(l => l.lesson_id);
+          orderError = checkRestructureOrder(existingIds, providedIds);
+          if (orderError) return course;
+
           const lessonMap = new Map(course.lessons.map((l) => [l.id, l]));
           const reordered = lesson_order
             .map(({ lesson_id, title }) => {
@@ -272,6 +319,8 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
             .filter(Boolean) as typeof course.lessons;
           return { ...course, lessons: reordered };
         });
+
+        if (orderError) return err("incomplete_lesson_order", orderError);
         if (mutError) return err(mutError, "Failed to restructure course");
         return ok({ message: "Course restructured" });
       })

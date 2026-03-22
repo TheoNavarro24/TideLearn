@@ -4,6 +4,7 @@ import { withAuth, ok, err } from "../lib/supabase.js";
 import { mutateCourse } from "../lib/mutate.js";
 import { uid, blockSchema, type Block } from "../lib/types.js";
 import { formatZodErrors } from "../lib/validate.js";
+import { injectSubItemIds } from "./semantic.js";
 
 export function registerBlockTools(server: McpServer) {
   server.tool(
@@ -91,15 +92,15 @@ BLOCK TYPES — pass exactly these fields in the 'block' object:
   list       { type:"list", style:"bulleted"|"numbered", items:["item1","item2"] }
   quote      { type:"quote", text:"...", cite?:"Author" }
   callout    { type:"callout", variant:"info"|"success"|"warning"|"danger", title?:"...", text:"..." }
-  accordion  { type:"accordion", items:[{ id:"<uuid>", title:"...", content:"..." }] }
-  tabs       { type:"tabs", items:[{ id:"<uuid>", label:"...", content:"..." }] }
+  accordion  { type:"accordion", items:[{ title:"...", content:"..." }] }
+  tabs       { type:"tabs", items:[{ label:"...", content:"..." }] }
   quiz       { type:"quiz", question:"...", options:["A","B","C","D"], correctIndex:0 }
   truefalse  { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
   shortanswer { type:"shortanswer", question:"...", answer:"...", acceptable?:["alt1"], caseSensitive?:false, trimWhitespace?:true }
   divider    { type:"divider" }
   toc        { type:"toc" }
 
-accordion and tabs items require a UUID id field — generate one with crypto.randomUUID().
+accordion and tabs item IDs are generated automatically — omit them.
 position is 1-based and optional; omit to append at the end.`,
     {
       course_id: z.string().uuid(),
@@ -109,11 +110,12 @@ position is 1-based and optional; omit to append at the end.`,
     },
     async ({ course_id, lesson_id, block, position }) =>
       withAuth(async (client, userId) => {
-        // Inject a new id and validate
-        const withId = { ...block, id: uid() };
+        // Inject a new id, inject sub-item IDs for accordion/tabs, then validate
+        const withId = injectSubItemIds({ ...block, id: uid() });
         const parsed = blockSchema.safeParse(withId);
         if (!parsed.success) {
-          return err("invalid_block_type", parsed.error.issues[0]?.message ?? "Invalid block");
+          const msgs = formatZodErrors(parsed.error);
+          return err("invalid_block_type", `Validation failed:\n${msgs.map(e => `- ${e}`).join("\n")}`);
         }
         const newBlock = parsed.data;
         const blockId = newBlock.id;
