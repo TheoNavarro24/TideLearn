@@ -12,6 +12,22 @@
 
 ---
 
+## Model Assignment
+
+| Task | Model | Rationale |
+|------|-------|-----------|
+| Task 1 — scaffold | **Haiku** | Pure file/bash ops, no judgment |
+| Task 2 — TideLearn audit | **Sonnet** | Scoring our own product = calibration baseline for all comparisons |
+| Tasks 3–8 Phase A, Steps 1–6 — nav/screenshots | **Haiku** | Mechanical browser work: navigate, sign up, take screenshots, record raw observations |
+| Tasks 3–8 Step 7 — extensibility research | **Sonnet** | Reading API docs and synthesising capability nuance requires judgment |
+| Tasks 3–8 Step 8 — scoring | **Sonnet** | Applies rubric to Haiku's observations + screenshots; feeds Task 9 directly |
+| Task 9 — matrix, journeys, roadmap | **Opus** | Single high-value synthesis session; gap analysis across 3 audiences is the crown jewel |
+| Task 10 — assemble .docx | **Sonnet** | Execution task; analytical content already exists in scores.json from Task 9 |
+
+**Handoff pattern for Tasks 3–8:** Haiku (Phase A) writes raw observations + screenshot paths to `{tool}-observations.json`. Sonnet (Step 7 + Step 8) reads that file plus the screenshots to score and write `scores-{tool}.json`. This preserves quality at the scoring step while using Haiku for the bulk of browser navigation.
+
+---
+
 ## File Structure
 
 ```
@@ -24,7 +40,9 @@ docs/analysis/
 │   ├── sana-{dimension}-{n}.png
 │   ├── courseau-{dimension}-{n}.png
 │   └── mindsmith-{dimension}-{n}.png
-├── scores.json                          # Structured scoring data
+├── {tool}-observations.json             # Haiku handoff: raw notes + screenshot paths per competitor
+├── scores-{tool}.json                   # Per-competitor scores (merged in Task 9)
+├── scores.json                          # Merged scoring data (assembled in Task 9)
 └── comparative-ui-analysis.docx         # Final deliverable
 ```
 
@@ -52,7 +70,7 @@ docs/analysis/
 
 ---
 
-### Task 1: Set Up Project Structure
+### Task 1: Set Up Project Structure `[Haiku]`
 
 **Files:**
 - Create: `docs/analysis/assets/` (directory)
@@ -87,7 +105,7 @@ git commit -m "chore: scaffold comparative analysis directory structure"
 
 ---
 
-### Task 2: Audit TideLearn — Screenshots & Scoring
+### Task 2: Audit TideLearn — Screenshots & Scoring `[Sonnet]`
 
 **Files:**
 - Modify: `docs/analysis/scores.json`
@@ -162,10 +180,13 @@ git commit -m "research: audit TideLearn UI across 7 dimensions"
 ### Task 3: Research Competitor — Articulate Rise
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/rise-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-rise.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/rise-*.png`
 
 **Approach:** Rise has a 30-day free trial. Sign up using `theo.ai.agent+rise@gmail.com` / password `theo.ai.agent.1`. If sign-up is blocked, fall back to public sources.
+
+#### Phase A — `[Haiku]` Steps 1–6: Navigate, screenshot, record observations
 
 - [ ] **Step 1: Navigate to Articulate Rise website**
 
@@ -198,13 +219,17 @@ Publish the course and get a shareable link. Screenshot:
 - Publish flow → `rise-publishing-1.png`
 - Learner view of published course → `rise-learner-1.png`
 
+Write all raw observations, screenshot paths, step counts, and friction points to `docs/analysis/rise-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 7–8: Extensibility research + scoring
+
 - [ ] **Step 7: Check extensibility**
 
 Research Rise's API, integrations, LTI support, webhook capabilities. Use help docs or marketing pages. Screenshot relevant pages as `rise-extensibility-1.png`. Evidence source likely `[docs]` or `[marketing]`.
 
 - [ ] **Step 8: Score Rise across all 7 dimensions**
 
-Update `docs/analysis/scores.json` with Rise's scores. Same format as TideLearn: score, evidence source, narrative, screenshot list.
+Read `rise-observations.json` and all screenshots. Write scores to `docs/analysis/scores-rise.json`. Same format as TideLearn: score, evidence source, narrative, screenshot list.
 
 - [ ] **Step 9: Commit**
 
@@ -218,10 +243,13 @@ git commit -m "research: audit Articulate Rise UI across 7 dimensions"
 ### Task 4: Research Competitor — Easygenerator
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/easygenerator-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-easygenerator.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/easygenerator-*.png`
 
 **Approach:** Easygenerator has a free plan. Sign up using `theo.ai.agent+easygenerator@gmail.com` / password `theo.ai.agent.1`. Follow the same process as Task 3.
+
+#### Phase A — `[Haiku]` Steps 1–6: Navigate, screenshot, record observations
 
 - [ ] **Step 1: Navigate to Easygenerator website, screenshot landing page** → `easygenerator-onboarding-1.png`
 - [ ] **Step 2: Sign up for free plan, screenshot sign-up flow** → `easygenerator-onboarding-2.png`
@@ -229,8 +257,13 @@ git commit -m "research: audit Articulate Rise UI across 7 dimensions"
 - [ ] **Step 4: Journey 1 — Create course, add lesson** → `easygenerator-editor-1.png`, `easygenerator-editor-2.png`
 - [ ] **Step 5: Journey 2 — Build mixed content lesson** → `easygenerator-blocks-1.png`, `easygenerator-blocks-2.png`
 - [ ] **Step 6: Journey 3 — Publish and share** → `easygenerator-publishing-1.png`, `easygenerator-learner-1.png`
+
+Write all raw observations, screenshot paths, step counts, and friction points to `docs/analysis/easygenerator-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 7–8: Extensibility research + scoring
+
 - [ ] **Step 7: Check extensibility** → `easygenerator-extensibility-1.png`
-- [ ] **Step 8: Score Easygenerator across all 7 dimensions** in `scores.json`
+- [ ] **Step 8: Score Easygenerator across all 7 dimensions** — read `easygenerator-observations.json` and screenshots, write to `scores-easygenerator.json`
 - [ ] **Step 9: Commit**
 
 ```bash
@@ -243,17 +276,27 @@ git commit -m "research: audit Easygenerator UI across 7 dimensions"
 ### Task 5: Research Competitor — Elucidat
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/elucidat-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-elucidat.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/elucidat-*.png`
 
 **Approach:** Elucidat is enterprise-only (no free trial). Evidence will come from public sources: marketing site, YouTube demos, G2/Capterra reviews, help documentation. Tag all evidence as `[marketing]`, `[review]`, or `[docs]`.
 
+**Note:** Because there's no direct access, Steps 1–4 are all public-source research. The Phase A/B split still applies — Haiku collects the raw material, Sonnet synthesises and scores.
+
+#### Phase A — `[Haiku]` Steps 1–4: Public-source research, screenshots
+
 - [ ] **Step 1: Navigate to Elucidat website, screenshot landing page** → `elucidat-onboarding-1.png` `[marketing]`
-- [ ] **Step 2: Search YouTube for "Elucidat tutorial" or "Elucidat demo"** — find a walkthrough video showing the editor. Screenshot key frames from articles/thumbnails, or capture from review sites → `elucidat-editor-1.png`
-- [ ] **Step 3: Search G2/Capterra for Elucidat reviews with screenshots** — capture relevant UI images → `elucidat-visual-1.png`, `elucidat-blocks-1.png`
+- [ ] **Step 2: Search YouTube for "Elucidat tutorial" or "Elucidat demo"** — screenshot key frames from articles/thumbnails or review sites → `elucidat-editor-1.png`
+- [ ] **Step 3: Search G2/Capterra for Elucidat reviews with screenshots** → `elucidat-visual-1.png`, `elucidat-blocks-1.png`
 - [ ] **Step 4: Check Elucidat help docs for UI screenshots** → `elucidat-learner-1.png`, `elucidat-publishing-1.png`
+
+Write all raw observations, screenshot paths, and evidence source tags to `docs/analysis/elucidat-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 5–6: Extensibility research + scoring
+
 - [ ] **Step 5: Research extensibility** (API docs, integrations page) → `elucidat-extensibility-1.png`
-- [ ] **Step 6: Score Elucidat across all 7 dimensions** in `scores.json`. Note evidence limitations in narrative.
+- [ ] **Step 6: Score Elucidat across all 7 dimensions** — read `elucidat-observations.json` and screenshots, write to `scores-elucidat.json`. Note evidence limitations in narrative.
 - [ ] **Step 7: Commit**
 
 ```bash
@@ -266,17 +309,25 @@ git commit -m "research: audit Elucidat UI across 7 dimensions (public sources)"
 ### Task 6: Research Competitor — Sana
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/sana-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-sana.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/sana-*.png`
 
 **Approach:** Sana may have a free trial or demo. Attempt sign-up with `theo.ai.agent+sana@gmail.com`. If gated, use public sources.
+
+#### Phase A — `[Haiku]` Steps 1–4: Navigate, screenshot, record observations
 
 - [ ] **Step 1: Navigate to Sana website, screenshot landing page** → `sana-onboarding-1.png`
 - [ ] **Step 2: Attempt sign-up or request demo, screenshot flow** → `sana-onboarding-2.png`
 - [ ] **Step 3: If accessible — walk through all 3 journeys, screenshot key screens** → `sana-editor-1.png`, `sana-blocks-1.png`, `sana-learner-1.png`, `sana-publishing-1.png`
 - [ ] **Step 4: If NOT accessible — gather from marketing site, YouTube, G2** → tag as `[marketing]`/`[review]`
+
+Write all raw observations, screenshot paths, step counts, and friction points to `docs/analysis/sana-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 5–6: Extensibility research + scoring
+
 - [ ] **Step 5: Research extensibility** (API, integrations) → `sana-extensibility-1.png`
-- [ ] **Step 6: Score Sana across all 7 dimensions** in `scores.json`
+- [ ] **Step 6: Score Sana across all 7 dimensions** — read `sana-observations.json` and screenshots, write to `scores-sana.json`
 - [ ] **Step 7: Commit**
 
 ```bash
@@ -289,18 +340,26 @@ git commit -m "research: audit Sana UI across 7 dimensions"
 ### Task 7: Research Competitor — Courseau
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/courseau-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-courseau.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/courseau-*.png`
 
 **Approach:** Courseau has a free tier. Sign up with `theo.ai.agent+courseau@gmail.com` / password `theo.ai.agent.1`.
+
+#### Phase A — `[Haiku]` Steps 1–5: Navigate, screenshot, record observations
 
 - [ ] **Step 1: Navigate to Courseau website, screenshot landing page** → `courseau-onboarding-1.png`
 - [ ] **Step 2: Sign up for free tier** → `courseau-onboarding-2.png`
 - [ ] **Step 3: Journey 1 — Create course, add lesson** → `courseau-editor-1.png`, `courseau-editor-2.png`
 - [ ] **Step 4: Journey 2 — Build mixed content lesson** → `courseau-blocks-1.png`, `courseau-blocks-2.png`
 - [ ] **Step 5: Journey 3 — Publish and share** → `courseau-publishing-1.png`, `courseau-learner-1.png`
+
+Write all raw observations, screenshot paths, step counts, and friction points to `docs/analysis/courseau-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 6–7: Extensibility research + scoring
+
 - [ ] **Step 6: Check extensibility** → `courseau-extensibility-1.png`
-- [ ] **Step 7: Score Courseau across all 7 dimensions** in `scores.json`
+- [ ] **Step 7: Score Courseau across all 7 dimensions** — read `courseau-observations.json` and screenshots, write to `scores-courseau.json`
 - [ ] **Step 8: Commit**
 
 ```bash
@@ -313,18 +372,26 @@ git commit -m "research: audit Courseau UI across 7 dimensions"
 ### Task 8: Research Competitor — Mindsmith
 
 **Files:**
-- Modify: `docs/analysis/scores.json`
+- Create: `docs/analysis/mindsmith-observations.json` (Haiku handoff)
+- Create: `docs/analysis/scores-mindsmith.json` (Sonnet scoring output)
 - Create: `docs/analysis/assets/mindsmith-*.png`
 
 **Approach:** Mindsmith has a free tier. Sign up with `theo.ai.agent+mindsmith@gmail.com` / password `theo.ai.agent.1`.
+
+#### Phase A — `[Haiku]` Steps 1–5: Navigate, screenshot, record observations
 
 - [ ] **Step 1: Navigate to Mindsmith website, screenshot landing page** → `mindsmith-onboarding-1.png`
 - [ ] **Step 2: Sign up for free tier** → `mindsmith-onboarding-2.png`
 - [ ] **Step 3: Journey 1 — Create course, add lesson** → `mindsmith-editor-1.png`, `mindsmith-editor-2.png`
 - [ ] **Step 4: Journey 2 — Build mixed content lesson** → `mindsmith-blocks-1.png`, `mindsmith-blocks-2.png`
 - [ ] **Step 5: Journey 3 — Publish and share** → `mindsmith-publishing-1.png`, `mindsmith-learner-1.png`
+
+Write all raw observations, screenshot paths, step counts, and friction points to `docs/analysis/mindsmith-observations.json`.
+
+#### Phase B — `[Sonnet]` Steps 6–7: Extensibility research + scoring
+
 - [ ] **Step 6: Check extensibility** → `mindsmith-extensibility-1.png`
-- [ ] **Step 7: Score Mindsmith across all 7 dimensions** in `scores.json`
+- [ ] **Step 7: Score Mindsmith across all 7 dimensions** — read `mindsmith-observations.json` and screenshots, write to `scores-mindsmith.json`
 - [ ] **Step 8: Commit**
 
 ```bash
@@ -334,7 +401,7 @@ git commit -m "research: audit Mindsmith UI across 7 dimensions"
 
 ---
 
-### Task 9: Build Comparison Matrix & Journey Walkthroughs
+### Task 9: Build Comparison Matrix & Journey Walkthroughs `[Opus]`
 
 **Files:**
 - Modify: `docs/analysis/scores.json` (add journey data)
@@ -377,7 +444,7 @@ git commit -m "research: complete comparison matrix, journeys, and roadmap"
 
 ---
 
-### Task 10: Assemble the .docx Report
+### Task 10: Assemble the .docx Report `[Sonnet]`
 
 **Files:**
 - Create: `docs/analysis/comparative-ui-analysis.docx`
@@ -450,4 +517,4 @@ Task 9 (matrix + journeys + roadmap)
 Task 10 (assemble .docx)
 ```
 
-**Parallelisation note:** Tasks 3-8 are independent of each other. If using subagent-driven-development, these 6 tasks can be dispatched in parallel for significant time savings. Each needs browser access. To avoid `scores.json` write conflicts, parallel agents should each write to a separate `scores-{tool}.json` file (e.g., `scores-rise.json`). Task 9 Step 1 must then begin by merging all per-tool score files into the main `scores.json` before analysis. For sequential execution, write directly to `scores.json` — no merge needed.
+**Parallelisation note:** Tasks 3–8 are independent of each other. Each task runs in two sequential phases — Phase A (Haiku) then Phase B (Sonnet) — but all six tasks can run in parallel with each other. If using subagent-driven-development, dispatch 6 subagents simultaneously: each subagent runs its own Phase A → Phase B sequence internally using the appropriate model for each phase. Each writes to its own `{tool}-observations.json` and `scores-{tool}.json` to avoid conflicts. Task 9 Step 1 must begin by merging all `scores-{tool}.json` files into the main `scores.json` before analysis.
