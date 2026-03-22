@@ -11,6 +11,8 @@ This is **Spec 1 of 3** in the Block Polish series:
 - Spec 2: Inline Previews
 - Spec 3: Validation & Mandatory Fields
 
+**Important:** `src/lib/scorm12.ts` contains **two complete renderers** — one for SCORM 1.2 export (`exportScorm12Zip`) and one for static web export (`exportStaticWebZip`). Each has its own `renderBlock`, `checkQuiz`, `checkSA`, and `checkTF` functions. Every SCORM-related change in this spec must be applied to **both** renderers (lines ~165-300 and ~497-620).
+
 ## Changes
 
 ### 1. QuizForm — add/remove options + radio correct answer
@@ -24,15 +26,23 @@ This is **Spec 1 of 3** in the Block Polish series:
 - Factory changes `correctIndex` from `0` to `-1` (sentinel for "not yet set")
 - The form shows a subtle prompt ("Select the correct answer") when `correctIndex === -1`
 
+**Option removal re-indexing:** When an option is removed:
+- If the removed option IS the correct answer (`correctIndex === removedIndex`): reset `correctIndex` to `-1` (force author to re-select)
+- If the removed option is BEFORE the correct answer (`removedIndex < correctIndex`): decrement `correctIndex` by 1
+- If the removed option is AFTER the correct answer (`removedIndex > correctIndex`): no change needed
+
 **Files changed:**
 - `src/components/blocks/editor/QuizForm.tsx` — form restructure
 - `src/types/course.ts` — factory: `correctIndex: -1`
 - `mcp/src/lib/types.ts` — factory: `correctIndex: -1`
 
 **Cascade:**
-- `src/components/blocks/view/Quiz.tsx` — handle `correctIndex === -1`: disable Check button, show "No correct answer set" if reached in view
-- `src/lib/scorm12.ts` — `renderQuiz()`: handle `-1` (show warning instead of marking an option correct)
-- `mcp/src/tools/preview.ts` — `renderBlock()` for quiz: handle `-1`
+- `src/components/blocks/view/Quiz.tsx` — handle `correctIndex === -1`:
+  - Check button is **always disabled** when `correctIndex === -1` (regardless of selection state)
+  - Show static message: "No correct answer has been set for this question"
+  - Do NOT dispatch `quiz:answered` event (prevents scoring corruption)
+- `src/lib/scorm12.ts` — **both renderers**: `renderQuiz()` — when `correctIndex === -1`, skip rendering the Submit button and show a static warning paragraph instead. `checkQuiz()` — add guard: if `correctIndex === -1`, show "No correct answer set" in feedback div and return early.
+- `mcp/src/tools/preview.ts` — `renderBlock()` for quiz: when `correctIndex === -1`, show "(no correct answer set)" label instead of marking any option. Current code `i === block.correctIndex` where `correctIndex === -1` already means no option gets marked — but add an explicit label for clarity.
 - `mcp/src/resources/instructions.ts` — document that `correctIndex` can be `-1` (unset) and that options need min 2
 
 ### 2. TrueFalse label fix
@@ -66,11 +76,11 @@ This is **Spec 1 of 3** in the Block Polish series:
 **Files changed:**
 - `src/components/blocks/editor/CalloutForm.tsx` — swap `<Textarea>` for `<RichTextEditor>`
 
-**Cascade — this is the important one:**
-- `src/components/blocks/view/Callout.tsx` — already renders the text field as raw HTML, so **no change needed** in the frontend view
-- `src/lib/scorm12.ts` — SCORM export `renderBlock` case `'callout'` currently uses `esc(b.text)` which would double-escape HTML. Must change to raw `b.text` (matching how `'text'` blocks are already handled). The content originates from the Tiptap editor which produces sanitized HTML.
-- `mcp/src/tools/preview.ts` — `renderBlock()` case `"callout"` already uses `${block.text}` (raw, no escaping) — **already correct**, no change needed
-- `mcp/src/resources/instructions.ts` — line 18 already notes callout `text` should use HTML. No change needed.
+**Cascade:**
+- `src/components/blocks/view/Callout.tsx` — already renders the text field as raw HTML via innerHTML, so **no change needed** in the frontend view. Verified: line 31 uses `__html: block.text`.
+- `src/lib/scorm12.ts` — **both renderers**: callout case currently uses `esc(b.text)` (lines ~179 and ~510) which would double-escape HTML. Must change to raw `(b.text || '')` (matching how `'text'` blocks are already handled at lines ~168 and ~500). The content originates from the Tiptap editor which produces sanitized HTML.
+- `mcp/src/tools/preview.ts` — `renderBlock()` case `"callout"` already uses `${block.text}` (raw, no escaping) — **no change needed**
+- `mcp/src/resources/instructions.ts` — line 18 already notes callout `text` should use HTML. **No change needed.**
 
 ### 5. ListForm inline remove
 
@@ -83,6 +93,8 @@ This is **Spec 1 of 3** in the Block Polish series:
 
 **Cascade:** None.
 
+**Known issue (out of scope):** SCORM export escapes list items with `esc(i)` even though they contain HTML from RichTextEditor. This is the same class of bug as the callout escaping issue. Noted for a follow-up fix, but not included in this spec to keep scope focused.
+
 ### 6. Media upload error toasts
 
 **Current:** `ImageForm`, `VideoForm`, `AudioForm`, `DocumentForm` all catch upload errors with `console.error` only. No user feedback.
@@ -94,6 +106,8 @@ This is **Spec 1 of 3** in the Block Polish series:
 - `src/components/blocks/editor/VideoForm.tsx`
 - `src/components/blocks/editor/AudioForm.tsx`
 - `src/components/blocks/editor/DocumentForm.tsx`
+
+All four forms have the identical pattern: `catch (e) { console.error("Upload failed", e); }`. Each gets a `toast()` call added alongside the `console.error`.
 
 **Cascade:** None. Toast system already exists and is imported in Editor.tsx.
 
@@ -111,12 +125,16 @@ This is **Spec 1 of 3** in the Block Polish series:
 **Feedback stays disabled by default** — the `showFeedback` toggle stays off for new blocks. This is an intentional design decision: feedback should be a conscious authoring choice, not an ignored default that leads to empty feedback on summative assessments.
 
 **Files changed:**
-- `src/components/blocks/view/Quiz.tsx` — remove `!isCorrect` condition from feedback display
-- `src/components/blocks/view/ShortAnswer.tsx` — remove `!correct` condition from feedback display
-- `src/lib/scorm12.ts` — `renderQuiz()` and `renderShortAnswer()`: show feedback regardless of correctness
-- `mcp/src/tools/preview.ts` — `renderBlock()` for quiz/shortanswer: same change (if feedback rendering exists there)
+- `src/components/blocks/view/Quiz.tsx` — line 113: remove `!isCorrect` condition from feedback display
+- `src/components/blocks/view/ShortAnswer.tsx` — line 90: remove `!correct` condition from feedback display
 
-**Cascade:** None beyond the files listed.
+**SCORM/static export cascade (both renderers in `src/lib/scorm12.ts`):**
+- `checkQuiz()` (lines ~242-253 and ~574-585): Currently shows `feedbackMessage` only on the correct path (`correct ? (feedbackMessage || 'Correct!') : 'Incorrect — try again.'`). Change to: show `feedbackMessage` on both paths when `showFeedback` is true. On correct: `'✓ Correct!' + (feedbackMessage ? ' ' + feedbackMessage : '')`. On incorrect: `'✗ Incorrect.' + (feedbackMessage ? ' ' + feedbackMessage : '')`.
+- `checkSA()` (lines ~282-295 and ~614-627): Same pattern — show `feedbackMessage` on both outcomes.
+
+**MCP preview:** `renderBlock()` in `mcp/src/tools/preview.ts` does NOT render quiz feedback at all — only marks the correct option with a checkmark. **No change needed.**
+
+**Known issue (out of scope):** SCORM `checkSA()` only compares against `b.answer`, not `b.acceptable[]` alternatives. The frontend `ShortAnswer.tsx` view correctly checks both. This is a pre-existing bug unrelated to feedback display. Noted for future fix.
 
 ### 8. Shared FieldLabel component
 
@@ -138,7 +156,7 @@ export function FieldLabel({ children, required, htmlFor }: {
 }
 ```
 
-All editor forms updated to use `<FieldLabel>` instead of raw `<label>`. The `required` prop is not used in this spec — it is set up for Spec 3.
+Updated in all editor forms that have `<label>` elements: HeadingForm, TextForm, ImageForm, QuizForm, CodeForm, TrueFalseForm, ShortAnswerForm, ListForm, QuoteForm, AccordionForm, TabsForm, CalloutForm, VideoForm, AudioForm, DocumentForm. **Not** DividerForm or TocForm (these have no editable fields and no labels).
 
 ## Files changed summary
 
@@ -154,13 +172,13 @@ All editor forms updated to use `<FieldLabel>` instead of raw `<label>`. The `re
 | `src/components/blocks/editor/AudioForm.tsx` | Add toast on error |
 | `src/components/blocks/editor/DocumentForm.tsx` | Add toast on error |
 | `src/components/blocks/editor/FieldLabel.tsx` | **New file** |
-| `src/components/blocks/editor/*.tsx` (all 16) | Use FieldLabel |
+| `src/components/blocks/editor/*.tsx` (15 forms) | Use FieldLabel (excludes DividerForm, TocForm) |
 | `src/components/blocks/view/Quiz.tsx` | Feedback on both outcomes + handle correctIndex -1 |
 | `src/components/blocks/view/ShortAnswer.tsx` | Feedback on both outcomes |
 | `src/types/course.ts` | Factory: quiz correctIndex to -1 |
 | `mcp/src/lib/types.ts` | Factory: quiz correctIndex to -1 |
-| `src/lib/scorm12.ts` | Callout: stop escaping HTML text; Quiz: handle -1; Feedback: both outcomes |
-| `mcp/src/tools/preview.ts` | Quiz renderBlock: handle -1 |
+| `src/lib/scorm12.ts` | **Both renderers:** Callout stop escaping HTML; Quiz handle -1; Feedback both outcomes |
+| `mcp/src/tools/preview.ts` | Quiz renderBlock: handle -1 with explicit label |
 | `mcp/src/resources/instructions.ts` | Document correctIndex -1, options min 2 |
 
 ## What this does NOT change
@@ -171,6 +189,8 @@ All editor forms updated to use `<FieldLabel>` instead of raw `<label>`. The `re
 - **Block controls** (move/duplicate/delete icons, positioning) — out of scope for this series
 - **Drag and drop reordering** — out of scope
 - **Block delete confirmation** — out of scope (undo exists)
+- **SCORM list item escaping** — known issue, noted in section 5, deferred
+- **SCORM ShortAnswer `acceptable[]` checking** — known issue, noted in section 7, deferred
 
 ## Risks
 
@@ -178,4 +198,8 @@ All editor forms updated to use `<FieldLabel>` instead of raw `<label>`. The `re
 
 2. **Quiz correctIndex -1 in existing courses** — this only affects the factory default for NEW quizzes. Existing quizzes keep their current `correctIndex` value. No migration needed.
 
-3. **Quiz correctIndex -1 reaching the learner view** — if an author publishes without setting a correct answer, the quiz renders but the Check button behaviour needs to handle "no correct answer". Design decision: treat all answers as incorrect and show "No correct answer has been set" — this makes the problem visible to learners and the author will hear about it. Spec 3's publish-time validation will prevent this from reaching production.
+3. **Quiz correctIndex -1 reaching the learner view** — if an author publishes without setting a correct answer:
+   - **Frontend view:** Check button is disabled, static "No correct answer has been set" message shown, `quiz:answered` event is NOT dispatched (prevents scoring corruption)
+   - **SCORM/static export:** Submit button is not rendered, static warning paragraph shown instead
+   - **MCP preview:** "(no correct answer set)" label shown, no option marked correct
+   - Spec 3's publish-time validation will prevent this from reaching production.
