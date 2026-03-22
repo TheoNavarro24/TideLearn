@@ -90,4 +90,26 @@ export function registerLessonTools(server: McpServer) {
         return ok({ message: "Lesson deleted" });
       })
   );
+
+  server.tool(
+    "get_lesson",
+    "Get a single lesson by id — returns its blocks (content lessons) or questions (assessment lessons). More efficient than get_course when you only need to read or edit one lesson.",
+    {
+      course_id: z.string().uuid(),
+      lesson_id: z.string().uuid(),
+    },
+    async ({ course_id, lesson_id }) =>
+      withAuth(async (client, userId) => {
+        const { data, error } = await client
+          .from("courses")
+          .select("content")
+          .eq("id", course_id)
+          .eq("user_id", userId)
+          .single();
+        if (error || !data) return err("course_not_found", `No course with id ${course_id}`);
+        const lesson = (data.content as any).lessons?.find((l: any) => l.id === lesson_id);
+        if (!lesson) return err("lesson_not_found", `No lesson with id ${lesson_id} in course ${course_id}`);
+        return ok(lesson);
+      })
+  );
 }
