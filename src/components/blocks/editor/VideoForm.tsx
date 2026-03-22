@@ -1,16 +1,26 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { VideoBlock } from "@/types/course";
 import { Input } from "@/components/ui/input";
 import { uploadMedia } from "@/lib/upload";
 import { useAuth } from "@/components/auth/AuthContext";
 import { FieldLabel } from "./FieldLabel";
 import { toast } from "@/hooks/use-toast";
+import { getVideoEmbed } from "@/lib/video";
 
 export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b: VideoBlock) => void }) {
   const { user } = useAuth();
   const courseId = new URLSearchParams(window.location.search).get("courseId") ?? "local";
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [debouncedUrl, setDebouncedUrl] = useState(block.url);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedUrl(block.url), 500);
+    return () => clearTimeout(t);
+  }, [block.url]);
+
+  const embed = debouncedUrl ? getVideoEmbed(debouncedUrl) : null;
 
   async function handleFile(file: File) {
     if (!user) return;
@@ -49,6 +59,30 @@ export function VideoForm({ block, onChange }: { block: VideoBlock; onChange: (b
               {uploading ? "…" : "Upload"}
             </button>
           </>
+        )}
+      </div>
+      {/* Video preview */}
+      <div style={{ marginTop: 8 }}>
+        {!debouncedUrl && (
+          <p className="text-xs text-muted-foreground" style={{ padding: "16px 0" }}>No video set</p>
+        )}
+        {embed?.type === "youtube" && embed.src && (
+          <div className="aspect-video w-full max-w-md overflow-hidden rounded-md border">
+            <iframe src={embed.src} title="Preview" className="h-full w-full" loading="lazy" allowFullScreen />
+          </div>
+        )}
+        {embed?.type === "vimeo" && embed.src && (
+          <div className="aspect-video w-full max-w-md overflow-hidden rounded-md border">
+            <iframe src={embed.src} title="Preview" className="h-full w-full" loading="lazy" allowFullScreen />
+          </div>
+        )}
+        {embed?.type === "direct" && (
+          <video controls src={debouncedUrl} preload="metadata" className="w-full max-w-md rounded-md border" />
+        )}
+        {embed?.type === "unknown" && debouncedUrl && (
+          <p className="text-xs text-amber-600" style={{ padding: "16px 0" }}>
+            URL not recognised — supported: YouTube, Vimeo, or direct .mp4/.webm
+          </p>
         )}
       </div>
     </div>
