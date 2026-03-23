@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { decompressFromEncodedURIComponent } from "lz-string";
+import { Menu } from "lucide-react";
 import { loadCourseFromCloud } from "@/lib/courses";
+import { cn } from "@/lib/utils";
 import { getSpec } from "@/components/blocks/registry";
 
 import { courseSchemaPermissive as courseSchema, type Course } from "@/types/course";
@@ -99,6 +101,7 @@ export default function View() {
   const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!course) return;
@@ -441,11 +444,20 @@ export default function View() {
 
       {/* Topbar */}
       <header className="h-[var(--topbar-h)] bg-[var(--ocean-surface)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
-        {/* Left: logo */}
-        <a href="/courses" aria-label="TideLearn home" className="flex items-center gap-2 no-underline">
-          <span aria-hidden="true" className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-sm leading-none shrink-0">🌊</span>
-          <span className="text-white font-extrabold text-sm tracking-tight">TideLearn</span>
-        </a>
+        {/* Left: hamburger (mobile) + logo */}
+        <div className="flex items-center gap-2">
+          <button
+            className="md:hidden p-2 -ml-2 text-white/70 hover:text-white transition-colors"
+            aria-label="Toggle lesson list"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <a href="/courses" aria-label="TideLearn home" className="flex items-center gap-2 no-underline">
+            <span aria-hidden="true" className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-sm leading-none shrink-0">🌊</span>
+            <span className="text-white font-extrabold text-sm tracking-tight">TideLearn</span>
+          </a>
+        </div>
 
         {/* Center: course title (absolute) */}
         <div className="absolute left-1/2 -translate-x-1/2 text-white text-[13px] font-semibold whitespace-nowrap opacity-90 max-w-[calc(100%-300px)] overflow-hidden text-ellipsis hidden md:block">
@@ -513,27 +525,28 @@ export default function View() {
       </header>
 
       {/* Main layout: sidebar + reading area */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
         {/* Sidebar */}
-        <nav style={{
-          width: 200,
-          flexShrink: 0,
-          background: "#f8fffe",
-          borderRight: "1px solid #e0fdf4",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "auto",
-          padding: "20px 0",
-        }}>
-          <div style={{
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "#14b8a6",
-            padding: "0 16px 10px",
-          }}>
+        <nav
+          aria-label="Lesson navigation"
+          className={cn(
+            "fixed md:relative z-30 md:z-auto",
+            "w-[var(--sidebar-w-viewer)] h-full",
+            "bg-[var(--surface-subtle)] border-r border-[var(--border-subtle)] flex flex-col shrink-0 overflow-y-auto py-5",
+            "transition-transform md:transition-none",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          )}
+        >
+          <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[var(--teal-bright)] px-4 pb-2.5">
             Lessons
           </div>
 
@@ -542,7 +555,7 @@ export default function View() {
             const isCurrent = l.id === currentLessonId;
 
             return (
-              <div
+              <button
                 key={l.id}
                 onClick={() => {
                   if (isPaged) {
@@ -554,49 +567,28 @@ export default function View() {
                   } else {
                     document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }
+                  setSidebarOpen(false);
                 }}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  padding: "8px 16px 8px 12px",
-                  cursor: "pointer",
-                  borderLeft: isActive ? "3px solid #14b8a6" : "3px solid transparent",
-                  background: isActive ? "#f0fdfb" : "transparent",
-                  transition: "background 0.12s",
-                  position: "relative",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "#f0fdfb";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent";
-                }}
+                className={cn(
+                  "w-full text-left flex items-start gap-2.5 py-2 px-4 pl-3 border-l-[3px] transition-colors",
+                  isActive
+                    ? "border-l-[var(--teal-bright)] bg-[var(--surface-tint)]"
+                    : "border-l-transparent hover:bg-[var(--surface-tint)]"
+                )}
               >
                 {/* Dot */}
-                <div style={{ flexShrink: 0, width: 16, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 3 }}>
+                <div className="shrink-0 w-4 flex items-center justify-center pt-[3px]">
                   <div style={getDotStyle(l.id, isCurrent)} />
                 </div>
                 {/* Number */}
-                <div style={{
-                  fontSize: 9,
-                  fontWeight: 600,
-                  color: isActive ? "#0d9488" : "#94a3b8",
-                  flexShrink: 0,
-                  paddingTop: 1,
-                }}>
+                <span className={cn("text-[9px] font-semibold shrink-0 pt-px", isActive ? "text-[var(--teal-primary)]" : "text-slate-400")}>
                   {i + 1}
-                </div>
+                </span>
                 {/* Title */}
-                <div style={{
-                  fontSize: 12,
-                  lineHeight: 1.45,
-                  color: isActive ? "#0d9488" : "#475569",
-                  fontWeight: isActive ? 600 : 400,
-                }}>
+                <span className={cn("text-xs leading-[1.45]", isActive ? "text-[var(--teal-primary)] font-semibold" : "text-slate-600")}>
                   {l.title}
-                </div>
-              </div>
+                </span>
+              </button>
             );
           })}
         </nav>
