@@ -1,6 +1,6 @@
 # Plan A.4 — Index.tsx (Landing Page) Overhaul
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Each task invokes one or more impeccable plugin skills — use the Skill tool to invoke them (e.g., `Skill("impeccable:distill")`).
 
 **Goal:** Rewrite landing page from inline styles to Tailwind, remove AI-slop anti-patterns (gradient text, glow effects, monospace chips), add responsive design, fix typography.
 
@@ -12,357 +12,161 @@
 
 **Depends on:** Plan A.1 (CSS vars, DM Sans font, contrast fix)
 
+**Orchestration:** All tasks in Phase 1 touch `src/pages/Index.tsx`. Dispatch parallel subagents in isolated worktrees — each handles a different concern. Phase 2 unifies the branches and verifies.
+
 ---
 
-### Task 1: Migrate Nav component to Tailwind + responsive
+## Phase 1 — Parallel subagents (worktree isolation)
 
-**Commands:** `/polish` (M-8 emoji logo → SVG), `/adapt` (responsive nav + hamburger)
+Dispatch these three subagents in parallel using `superpowers:dispatching-parallel-agents`. Each runs in its own git worktree so edits don't conflict.
+
+---
+
+### Task 1: Visual anti-pattern removal (Subagent A)
+
+**Invoke:** `/distill` then `/polish` — strip hero anti-patterns, replace emoji with SVG, fix monospace chips
 
 **Files:**
-- Modify: `src/pages/Index.tsx` (Nav component, lines 11–127)
+- Modify: `src/pages/Index.tsx`
 
-- [ ] **Step 1: Replace emoji logo with Lucide icon (M-8)**
+- [ ] **Step 1: Invoke `/distill`**
 
-```tsx
-import { Waves } from "lucide-react";
+Invoke the `impeccable:distill` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- **Issue H-2:** Gradient text on hero headline (`TEAL_GRAD_TEXT` on `<em>`, lines 543–553). Replace with solid teal emphasis: `<em className="text-teal-400 not-italic font-semibold">`.
+- **Issue H-3:** Dark hero with cyan glow effects (lines 466–527). Remove:
+  - Radial gradient overlay in background
+  - Glowing dot `boxShadow: "0 0 8px #14b8a6"` on eyebrow pill
+  - Neon CTA button shadow
+  - Keep: dark ocean background, line-texture overlay (that's the good part)
+- **Delete** module-level constants `TEAL_GRAD`, `TEAL_GRAD_TEXT`, `OCEAN_DEEP` (lines 6–8) — use CSS vars via Tailwind instead (L-2).
 
-// Before: 🌊 emoji in a gradient box
-// After:
-<div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-  <Waves className="w-5 h-5 text-white" />
-</div>
-```
+- [ ] **Step 2: Invoke `/polish`**
 
-If Lucide doesn't have a `Waves` icon, check available alternatives (`Wave`, `Droplets`, etc.) or use a simple custom SVG.
-
-- [ ] **Step 2: Convert nav layout to Tailwind with responsive**
-
-```tsx
-<nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-14 h-16 bg-[#0a1f1c]/95 backdrop-blur-sm">
-```
-
-- [ ] **Step 3: Add mobile hamburger + responsive nav links**
-
-Hide nav links on mobile, show hamburger:
-```tsx
-{/* Desktop nav */}
-<div className="hidden md:flex items-center gap-6">
-  {/* nav links */}
-</div>
-
-{/* Mobile hamburger */}
-<button className="md:hidden" aria-label="Menu" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
-  <Menu className="w-5 h-5 text-white" />
-</button>
-
-{/* Mobile nav overlay */}
-{mobileNavOpen && (
-  <div className="md:hidden absolute top-full inset-x-0 bg-[#0a1f1c] border-t border-white/10 p-4 flex flex-col gap-3">
-    {/* Same nav links, stacked vertically */}
-    <button className="absolute top-2 right-2 text-white" onClick={() => setMobileNavOpen(false)} aria-label="Close menu">
-      <X className="w-5 h-5" />
-    </button>
+Invoke the `impeccable:polish` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- **Issue M-8:** Replace 🌊 emoji logo with Lucide `Waves` icon in both Nav (line 51) and footer (line 728):
+  ```tsx
+  import { Waves } from "lucide-react";
+  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
+    <Waves className="w-5 h-5 text-white" />
   </div>
-)}
-```
+  ```
+- **Issue H-5:** Replace `fontFamily: "monospace"` in feature visual chips (lines 438–447) with sans pill styling: `font-sans text-sm font-medium bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg`.
+- **Issue L-1:** Same monospace fix in EditorCard URL bar (line 192).
 
-Add state: `const [mobileNavOpen, setMobileNavOpen] = useState(false);`
-Close on link click and Escape key.
+- [ ] **Step 3: Verify build**
 
-- [ ] **Step 4: Remove all inline styles from Nav**
+Run: `npm run build` — SUCCESS
 
-Replace every `style={{}}` with Tailwind classes. Remove `fontFamily: "Inter"` — `font-sans` now maps to DM Sans.
-
-- [ ] **Step 5: Verify build**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add src/pages/Index.tsx
-git commit -m "refactor(landing): migrate Nav to Tailwind, SVG logo, responsive hamburger"
+git commit -m "fix(landing): strip gradient text, glow effects, emoji→SVG, monospace→pills"
 ```
 
 ---
 
-### Task 2: Strip anti-patterns from hero section
+### Task 2: Responsive layout (Subagent B)
 
-**Commands:** `/distill` (H-2 gradient text, H-3 dark hero glow), `/polish` (neon CTA shadow), `/harden` (M-2 arrow chars aria-hidden)
+**Invoke:** `/adapt` — make entire landing page responsive across all sections
 
 **Files:**
-- Modify: `src/pages/Index.tsx` (hero section, lines 461–618 + constants lines 6–8)
+- Modify: `src/pages/Index.tsx`
 
-- [ ] **Step 1: Remove module-level gradient constants**
+- [ ] **Step 1: Invoke `/adapt`**
 
-Delete lines 6–8:
-```tsx
-// DELETE these:
-const TEAL_GRAD = "linear-gradient(135deg, #14b8a6, #06b6d4)";
-const TEAL_GRAD_TEXT = "linear-gradient(135deg, #14b8a6, #67e8f9)";
-const OCEAN_DEEP = "#0a1f1c";
-```
+Invoke the `impeccable:adapt` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- **Issue C-2:** Entire file has zero responsive design. No `@media`, no Tailwind responsive prefixes, no breakpoints. On mobile: nav overlaps, features collapse unreadably, EditorCard overflows.
+- **Nav:** Replace fixed `padding: "18px 56px"` with `px-6 md:px-14`. Add mobile hamburger with overlay dropdown (hidden md:flex for desktop links, md:hidden for hamburger). Add state `mobileNavOpen`, close on link click and Escape.
+- **Hero:** Responsive padding `pt-32 md:pt-40 pb-20 md:pb-32 px-6 md:px-14`. Responsive headline sizing `text-4xl md:text-6xl lg:text-7xl`. CTA buttons stack vertically on mobile.
+- **Issue M-5:** EditorCard mockup — stack to single column below `md:`, hide sidebar: `grid-cols-1 md:grid-cols-[220px_1fr]` with sidebar `hidden md:block`.
+- **Features grid:** `grid-cols-1 md:grid-cols-[80px_1fr_1fr]` with `gap-6 md:gap-8`.
+- **Footer:** Responsive padding `px-6 md:px-14`.
+- **Replace all** `onMouseEnter`/`onMouseLeave` handlers with Tailwind `hover:` utilities.
 
-Use CSS vars (`var(--gradient-primary)`, `var(--ocean-deepest)`) via Tailwind instead.
+- [ ] **Step 2: Verify build**
 
-- [ ] **Step 2: Remove gradient text from headline (H-2)**
+Run: `npm run build` — SUCCESS
 
-Find the `<em>` with `TEAL_GRAD_TEXT` applied (lines 543–553). Replace:
-```tsx
-// Before: gradient text with WebkitBackgroundClip
-<em style={{ ...TEAL_GRAD_TEXT stuff }}>craft</em>
-
-// After: solid teal emphasis
-<em className="text-teal-400 not-italic font-semibold">craft</em>
-```
-
-- [ ] **Step 3: Remove glow effects from hero (H-3)**
-
-Remove:
-- Radial gradient overlay (`radialGradient` in background)
-- Glowing dot on eyebrow pill (`boxShadow: "0 0 8px #14b8a6"`)
-- Neon CTA button shadow
-
-Keep:
-- The dark ocean background (`bg-[var(--ocean-deepest)]`)
-- The line-texture overlay (this is the good visual element)
-
-- [ ] **Step 4: Convert hero section to Tailwind**
-
-```tsx
-<section className="relative bg-[var(--ocean-deepest)] pt-32 md:pt-40 pb-20 md:pb-32 px-6 md:px-14 text-center">
-```
-
-Hero headline: keep `font-display` (Lora), responsive sizing with `text-4xl md:text-6xl lg:text-7xl`.
-
-Subhead: use `text-[var(--text-muted)]` (now #64748b from A.1 — but in dark context, use a lighter color like `text-slate-300`).
-
-- [ ] **Step 5: Fix CTA arrow characters (M-2)**
-
-```tsx
-// Before
-<a>Start authoring →</a>
-// After
-<a>Start authoring<span aria-hidden="true"> →</span></a>
-
-// Before
-<a>See what it does ↓</a>
-// After
-<a>See what it does<span aria-hidden="true"> ↓</span></a>
-```
-
-- [ ] **Step 6: Verify build**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-- [ ] **Step 7: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/pages/Index.tsx
-git commit -m "fix(landing): strip gradient text, glow effects, neon shadows (anti-patterns)"
+git commit -m "feat(landing): responsive layout across all sections (WCAG 1.4.10)"
 ```
 
 ---
 
-### Task 3: Migrate EditorCard mockup to Tailwind + responsive
+### Task 3: Accessibility + copy + typography (Subagent C)
 
-**Commands:** `/adapt` (M-5 responsive stack on mobile), `/harden` (M-1 dark contrast fix), `/normalize` (L-1 monospace URL bar)
+**Invoke:** `/harden` then `/clarify` then `/typeset` — a11y fixes, copy cleanup, font migration
 
 **Files:**
-- Modify: `src/pages/Index.tsx` (EditorCard component, lines 130–322)
+- Modify: `src/pages/Index.tsx`
 
-- [ ] **Step 1: Convert EditorCard to Tailwind**
+- [ ] **Step 1: Invoke `/harden`**
 
-Replace all inline styles. Key layout:
-```tsx
-<div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0d1f1d] shadow-2xl max-w-3xl mx-auto">
-```
+Invoke the `impeccable:harden` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- **Issue M-1:** `#94a3b8` text on dark EditorCard mockup background (`#0d1f1d`) yields 3.5:1. Replace with `#cbd5e1` (passes AA).
+- **Issue M-2:** Arrow characters in CTA copy ("Start authoring →", "See what it does ↓") are read aloud by screen readers. Wrap in `<span aria-hidden="true">`.
 
-- [ ] **Step 2: Fix monospace in URL bar (L-1)**
+- [ ] **Step 2: Invoke `/clarify`**
 
-Replace `fontFamily: "monospace"`:
-```tsx
-// Before
-<span style={{ fontFamily: "monospace" }}>tidelearn.app/editor</span>
-// After
-<span className="font-sans text-xs tracking-tight opacity-60">tidelearn.app/editor</span>
-```
+Invoke the `impeccable:clarify` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- **Issue M-7:** Redundant copy — "What it does" kicker above "Everything you need. Nothing you don't." heading (lines 647–690). Drop the kicker entirely or replace with a specific descriptor.
+- **Issue L-4:** Footer copyright year hardcoded `© 2026`. Replace with `{new Date().getFullYear()}`.
 
-Use background-colour pill styling instead of font-family to signal "technical":
-```tsx
-<span className="bg-white/5 px-2 py-0.5 rounded text-xs">tidelearn.app/editor</span>
-```
+- [ ] **Step 3: Invoke `/typeset`**
 
-- [ ] **Step 3: Make responsive — stack on mobile (M-5)**
+Invoke the `impeccable:typeset` skill. Context for the skill:
+- **Target file:** `src/pages/Index.tsx`
+- Replace all remaining `fontFamily: "Inter"` and `fontFamily: "Inter, sans-serif"` references with Tailwind `font-sans` class (which now maps to DM Sans from A.1).
 
-```tsx
-<div className="grid grid-cols-1 md:grid-cols-[220px_1fr]">
-  {/* Sidebar — hidden on mobile */}
-  <div className="hidden md:block border-r border-white/10 p-4">
-    {/* sidebar content */}
-  </div>
-  {/* Main content — always visible */}
-  <div className="p-4 md:p-6">
-    {/* editor mockup content */}
-  </div>
-</div>
-```
+- [ ] **Step 4: Verify build**
 
-- [ ] **Step 4: Fix muted text contrast in dark context (M-1)**
+Run: `npm run build` — SUCCESS
 
-In the mockup, replace `#94a3b8` text on dark backgrounds with `#cbd5e1` (passes AA on dark):
-```tsx
-className="text-slate-300" // instead of text-[#94a3b8]
-```
-
-- [ ] **Step 5: Verify build**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/pages/Index.tsx
-git commit -m "refactor(landing): EditorCard to Tailwind, responsive stack, fix monospace and contrast"
+git commit -m "fix(landing): a11y contrast+arrows, drop redundant copy, Inter→DM Sans"
 ```
 
 ---
 
-### Task 4: Migrate features section to Tailwind + fix anti-patterns
+## Phase 2 — Unify and verify
 
-**Commands:** `/clarify` (M-7 redundant "What it does" copy), `/adapt` (responsive feature grid), `/polish` (H-5 monospace chips → sans pill)
-
-**Files:**
-- Modify: `src/pages/Index.tsx` (FeatureRow + features section, lines 344–702)
-
-- [ ] **Step 1: Fix redundant copy (M-7)**
-
-```tsx
-// Before: "What it does" kicker + "Everything you need. Nothing you don't."
-// After: drop the kicker entirely, keep the heading
-```
-
-- [ ] **Step 2: Convert features section to Tailwind + responsive grid**
-
-```tsx
-<section className="px-6 md:px-14 py-16 md:py-24 max-w-6xl mx-auto">
-```
-
-Feature rows:
-```tsx
-<div className="grid grid-cols-1 md:grid-cols-[80px_1fr_1fr] gap-6 md:gap-8 items-start">
-```
-
-- [ ] **Step 3: Fix monospace feature chips (H-5)**
-
-Replace `fontFamily: "monospace"` in feature visual chips:
-```tsx
-// Before
-<span style={{ fontFamily: "monospace" }}>mcp://tidelearn/generate</span>
-
-// After
-<span className="font-sans text-sm font-medium bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg">
-  mcp://tidelearn/generate
-</span>
-```
-
-Use background colour + rounded pill to signal "technical" instead of monospace font.
-
-- [ ] **Step 4: Remove all onMouseEnter/onMouseLeave handlers**
-
-Replace with Tailwind `hover:` utilities on feature rows and any interactive elements.
-
-- [ ] **Step 5: Verify build**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add src/pages/Index.tsx
-git commit -m "refactor(landing): features to Tailwind, fix monospace chips, drop redundant copy"
-```
-
----
-
-### Task 5: Migrate footer + final cleanup
-
-**Commands:** `/normalize` (L-2 duplicate constants, L-4 hardcoded year), `/typeset` (remaining Inter → font-sans), `/polish` (footer emoji logo)
+### Task 4: Merge parallel branches + final cleanup
 
 **Files:**
-- Modify: `src/pages/Index.tsx` (footer, lines 705–744 + WaveDivider)
+- Modify: `src/pages/Index.tsx`
 
-- [ ] **Step 1: Convert footer to Tailwind**
+- [ ] **Step 1: Merge all three worktree branches into the working branch**
 
-```tsx
-<footer className="bg-[var(--ocean-deepest)] text-slate-400 px-6 md:px-14 py-12">
-```
+Merge Subagent A, B, and C branches sequentially. Resolve any conflicts — most will be in `src/pages/Index.tsx`. The anti-pattern removal (A) and responsive layout (B) may conflict on the same elements; prefer B's Tailwind classes with A's content changes applied on top.
 
-- [ ] **Step 2: Fix hardcoded copyright year (L-4)**
+- [ ] **Step 2: Add `id="main-content"` to first content section**
 
-```tsx
-// Before
-<span>© 2026 TideLearn</span>
-// After
-<span>© {new Date().getFullYear()} TideLearn</span>
-```
-
-- [ ] **Step 3: Replace footer emoji logo with Lucide icon**
-
-Same Waves icon treatment as Task 1.
-
-- [ ] **Step 4: Convert WaveDivider to Tailwind**
-
-Replace any inline styles on the SVG wave divider component.
-
-- [ ] **Step 5: Add `id="main-content"` to main content area**
-
-Add the skip link target to the first content section after the hero:
+Add the skip link target (from A.1) to the main content area:
 ```tsx
 <main id="main-content">
 ```
 
-- [ ] **Step 6: Replace all remaining `fontFamily: "Inter"` with `font-sans`**
+- [ ] **Step 3: Verify no inline styles remain**
 
-Search the entire file for any remaining `fontFamily: "Inter"` references and replace with the Tailwind `font-sans` class.
+Search for `style={{` in Index.tsx — should return zero results.
 
-- [ ] **Step 7: Verify build**
+- [ ] **Step 4: Run full build** — `npm run build` — SUCCESS
+- [ ] **Step 5: Run lint** — `npm run lint` — PASS
 
-Run: `npm run build`
-Expected: SUCCESS
+- [ ] **Step 6: Visual check at 375px**
 
-- [ ] **Step 8: Commit**
-
-```bash
-git add src/pages/Index.tsx
-git commit -m "refactor(landing): footer to Tailwind, dynamic year, SVG logo, final cleanup"
-```
-
----
-
-### Task 6: Final verification for A.4
-
-- [ ] **Step 1: Run full build**
-
-```bash
-npm run build
-```
-Expected: SUCCESS
-
-- [ ] **Step 2: Run lint**
-
-```bash
-npm run lint
-```
-Expected: PASS
-
-- [ ] **Step 3: Visual check at 375px**
-
-Run: `npm run dev`
 - Hamburger nav visible, links hidden
 - Hero text readable, no overflow
 - EditorCard: sidebar hidden, single column
@@ -370,7 +174,7 @@ Run: `npm run dev`
 - CTA buttons: stacked vertically
 - No horizontal scroll
 
-- [ ] **Step 4: Visual check at 1440px**
+- [ ] **Step 7: Visual check at 1440px**
 
 - Full nav visible
 - Hero: no gradient text, no glow effects, clean teal emphasis
@@ -379,13 +183,13 @@ Run: `npm run dev`
 - No monospace font in chips or URL bar
 - No inline styles remaining
 
-- [ ] **Step 5: Anti-pattern verification**
+- [ ] **Step 8: Anti-pattern verification**
 
-Confirm removal of:
-- Gradient text on headline
-- Glowing dot on eyebrow pill
-- Neon CTA shadow
-- Radial gradient overlay
-- Monospace in all chips and URL bar
-- Emoji logo (should be SVG now)
-- "What it does" redundant kicker
+Confirm removal of: gradient text, glowing dot, neon CTA shadow, radial gradient overlay, monospace in chips/URL bar, emoji logo, "What it does" kicker.
+
+- [ ] **Step 9: Commit unified result**
+
+```bash
+git add src/pages/Index.tsx
+git commit -m "feat(landing): unified A.4 overhaul — anti-patterns, responsive, a11y, typography"
+```
