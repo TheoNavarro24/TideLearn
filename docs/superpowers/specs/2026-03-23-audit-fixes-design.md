@@ -41,7 +41,7 @@ The audit flags Inter as generic AI-slop. The replacement must:
 - Be available on Google Fonts
 - Not be on the "overused" list (Inter, Roboto, Open Sans, Arial)
 
-Top pick: **DM Sans** — geometric, clean, good x-height, pairs well with serifs, widely available but not in the "default AI" bucket. Fallback candidates: Plus Jakarta Sans, Instrument Sans. Final choice can be made during implementation.
+**Decision: DM Sans.** Geometric, clean, good x-height, pairs well with serifs, widely available but not in the "default AI" bucket. This is locked — all subsequent plans reference it.
 
 ---
 
@@ -80,7 +80,7 @@ Top pick: **DM Sans** — geometric, clean, good x-height, pairs well with serif
 | Issue | Fix |
 |---|---|
 | Undo/Redo no `aria-label` | Add `aria-label="Undo"` / `aria-label="Redo"` |
-| Block picker: no keyboard nav | Add `role="listbox"` / `role="option"`, arrow-key navigation, Escape to close |
+| Block picker: no keyboard nav | Use combobox pattern: `role="combobox"` on search input with `aria-controls` pointing to a `role="listbox"` list, `role="option"` on tiles, arrow-key navigation, Escape to close. Consider Radix Combobox. |
 | Sidebar footer emoji icons | Replace ⚙️/📦 with Lucide icons (`Settings`, `Package`) or wrap in `aria-hidden` with visually-hidden label |
 | Block picker 🔍 emoji | Replace with Lucide `Search` icon or `aria-hidden` |
 
@@ -99,14 +99,14 @@ Top pick: **DM Sans** — geometric, clean, good x-height, pairs well with serif
 | Import section unreachable | Add visible button in PublishModal to toggle import |
 | Export cards emoji icons | Replace 📦/🌐/📄 with Lucide icons |
 
-### File size consideration
+### File decomposition (required)
 
-Editor.tsx at 1632 lines is too large. During the rewrite, extract:
+Editor.tsx at 1632 lines is too large. As part of A.2, extract:
 - `PublishModal` → `src/components/editor/PublishModal.tsx`
 - `AddBlockRow` + block picker → `src/components/editor/BlockPicker.tsx`
 - `ConfirmModal` (new) → `src/components/editor/ConfirmModal.tsx` (or use shadcn AlertDialog directly)
 
-This keeps the main Editor.tsx focused on layout, state, and orchestration.
+This is a required deliverable of A.2, not optional. The main Editor.tsx should be focused on layout, state, and orchestration.
 
 ---
 
@@ -154,9 +154,9 @@ This keeps the main Editor.tsx focused on layout, state, and orchestration.
 |---|---|
 | "View All" assessment placeholder no action | Add button/link to switch to paged mode and jump to that lesson |
 | Resume button no lesson context | Show lesson title: "Resume: Lesson 3 — Savings Vehicles" |
-| Progress stripe inconsistency | Unify: always track completion count, not scroll position |
+| Progress stripe inconsistency | Unify: always track `completed.size / totalLessons` in both modes. In View All, the progress bar reflects lesson completions (not scroll depth). Scroll-based `lessonProgress` is removed. |
 | Gate mode locked sections no navigation | Add "Go to previous section" link |
-| `postMessage` target `"*"` | Document as intentional broadcast for SCORM compatibility (add code comment), or scope to `window.parent.origin` if available |
+| `postMessage` target `"*"` | Document as intentional broadcast with a code comment — SCORM players have unpredictable origins, so scoping is not reliable |
 
 ---
 
@@ -181,7 +181,7 @@ This keeps the main Editor.tsx focused on layout, state, and orchestration.
 | L-1 monospace URL bar | Same treatment as H-5 |
 | M-2 arrow chars in CTAs | Wrap `→`/`↓` in `<span aria-hidden="true">` or replace with Lucide icons |
 | M-7 redundant copy | Drop "What it does" kicker or replace with specific descriptor |
-| M-8 emoji logo | Replace 🌊 with an SVG wave icon for cross-platform consistency |
+| M-8 emoji logo | Replace 🌊 with Lucide `Waves` icon (or a minimal custom SVG if Lucide doesn't have a suitable match) for cross-platform consistency |
 | L-4 hardcoded copyright year | `new Date().getFullYear()` |
 
 ### Responsive design
