@@ -1,0 +1,47 @@
+{
+  "tool": "courseau",
+  "dimensions": {
+    "onboarding": {
+      "score": 4,
+      "evidence": "[direct|marketing]",
+      "narrative": "Courseau's onboarding is notably friction-free: a 14-day free trial with no credit card required, a minimal sign-up form (first name, last name, company email), and a clear value proposition of 'publish your first course in minutes.' The marketing landing page is benefit-led and visually clean with strong social proof. The requirement for a company email may exclude solo creators or personal users, which is a minor but real barrier. Overall this is competitive with the best in the mid-market segment.",
+      "screenshots": ["courseau-onboarding-1.png", "courseau-onboarding-2.png"]
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Course output shown in landing page mockups is polished and slide-based — clean typography, consistent spacing, and professional imagery. The learner-facing UI appears modern and mobile-responsive. G2 reviewers consistently praise the 'impressive design and user interface.' The platform's AI-generated courses are described as 'beautiful, interactive, professional' out of the box. Some design inflexibility is implied by the structured slide/card format, which may limit bespoke visual customisation compared to more template-rich tools like Elucidat.",
+      "screenshots": ["courseau-onboarding-1.png", "courseau-visual-1.png"]
+    },
+    "editor": {
+      "score": 3,
+      "evidence": "[marketing|review]",
+      "narrative": "The live editor was not captured in screenshots — the session did not successfully navigate to the authenticated authoring environment. From marketing imagery and G2 reviews, the editor is AI-first: authors define objectives and upload source material, then review and refine the AI-generated draft. Manual editing, image/video insertion, and block manipulation are supported. Reviewers note the interface is intuitive but flag an inability to copy/paste lessons across courses. Without direct editor access, a score of 3 (functional, competitive) is appropriate.",
+      "screenshots": ["courseau-editor-1.png", "courseau-editor-2.png"]
+    },
+    "blocks": {
+      "score": 3,
+      "evidence": "[marketing|review]",
+      "narrative": "Confirmed block types from marketing and reviews include: lesson slides, MCQ quizzes, flip cards, key takeaways, examples, and actionable steps. Images and video can be embedded and edited. AI narration is added per lesson. However, advanced interactive block types — accordion, tabs, hotspot, timeline, code block — are not confirmed in any public source. The block palette appears narrower than enterprise competitors, reflecting Courseau's AI-generation-first philosophy over deep manual block authoring.",
+      "screenshots": ["courseau-blocks-1.png", "courseau-blocks-2.png"]
+    },
+    "learner": {
+      "score": 3,
+      "evidence": "[marketing|review]",
+      "narrative": "The learner view was not directly captured; the screenshot slot rendered the marketing page. From marketing mockups and reviews, learner output is slide/card-based, visually polished, and mobile-responsive. AI narration provides audio accompaniment. Sharing options include link, QR code, and embed — covering common learner access patterns. No confirmed learner dashboard, progress tracking, or gamification in the free tier. Compared to tools with dedicated learner portals, the experience is functional but limited.",
+      "screenshots": ["courseau-learner-1.png"]
+    },
+    "publishing": {
+      "score": 3,
+      "evidence": "[marketing|review]",
+      "narrative": "Courseau supports six publishing/sharing modes: shareable link, QR code, SCORM export, website embed, editable PowerPoint, and live embed. SCORM export for LMS delivery is confirmed. xAPI is not confirmed in any public source. Password protection (master password) is available as a basic access control. This is a solid publishing story for the mid-market but lacks the enterprise publishing breadth of tools like Elucidat (SCORM 2004, xAPI, instant re-release, 15+ LMS integrations). LearnUpon integration is planned for 2026.",
+      "screenshots": ["courseau-publishing-1.png", "courseau-extensibility-1.png"]
+    },
+    "extensibility": {
+      "score": 2,
+      "evidence": "[marketing|review]",
+      "narrative": "The pricing/features screenshot shows a plan comparison table but does not surface any API, webhook, or integration features. No REST API, webhooks, Zapier, or Make connectors are confirmed in any public source for the standalone Courseau product. The LearnUpon acquisition (November 2025) signals future LMS integration depth, but as of the current product state, extensibility is limited to SCORM export and shareable links. This is a clear weakness relative to enterprise-grade competitors.",
+      "screenshots": ["courseau-extensibility-1.png"]
+    }
+  }
+}

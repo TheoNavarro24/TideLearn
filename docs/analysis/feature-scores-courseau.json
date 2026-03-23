@@ -1,0 +1,157 @@
+{
+  "tool": "courseau",
+  "evidence_source": "[direct|marketing|review]",
+  "accessed_via": "free_tier",
+  "category_scores": {
+    "blocks": {
+      "score": 2,
+      "narrative": "Confirmed block types include lesson slides (card-based), MCQ quizzes, flip cards, key takeaways, examples, and actionable steps. Images and video can be added and edited per lesson. AI narration is generated automatically. However, the block palette does not appear to include advanced interactive types — accordion, tabs, hotspot image, timeline, table, code block, and drag-drop interactions are not confirmed in any public source. The AI-first generation model means authors work with a curated set of pedagogically-structured block types rather than a freeform block library. This is market standard for AI-native tools but below competitive depth for manual authoring. Evidence: [marketing|review]"
+    },
+    "assessment": {
+      "score": 2,
+      "narrative": "MCQ quizzes are confirmed and AI-generated automatically from course content, with unlimited quiz generation mentioned as a feature. Knowledge checks and unscored review elements (key takeaways, flip cards) are confirmed. However, specific assessment question types beyond MCQ — true/false, fill-in-the-blank, matching, drag-drop, hotspot image, and essay/open-text — are not confirmed in public sources. Question banks, randomisation, passing score configuration, and multiple attempts are not confirmed. Assessment is functional but appears basic relative to dedicated assessment platforms. Evidence: [marketing|review]"
+    },
+    "ai": {
+      "score": 4,
+      "narrative": "AI is the core differentiator and is deeply integrated throughout: AI course generation from PDFs, videos, PPTx, web links, and voice notes; AI quiz generation automatically per lesson; AI content rewrite and editing assistance; AI narration (lifelike audio) for all courses; and AI translation into 120+ languages. AI image generation and AI learner feedback/tutoring are not confirmed. The AI-first workflow — where the entire course structure is generated before manual editing — places Courseau among the most AI-native tools in the market. Evidence: [marketing|review]"
+    },
+    "compliance": {
+      "score": 2,
+      "narrative": "SCORM export is confirmed and available for LMS delivery. Editable PowerPoint export is also confirmed as an output format. xAPI/Tin Can is not confirmed in any public source for Courseau's standalone product. LTI (consumer or provider) is not confirmed. PDF export is not confirmed. The compliance story is functional for organisations needing basic SCORM LMS delivery, but lacks the breadth of SCORM 2004, xAPI, and LTI that enterprise authoring tools offer. Evidence: [marketing|review]"
+    },
+    "analytics": {
+      "score": 1,
+      "narrative": "Courseau is described in marketing as an authoring tool rather than a learning platform, and no analytics dashboard is confirmed in the standalone product. The extensibility screenshot shows a feature comparison table but analytics rows are not clearly visible. Completion tracking and quiz score analytics may be available when courses are delivered via SCORM to an LMS, but those would be LMS-side features, not Courseau's own. Learner-side analytics within Courseau's shared-link delivery mode are not confirmed. LearnUpon integration (planned 2026) would add LMS analytics. Not confirmed from available access. Evidence: [marketing]"
+    },
+    "collaboration": {
+      "score": 2,
+      "narrative": "Real-time commenting is confirmed — G2 reviewers and marketing describe collaborating 'with your team using real-time comments for instant feedback.' Multi-author access is implied by the team collaboration feature. However, structured review/approval workflows, version history, external reviewer links (without account), and granular roles and permissions are not confirmed in public sources. Collaboration features appear functional but lightweight compared to tools like Elucidat with full review workflow and audit trails. Evidence: [marketing|review]"
+    },
+    "templates": {
+      "score": 2,
+      "narrative": "The AI-first generation model means Courseau does not rely on traditional course templates — the AI produces a structured draft from source material. Some pre-built lesson structures (key takeaways, flip cards, examples) function as implicit templates. Theme customisation (branding, colours) is mentioned in marketing. White-label and custom domain features are not confirmed. A traditional library of named course or lesson templates does not appear to be part of the product model. Evidence: [marketing|review]"
+    },
+    "branching": {
+      "score": 1,
+      "narrative": "Conditional navigation and personalised learning paths are not confirmed in any public source for Courseau's standalone product. The platform's slide/card sequential structure does not suggest a branching-native architecture. LearnUpon's broader LMS platform supports Learning Journeys (automated personalised paths), but this is an LMS feature, not Courseau's authoring output. Branching is effectively absent from the confirmed Courseau feature set. Not confirmed from available access. Evidence: [marketing|review]"
+    },
+    "media": {
+      "score": 2,
+      "narrative": "Direct video upload and image upload/editing are confirmed. AI narration (audio generation) is a strong, native media feature. Images and videos can be added and edited within the editor. A stock media library is not confirmed. In-product image editing depth is unclear beyond basic insertion. Subtitle/caption support for uploaded video is not confirmed. CDN hosting is implied by the link-based delivery model. Evidence: [marketing|review]"
+    },
+    "accessibility": {
+      "score": 1,
+      "narrative": "WCAG 2.1 AA compliance is not confirmed in any public source for Courseau. Keyboard navigation and screen reader support are not mentioned in marketing or reviews. The platform does confirm translation into 120+ languages and AI narration as accessibility-adjacent features (multilingual, audio support), but these are not substitutes for WCAG technical compliance. Given the platform's AI-native, modern build, baseline accessibility is probable but not confirmed from available access. Evidence: [marketing]"
+    },
+    "publishing": {
+      "score": 2,
+      "narrative": "Six publishing modes are confirmed: shareable link, QR code, SCORM export, website embed, editable PowerPoint, and live embed. Password protection (master password for access restriction) is confirmed in help docs. SSO for learner access is not confirmed. SCORM export enables LMS delivery. xAPI is not confirmed. The publishing feature set covers the most common mid-market needs but does not reach enterprise depth (SCORM 2004, xAPI, instant re-release, SSO). Evidence: [marketing|review]"
+    },
+    "extensibility": {
+      "score": 1,
+      "narrative": "No REST API, webhooks, Zapier, or Make integrations are confirmed for the Courseau standalone product. The pricing/features table visible in the extensibility screenshot does not surface API or integration rows. SCORM export and link sharing are the primary integration mechanisms. LearnUpon's acquisition (November 2025) signals deeper integration with LearnUpon LMS in 2026, but as of the current product state, extensibility is minimal. No MCP server confirmed. Evidence: [marketing]"
+    }
+  },
+  "block_checklist": {
+    "rich_text": {"presence": "yes", "notes": "Lesson text content is confirmed as core block type"},
+    "image": {"presence": "yes", "notes": "Images can be added and edited within lessons"},
+    "video_embed": {"presence": "yes", "notes": "Video can be added to lessons; embed method not specified"},
+    "video_upload": {"presence": "yes", "notes": "Direct video upload confirmed as source input for AI generation"},
+    "audio": {"presence": "yes", "notes": "AI narration generates audio per lesson; manual audio upload not confirmed"},
+    "quote_callout": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "accordion": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "tabs": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "table": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "timeline": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "embed_iframe": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "code_block": {"presence": "no", "notes": "Not a target use case for this platform"},
+    "interactive_hotspot": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "flashcard": {"presence": "yes", "notes": "Flip cards confirmed as a native block/element type"}
+  },
+  "assessment_checklist": {
+    "mcq": {"presence": "yes", "notes": "MCQ quizzes confirmed; AI-generated automatically from course content"},
+    "true_false": {"presence": "unknown", "notes": "Not explicitly confirmed; may be included in quiz generation"},
+    "fill_blank": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "matching": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "hotspot_image": {"presence": "no", "notes": "Not confirmed; unlikely given current block palette"},
+    "drag_drop": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "essay_open": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "knowledge_check_unscored": {"presence": "yes", "notes": "Key takeaways and flip cards serve as unscored knowledge reinforcement"},
+    "question_banks": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "randomisation": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "passing_score": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "multiple_attempts": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "ai_checklist": {
+    "ai_course_generation": {"presence": "yes", "notes": "Core feature — generates full course structure from PDFs, video, PPTx, web links, voice notes"},
+    "ai_content_rewrite": {"presence": "yes", "notes": "AI editing and content refinement supported post-generation"},
+    "ai_quiz_generation": {"presence": "yes", "notes": "Unlimited AI quiz generation from course content confirmed"},
+    "ai_translation": {"presence": "yes", "notes": "120+ languages confirmed"},
+    "ai_image_generation": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "ai_learner_feedback": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "ai_tutor_chat": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "compliance_checklist": {
+    "scorm_12": {"presence": "yes", "notes": "SCORM export confirmed; version not explicitly specified in public sources"},
+    "scorm_2004": {"presence": "unknown", "notes": "Specific SCORM version not confirmed"},
+    "xapi_tin_can": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "lti_consumer": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "lti_provider": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "pdf_export": {"presence": "unknown", "notes": "Not confirmed; PowerPoint export is confirmed instead"},
+    "video_export": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "analytics_checklist": {
+    "completion_tracking": {"presence": "unknown", "notes": "Not confirmed in standalone Courseau; available via SCORM delivery to LMS"},
+    "quiz_score_analytics": {"presence": "unknown", "notes": "Not confirmed in standalone Courseau product"},
+    "time_on_task": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "learner_progress_view": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "cohort_analytics": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "analytics_dashboard": {"presence": "unknown", "notes": "Not confirmed from available access; LearnUpon LMS provides analytics"},
+    "report_export": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "collaboration_checklist": {
+    "multi_author": {"presence": "yes", "notes": "Team collaboration and multi-author editing confirmed"},
+    "inline_commenting": {"presence": "yes", "notes": "Real-time comments on course content confirmed in marketing and G2 reviews"},
+    "review_approval_workflow": {"presence": "unknown", "notes": "Structured approval workflow not confirmed"},
+    "version_history": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "roles_permissions": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "templates_checklist": {
+    "course_templates": {"presence": "partial", "notes": "AI generates structured drafts; no traditional named template library confirmed"},
+    "lesson_templates": {"presence": "partial", "notes": "Implicit lesson structures (key takeaways, flip cards, quizzes) act as template patterns"},
+    "theme_customisation": {"presence": "yes", "notes": "Branding customisation mentioned in marketing"},
+    "white_label": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "custom_domain": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "branching_checklist": {
+    "conditional_navigation": {"presence": "no", "notes": "Not confirmed; platform is sequential slide/card-based"},
+    "prerequisites": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "personalised_paths": {"presence": "no", "notes": "Not confirmed in standalone Courseau; LearnUpon Learning Journeys is a separate LMS feature"}
+  },
+  "media_checklist": {
+    "direct_video_upload": {"presence": "yes", "notes": "Video upload confirmed as source input and in-lesson media"},
+    "cdn_hosting": {"presence": "yes", "notes": "Implied by link-based shareable delivery model"},
+    "stock_media_library": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "in_product_image_editing": {"presence": "partial", "notes": "Images can be added and edited; depth of editing tools not confirmed"},
+    "subtitle_caption_support": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "accessibility_checklist": {
+    "wcag_21_aa": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "keyboard_navigation": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "screen_reader_support": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "alt_text_support": {"presence": "unknown", "notes": "Not confirmed from available access"}
+  },
+  "publishing_checklist": {
+    "shareable_link_no_lms": {"presence": "yes", "notes": "Direct link sharing confirmed as primary delivery method"},
+    "password_protection": {"presence": "yes", "notes": "Master password for access restriction confirmed in help docs"},
+    "sso_learner_access": {"presence": "unknown", "notes": "Not confirmed from available access"},
+    "embed_in_external_site": {"presence": "yes", "notes": "Website embed and live embed both confirmed as sharing modes"}
+  },
+  "extensibility_checklist": {
+    "rest_api": {"presence": "no", "notes": "Not confirmed from available access; no public API documentation found"},
+    "webhooks": {"presence": "no", "notes": "Not confirmed from available access"},
+    "zapier_make": {"presence": "no", "notes": "Not confirmed from available access"},
+    "mcp_server": {"presence": "no", "notes": "Not confirmed from available access"},
+    "sso_author_access": {"presence": "unknown", "notes": "Not confirmed from available access; possible via LearnUpon post-acquisition"}
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "tool": "courseau",
+  "evidence_source": "[direct|marketing|review]",
+  "accessed_via": "free_tier",
+  "screenshots": {
+    "onboarding": ["courseau-onboarding-1.png", "courseau-onboarding-2.png"],
+    "visual": ["courseau-visual-1.png"],
+    "editor": ["courseau-editor-1.png", "courseau-editor-2.png"],
+    "blocks": ["courseau-blocks-1.png", "courseau-blocks-2.png"],
+    "learner": ["courseau-learner-1.png"],
+    "publishing": ["courseau-publishing-1.png"],
+    "extensibility": ["courseau-extensibility-1.png"]
+  },
+  "observations": {
+    "onboarding": "Marketing landing page (courseau-onboarding-1.png) is clean and benefit-led: 'Create great courses, fast.' Prominent social proof logos (Panasonic, etc.), clear feature callouts for AI generation, and a single primary CTA. Headline 'Publish your first course in minutes' with 14-day free trial, no credit card required, visible in courseau-onboarding-2.png. Sign-up form collects first name, last name, and company email — minimal friction. No demo-gating. The marketing emphasises speed and AI, and targets L&D professionals and SMEs without instructional design backgrounds.",
+    "visual": "The marketing landing page (courseau-visual-1.png) appears to be the same rendering as the homepage — the previous agent likely captured the landing page for multiple screenshot slots. From what is visible, the platform presents a modern, clean aesthetic with light backgrounds, strong typography, and professional course thumbnail imagery. Course output shown in laptop mockups looks polished with consistent slide-style layouts.",
+    "editor": "courseau-editor-1.png and courseau-editor-2.png both rendered as the marketing landing page rather than the live in-app editor — suggesting the session did not successfully navigate to the authenticated editor. Based on marketing imagery visible in the landing page mockups, the editor appears to use a slide/card-based canvas with a right-side panel for block insertion. AI generation is the primary content entry point, with manual editing supported afterward.",
+    "blocks": "courseau-blocks-1.png and courseau-blocks-2.png both rendered as the marketing landing page. From the landing page copy and web research, confirmed block/content types include: lesson slides (card-based), quizzes (MCQ confirmed), flip cards, key takeaways, examples, and actionable steps. Images and videos can be added and edited. AI narration is generated per lesson. Accordion, tabs, hotspot, and timeline block types are not confirmed.",
+    "learner": "courseau-learner-1.png rendered as the marketing landing page rather than a learner preview. From landing page mockups and web research, learner-facing output is slide/card-based, mobile-responsive, and visually polished. Courses can be shared via direct link, QR code, embedded on a website, or exported as SCORM. AI narration provides audio for learners. No confirmed gamification or learner dashboard.",
+    "publishing": "courseau-publishing-1.png rendered as the marketing landing page. From web research and the extensibility screenshot (pricing/features table), Courseau supports 6 sharing/publishing modes: shareable link, QR code, SCORM export for LMS upload, website embed, editable PowerPoint export, and live embed. SCORM is confirmed for LMS delivery. xAPI is not explicitly confirmed in public sources. Password protection is mentioned in help docs (master password to restrict access).",
+    "extensibility": "courseau-extensibility-1.png shows a pricing and features comparison table (Personal $49/mo vs a higher tier $99/mo), plus an 'Unlock unlimited credits' panel. Below the pricing table, a comprehensive feature list is visible with rows comparing Personal vs Enterprise tiers. The feature table includes entries for AI generation, collaboration, SCORM export, and sharing options. No REST API, webhooks, or Zapier integration confirmed. LearnUpon acquired Courseau in November 2025; deeper LMS integrations with LearnUpon are planned for early 2026."
+  },
+  "journey_notes": {
+    "journey1_create_course": {
+      "step_count": 3,
+      "friction_points": ["Must enter company email to start trial (may block personal users)", "AI generation requires defining learning objectives and learner profile before draft is produced"],
+      "notes": "Estimated flow: sign up (1 step) → define learning objectives and source material (1 step) → AI generates draft (1 step). Marketing claims 'content to course in minutes.' No confirmed drag-and-drop from scratch; AI-first workflow is the primary path."
+    },
+    "journey2_mixed_content": {
+      "step_count": 0,
+      "friction_points": ["In-app editor not captured in screenshots; flow inferred from marketing and reviews"],
+      "notes": "Based on web research: AI generates initial slide deck; author reviews and edits blocks, adds images/video, and inserts additional block types (flip cards, quizzes, key takeaways) from a menu. Manual block insertion is supported alongside AI generation. Exact step count not confirmed from direct access."
+    },
+    "journey3_publish_share": {
+      "step_count": 2,
+      "friction_points": ["SCORM export appears to be a plan-gated feature; not confirmed free tier", "xAPI not confirmed as available output format"],
+      "notes": "From web research: publish via shareable link (immediate, 1 step) or export SCORM for LMS upload (1 additional step). 6 sharing modes confirmed in help docs. Estimated 2-step flow for link share, 3 steps for SCORM export."
+    }
+  }
+}
