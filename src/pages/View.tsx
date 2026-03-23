@@ -767,59 +767,27 @@ export default function View() {
 
       {/* Bottom nav — fixed, only shown in paged mode */}
       {isPaged && (
-        <nav style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 56,
-          background: "#fff",
-          borderTop: "1px solid #e0fdf4",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 32px",
-          zIndex: 100,
-        }}>
+        <nav
+          aria-label="Lesson pagination"
+          className="fixed bottom-0 inset-x-0 h-14 flex items-center justify-between px-4 md:px-8 bg-white border-t border-[var(--border-subtle)] z-10 pb-[env(safe-area-inset-bottom)]"
+        >
           {/* Previous */}
           <button
+            aria-label="Previous lesson"
             disabled={!prevLesson}
             onClick={() => go("prev")}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 13,
-              fontWeight: 500,
-              color: prevLesson ? "#64748b" : "#cbd5e1",
-              cursor: prevLesson ? "pointer" : "not-allowed",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 12px",
-              borderRadius: 8,
-              fontFamily: "Inter, sans-serif",
-              transition: "background 0.12s, color 0.12s",
-            }}
-            onMouseEnter={(e) => {
-              if (prevLesson) {
-                (e.currentTarget as HTMLButtonElement).style.background = "#f0fdfb";
-                (e.currentTarget as HTMLButtonElement).style.color = "#0d9488";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (prevLesson) {
-                (e.currentTarget as HTMLButtonElement).style.background = "none";
-                (e.currentTarget as HTMLButtonElement).style.color = "#64748b";
-              }
-            }}
+            className={cn(
+              "bg-transparent border-none text-[13px] font-medium flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
+              prevLesson ? "text-[var(--text-muted)] cursor-pointer hover:bg-[var(--surface-tint)] hover:text-[var(--teal-primary)]" : "text-slate-300 cursor-not-allowed"
+            )}
           >
-            ← Previous lesson
+            <span aria-hidden="true">&larr; </span>Previous lesson
           </button>
 
           {/* Counter */}
-          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+          <span className="text-xs text-slate-400 font-medium">
             {isCourseCompleted
-              ? "Course complete ✓"
+              ? "Course complete \u2713"
               : `Lesson ${idx + 1} of ${totalLessons}`}
           </span>
 
@@ -827,53 +795,23 @@ export default function View() {
           {isCourseCompleted && !nextLesson ? (
             <button
               disabled
-              style={{
-                background: "linear-gradient(135deg, #14b8a6, #0891b2)",
-                border: "none",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#fff",
-                cursor: "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 18px",
-                borderRadius: 8,
-                fontFamily: "Inter, sans-serif",
-                opacity: 0.75,
-              }}
+              className="bg-gradient-to-br from-teal-500 to-cyan-600 border-none text-[13px] font-semibold text-white cursor-not-allowed flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans opacity-75"
             >
-              Completed ✓
+              Completed &#10003;
             </button>
           ) : (
             <button
+              aria-label="Next lesson"
               disabled={!nextLesson}
               onClick={() => go("next")}
-              style={{
-                background: nextLesson
-                  ? "linear-gradient(135deg, #14b8a6, #0891b2)"
-                  : "#e2e8f0",
-                border: "none",
-                fontSize: 13,
-                fontWeight: 600,
-                color: nextLesson ? "#fff" : "#94a3b8",
-                cursor: nextLesson ? "pointer" : "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 18px",
-                borderRadius: 8,
-                fontFamily: "Inter, sans-serif",
-                transition: "opacity 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                if (nextLesson) (e.currentTarget as HTMLButtonElement).style.opacity = "0.9";
-              }}
-              onMouseLeave={(e) => {
-                if (nextLesson) (e.currentTarget as HTMLButtonElement).style.opacity = "1";
-              }}
+              className={cn(
+                "border-none text-[13px] font-semibold flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
+                nextLesson
+                  ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white cursor-pointer hover:opacity-90"
+                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
+              )}
             >
-              Next lesson →
+              Next lesson<span aria-hidden="true"> &rarr;</span>
             </button>
           )}
         </nav>
