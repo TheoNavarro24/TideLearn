@@ -1,0 +1,49 @@
+{
+  "tool": "easygenerator",
+  "evidence_source": "[marketing|docs|review]",
+  "accessed_via": "mixed",
+  "screenshots": {
+    "onboarding": ["easygenerator-onboarding-1.png", "easygenerator-onboarding-2.png"],
+    "blocks": ["easygenerator-blocks-1.png"],
+    "publishing": ["easygenerator-publishing-1.png"],
+    "extensibility": ["easygenerator-extensibility-1.png"]
+  },
+  "observations": {
+    "onboarding": "The marketing landing page positions Easygenerator as the 'employee-generated learning' platform — the central thesis is that subject matter experts (SMEs), not L&D specialists, should create courses. This framing is consistent and compelling. Sign-up is self-serve with a 14-day free trial (no credit card required), after which the account drops to a free tier. Onboarding support is reportedly strong: the vendor actively helps admins onboard their trainer population, and reviewers describe the platform as self-explanatory from day one. The editor has a short learning curve and is designed for non-technical authors. G2 and Capterra reviewers consistently praise ease of initial use and how quickly SMEs can produce content without instructional design training.",
+    "visual": "Marketing imagery shows a clean, card-based editor interface with a left-panel block palette and a central canvas. Learner-facing output is described by reviewers as 'polished' and 'contemporary.' Theme customization supports custom logo, colors (text, background, button, body), and fonts (body, headline, and content-level typography) — all saveable as branded themes. A course library of hundreds of ready-to-use templates covers onboarding, compliance, product, and soft-skills topics. The visual identity is modern and minimal rather than flashy. Some reviewers note limited layout flexibility compared to pixel-precise tools like Articulate Storyline. Note: scored from marketing and review sources; no direct editor access.",
+    "editor": "Easygenerator uses a block-based, WYSIWYG editor with six category tabs in the left panel: Text, Images, Media, Docs, Interactive, and Embed. Blocks are added via drag-and-drop or click. The interface is intentionally simplified for SME authors — there is no timeline, no layering, and no complex interaction logic. EasyAI 2.0 is embedded throughout: authors can describe what they want in a block prompt and the AI selects the right format (text, image, quiz, flip card, etc.). The 'Chat AI' sidebar provides conversational content generation. Course Guidelines let authors set tone, audience, and terminology at the course level to keep AI output consistent. A dedicated Settings panel controls design, publishing defaults, and results tracking. Reviewers praise the editor's speed and simplicity but note occasional performance lags and a desire for more layout control.",
+    "blocks": "Six content category tabs confirmed: Text, Images, Media, Docs, Interactive, and Embed. Interactive category includes: Flip Cards (text/image, up to 3 per row, responsive), Card Sorting (drag-and-drop categorisation, up to 6 categories), How-To (step-by-step guides with images and hotspots), Walkthrough (screenshot-based simulation with clickable hotspot overlays). EasyAI can generate flip cards and hotspots from prompts. Quote/callout blocks, accordion/tabs, and dedicated timeline blocks are not confirmed in public sources. Embed/iframe block confirmed. Assessment question types (treated as a separate block category): single-choice (MCQ), multiple-choice, True/False (Statement), fill-in-the-blanks, text matching, drag-and-drop, ranking, hotspot image, open questions. This is a notably broad question-type set for an SME-focused tool.",
+    "learner": "Learner-facing output is mobile-responsive across desktop, tablet, and mobile without additional setup. Two layout modes exist: paginated ('Click Next' for multi-page courses) and scroll ('Scroll Through' for microlearning). Reviewers describe the learner experience as polished and modern. One noted limitation: there is no option to require learners to complete video viewing before progressing — a gap for compliance use cases. Text-to-speech and AI-generated subtitles improve accessibility. EasyVideo allows AI avatar-narrated video generation. No dedicated learner dashboard or social/cohort learning features are confirmed. Progress is saved server-side so learners can resume across devices.",
+    "publishing": "Publishing options are comprehensive: private shareable link, QR code, website embed (iframe), SCORM 1.2, SCORM 2004, xAPI/Tin Can, LTI 1.2, HTML hosting, and PDF export all confirmed. A standout feature is Dynamic SCORM — courses are uploaded to the LMS once and updated in place without re-upload, just by clicking 'Update course.' Direct LXP integrations with EdCast, Degreed, HowNow, LearnUpon, and BlendLXP. SCORM import (from Articulate Rise) was added in December 2025, allowing migration of existing content into native Easygenerator blocks. Password protection on review links is confirmed; learner-facing password protection on the published course itself is confirmed. SSO for learner access via LTI.",
+    "extensibility": "API access is confirmed but appears to be plan-gated and not comprehensively documented in public sources — user reviews suggest the API is limited in some use cases. Webhooks confirmed: learner ID, course ID, completion time, score, and pass/fail status can be pushed to a provided URL. Native LXP integrations exist (EdCast, Degreed, HowNow, LearnUpon, BlendLXP). SAML 2.0 / SSO for author access confirmed. No Zapier or Make native connectors found. No MCP server. EasyAI is powered by OpenAI under an enterprise GDPR-compliant DPA. ISO 27001 compliance and GDPR-compliant EU data hosting confirmed."
+  },
+  "journey_notes": {
+    "journey1_create_course": {
+      "step_count": 5,
+      "friction_points": [
+        "No friction at sign-up — 14-day trial requires only email, no credit card",
+        "Course structure must be built manually (no AI outline builder at the course level in base flow)",
+        "Block selection requires familiarity with the six category tabs to know where to look"
+      ],
+      "notes": "Typical flow: sign up → name course → add sections/pages → add content blocks via left panel → save. EasyAI can accelerate block creation from prompts. Reviewers describe the first-course creation experience as smooth and fast, often possible within an hour for SMEs with no prior experience. Note: assessed from marketing, help docs, and review sources only."
+    },
+    "journey2_mixed_content": {
+      "step_count": 6,
+      "friction_points": [
+        "No dedicated accordion or tab block confirmed — mixed content layouts depend on available block types",
+        "Video completion enforcement not available — cannot lock progression until video is watched",
+        "Stock media library integration not confirmed — users report it is 'tedious to find and upload external images'"
+      ],
+      "notes": "Adding mixed content (text, video, quiz, interactive) is core to the platform's design. The Interactive tab provides flip cards, card sorting, how-to, and walkthrough. AI can transform text into interactive elements. Assessment blocks cover a wide range of question types. The main gap is in richer layout options (accordion, tabs, timeline) and video gating. Note: assessed from marketing, help docs, and review sources only."
+    },
+    "journey3_publish_share": {
+      "step_count": 4,
+      "friction_points": [
+        "Dynamic SCORM upload requires initial LMS configuration — one-time setup friction",
+        "LTI tracking limited to pass/fail score only — not granular",
+        "Analytics requires running reports per course individually rather than a single cross-course dashboard"
+      ],
+      "notes": "Publish flow: Settings → Publishing → choose method (link / SCORM / xAPI / LTI / embed / PDF). Dynamic SCORM is a meaningful workflow differentiator — L&D teams update content without re-uploading to LMS. Review links with optional password can be shared with external stakeholders without requiring an Easygenerator account. Note: assessed from marketing, help docs, and review sources only."
+    }
+  }
+}

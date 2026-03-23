@@ -1,0 +1,47 @@
+{
+  "tool": "easygenerator",
+  "dimensions": {
+    "onboarding": {
+      "score": 5,
+      "evidence": "[marketing|review]",
+      "narrative": "Self-serve 14-day free trial with no credit card required is the cleanest onboarding gate in this benchmark. The platform's 'employee-generated learning' philosophy is embedded into the sign-up flow: messaging explicitly targets SMEs and non-technical authors. G2 and Capterra reviewers consistently rate onboarding as fast and friction-free, noting that new SME authors can be productive the same day. Vendor-assisted admin onboarding (the team helps organisations onboard their trainer population) is reported as a genuine differentiator. The free tier post-trial preserves access, avoiding a hard cutoff. Note: scored from marketing and review sources; no direct trial access during this audit.",
+      "screenshots": ["easygenerator-onboarding-1.png", "easygenerator-onboarding-2.png"]
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Learner-facing output is consistently described as polished and contemporary in reviewer feedback. The branding system (logo, colour scheme, fonts at body/headline/content level) and the branded theme feature allow organisations to lock in a consistent look across all SME-created courses. Hundreds of ready-to-use templates accelerate branded production. The main limitation — noted by several reviewers — is that layout flexibility is intentionally restricted to keep the tool simple for SMEs, which constrains design ambition compared to pixel-precise tools. No white-label option (Easygenerator branding persists on the platform UI). Note: scored from marketing and review sources only.",
+      "screenshots": ["easygenerator-onboarding-1.png"]
+    },
+    "editor": {
+      "score": 4,
+      "evidence": "[marketing|docs|review]",
+      "narrative": "The six-tab block palette (Text, Images, Media, Docs, Interactive, Embed) is clean and logically organised. EasyAI 2.0 is deeply integrated: authors can describe what they need in a block prompt and the AI selects the right format and generates content — removing the need for instructional design expertise. Course Guidelines (tone, audience, terminology, reference files) give AI output consistent organisational context. The Chat AI sidebar supports longer-form generation. The editor is intentionally simplified for SME use, which is a strength for breadth of adoption but a limitation for L&D power users who want layout control. Reviewers praise speed but note occasional performance lags and limited layout options. Note: scored from marketing, docs, and review sources only.",
+      "screenshots": ["easygenerator-blocks-1.png"]
+    },
+    "blocks": {
+      "score": 3,
+      "evidence": "[marketing|docs]",
+      "narrative": "Core media blocks (rich text, image, video embed/upload, audio, iframe embed) are confirmed. The Interactive category includes flip cards, card sorting, how-to steps, and walkthrough (screenshot simulation with hotspots) — a reasonable set for an SME tool but lacking accordion/tabs and timeline blocks that more advanced tools offer. Assessment question types are notably broad: MCQ, multiple-choice, True/False, fill-in-the-blank, text matching, drag-and-drop, ranking, hotspot image, and open questions are all confirmed. AI image generation is available inline. No dedicated code block or quote/callout block confirmed in public sources. Note: scored from marketing and help docs; no direct editor access.",
+      "screenshots": ["easygenerator-blocks-1.png"]
+    },
+    "learner": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Learner-facing output is mobile-responsive by default across desktop, tablet, and mobile. Two layout modes (paginated / scroll-through microlearning) give authors flexibility for different content types. Reviewers describe the learner experience as polished and modern with a 'contemporary design.' Text-to-speech, AI subtitles, and screen reader support improve accessibility and engagement. EasyVideo enables AI avatar-narrated video without studio production. The notable gap is the inability to gate progression on video completion — a compliance training limitation flagged by enterprise reviewers. No learner social features, leaderboards, or certificates confirmed in public sources. Note: scored from marketing and review sources.",
+      "screenshots": []
+    },
+    "publishing": {
+      "score": 5,
+      "evidence": "[marketing|docs]",
+      "narrative": "Publishing is one of Easygenerator's strongest dimensions. SCORM 1.2, SCORM 2004, xAPI/Tin Can, LTI 1.2, shareable link, QR code, iframe embed, HTML hosting, and PDF export are all confirmed. Dynamic SCORM — upload once, update in place without re-uploading — is a genuine workflow differentiator for L&D teams managing frequent content updates. Direct LXP integrations with EdCast, Degreed, HowNow, LearnUpon, and BlendLXP cover the major enterprise LXP market. SCORM import (from Articulate Rise) added December 2025 enables migration of existing content. Password protection on published links and review links is confirmed. Note: scored from marketing and help docs.",
+      "screenshots": ["easygenerator-publishing-1.png"]
+    },
+    "extensibility": {
+      "score": 3,
+      "evidence": "[marketing|docs|review]",
+      "narrative": "Webhooks are confirmed (learner ID, course ID, completion time, score, pass/fail push to a provided URL). API access is confirmed at the platform level but user reviews suggest it is limited in scope and likely plan-gated — not a fully documented public REST API of the kind Elucidat offers. SAML 2.0 / SSO for author access is confirmed. Native LXP integrations exist but are relatively narrow (five platforms). No Zapier or Make connectors found. No MCP server. EasyAI runs on OpenAI under an enterprise GDPR-compliant DPA with a guarantee that data is not used for model training. ISO 27001 and GDPR compliance confirmed. Note: scored from marketing, docs, and review sources.",
+      "screenshots": ["easygenerator-extensibility-1.png"]
+    }
+  }
+}

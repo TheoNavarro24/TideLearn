@@ -1,0 +1,155 @@
+{
+  "tool": "easygenerator",
+  "category_scores": {
+    "blocks": {
+      "score": 3,
+      "narrative": "Core media blocks (rich text, image, video embed/upload, audio, iframe/embed) confirmed. Interactive blocks confirmed: flip cards, card sorting, how-to (step-by-step), walkthrough (screenshot simulation with hotspot overlays). No dedicated accordion, tabs, timeline, or code block confirmed in public sources. Quote/callout not explicitly listed. AI can generate certain block types from prompts (flip cards, hotspot images). The block set is adequate for SME-produced training but narrower than enterprise-focused tools. Evidence: [marketing|docs]",
+      "checklist": {
+        "rich_text": {"presence": "yes", "notes": "Confirmed, with text style controls (bold, italic, colour, alignment)"},
+        "image": {"presence": "yes", "notes": "Upload and AI-generated images confirmed"},
+        "video_embed": {"presence": "yes", "notes": "YouTube and external video embed confirmed"},
+        "video_upload": {"presence": "yes", "notes": "Direct video upload confirmed"},
+        "audio": {"presence": "yes", "notes": "Audio upload and text-to-speech confirmed"},
+        "quote_callout": {"presence": "unknown", "notes": "Not confirmed in public sources"},
+        "accordion": {"presence": "unknown", "notes": "Not confirmed in public sources; no dedicated accordion block found"},
+        "tabs": {"presence": "unknown", "notes": "Not confirmed in public sources"},
+        "table": {"presence": "unknown", "notes": "Not explicitly confirmed"},
+        "timeline": {"presence": "unknown", "notes": "Not confirmed in public sources"},
+        "embed_iframe": {"presence": "yes", "notes": "Embed/iframe tab confirmed in block palette"},
+        "code_block": {"presence": "no", "notes": "No code block found in public sources; tool is not targeted at technical content"},
+        "interactive_hotspot": {"presence": "yes", "notes": "Walkthrough block uses clickable hotspot overlays; hotspot image question type confirmed"},
+        "flashcard": {"presence": "yes", "notes": "Flip cards confirmed as a named interactive block in the Interactive tab"}
+      }
+    },
+    "assessment": {
+      "score": 4,
+      "narrative": "Assessment depth is a genuine strength relative to the SME-focused market segment. Confirmed question types: single-choice (MCQ), multiple-choice, True/False (Statement), fill-in-the-blank, text matching (jigsaw pairs), drag-and-drop (words/images to target areas), ranking text, hotspot image, and open questions. Passing score and knowledge checks confirmed. Question randomisation and question banks not explicitly confirmed but common in this tier. Multiple attempts not confirmed explicitly. Unscored knowledge checks implied. Evidence: [marketing|docs]",
+      "checklist": {
+        "mcq": {"presence": "yes", "notes": "Single-choice and multiple-choice question types confirmed"},
+        "true_false": {"presence": "yes", "notes": "Confirmed as 'Statement' question type"},
+        "fill_blank": {"presence": "yes", "notes": "Fill-in-the-blanks confirmed"},
+        "matching": {"presence": "yes", "notes": "Text matching (jigsaw pair matching) confirmed"},
+        "hotspot_image": {"presence": "yes", "notes": "Hotspot question type confirmed — learners click correct area on image"},
+        "drag_drop": {"presence": "yes", "notes": "Drag-and-drop question type confirmed"},
+        "essay_open": {"presence": "yes", "notes": "Open questions confirmed"},
+        "knowledge_check_unscored": {"presence": "yes", "notes": "How-to and walkthrough blocks are unscored; knowledge check mode implied"},
+        "question_banks": {"presence": "unknown", "notes": "Not explicitly confirmed in public sources"},
+        "randomisation": {"presence": "unknown", "notes": "Not explicitly confirmed, though common at this tier"},
+        "passing_score": {"presence": "yes", "notes": "Passing score (mastery score) confirmed in results tracking"},
+        "multiple_attempts": {"presence": "unknown", "notes": "Not explicitly confirmed in public sources reviewed"}
+      }
+    },
+    "ai": {
+      "score": 5,
+      "narrative": "EasyAI 2.0 is one of the most comprehensive AI authoring suites in this benchmark. Confirmed: AI course content generation (Create with AI — describe a block and AI picks format and generates content), AI content rewriting/editing (tone, grammar, summarise, rewrite), AI quiz generation (all question types from prompts or existing content), AI translation via EasyTranslate (75 languages, auto-detects and translates text across course), AI image generation (custom images from prompts or auto-generated from text blocks), AI hotspot image generation, AI video creation via EasyVideo (AI avatars and narration), text-to-speech, AI subtitles for video, and Course Guidelines for context-aware AI output. AI is available on all plans. Powered by OpenAI under GDPR-compliant enterprise DPA. AI learner feedback and AI tutor/chat for learners (as opposed to authors) are not confirmed. Evidence: [marketing|docs]",
+      "checklist": {
+        "ai_course_generation": {"presence": "yes", "notes": "Create with AI — describe any block and AI generates content in the right format"},
+        "ai_content_rewrite": {"presence": "yes", "notes": "Edit with AI confirmed: rewrite, summarise, change tone, fix grammar"},
+        "ai_quiz_generation": {"presence": "yes", "notes": "All question types can be generated by AI from prompts or existing content"},
+        "ai_translation": {"presence": "yes", "notes": "EasyTranslate — 75 languages, auto-detects and translates course text"},
+        "ai_image_generation": {"presence": "yes", "notes": "Custom image generation from prompts; also AI hotspot background generation"},
+        "ai_learner_feedback": {"presence": "no", "notes": "AI feedback during the learner experience not confirmed; AI is author-side only"},
+        "ai_tutor_chat": {"presence": "no", "notes": "Chat AI is for authors during content creation, not a learner-facing tutor chat"}
+      }
+    },
+    "compliance": {
+      "score": 5,
+      "narrative": "Full SCORM and xAPI stack confirmed. SCORM 1.2 and SCORM 2004 both confirmed, with explicit explanation of the completion vs. mastery tracking difference between versions. xAPI/Tin Can confirmed with LRS integration (custom LRS or Easygenerator's built-in). LTI 1.2 confirmed, though noted as limited to pass/fail score tracking only (not granular). PDF export confirmed as a publishing option. Video export not confirmed. Dynamic SCORM (upload-once, update-in-place) is a notable differentiator. SCORM import from Articulate Rise added December 2025. Evidence: [marketing|docs]",
+      "checklist": {
+        "scorm_12": {"presence": "yes", "notes": "SCORM 1.2 explicitly confirmed"},
+        "scorm_2004": {"presence": "yes", "notes": "SCORM 2004 explicitly confirmed with completion/mastery tracking"},
+        "xapi_tin_can": {"presence": "yes", "notes": "xAPI/Tin Can confirmed with LRS integration"},
+        "lti_consumer": {"presence": "yes", "notes": "LTI 1.2 confirmed — delivers content into third-party platforms"},
+        "lti_provider": {"presence": "partial", "notes": "LTI tracking limited to pass/fail score only, not granular xAPI-level data"},
+        "pdf_export": {"presence": "yes", "notes": "PDF export confirmed as a publishing option"},
+        "video_export": {"presence": "no", "notes": "No video export confirmed in public sources"}
+      }
+    },
+    "analytics": {
+      "score": 3,
+      "narrative": "EasyAnalytics is a named analytics product built around Easygenerator's LMS data. Confirmed: completion tracking, quiz score analytics (mastery score), learner progress view (individual results per learner), and CSV report export. EasyAnalytics aims to transform course data into actionable insights. Limitations noted in reviews: reports must be run per-course individually rather than through a unified cross-course dashboard; admin-level analytics require manual CSV export and external tooling for trend analysis. Time-on-task and cohort-level analytics not explicitly confirmed. Full analytics access gated to Team and Enterprise tiers (Pro limited to 100 learner records). Evidence: [marketing|docs|review]",
+      "checklist": {
+        "completion_tracking": {"presence": "yes", "notes": "Completion status tracked and visible in Gradebook"},
+        "quiz_score_analytics": {"presence": "yes", "notes": "Mastery score per learner confirmed"},
+        "time_on_task": {"presence": "unknown", "notes": "Not explicitly confirmed in public sources"},
+        "learner_progress_view": {"presence": "yes", "notes": "Results per learner view confirmed with completion status and score"},
+        "cohort_analytics": {"presence": "unknown", "notes": "Not explicitly confirmed; per-course reporting is the documented model"},
+        "analytics_dashboard": {"presence": "partial", "notes": "EasyAnalytics dashboard exists but reviews note it is per-course rather than a unified cross-course view"},
+        "report_export": {"presence": "yes", "notes": "CSV export of all learner results confirmed; Team/Enterprise tier required for full export"}
+      }
+    },
+    "collaboration": {
+      "score": 4,
+      "narrative": "SME collaboration is Easygenerator's brand identity and a genuine strength. Co-authoring with simultaneous editing (Google Docs style) is confirmed for Team and Enterprise. External reviewer links (no Easygenerator account required) with optional password protection are confirmed. In-app comment notifications, page-level comments, and @mention notifications confirmed. The Organisations feature allows managing roles, groups, course transfers, and permissions. Translation review by regional experts via EasyTranslate reviewer links is confirmed. Reviewer tracking sidebar confirmed. Version history not explicitly confirmed. Review workflow is described as a premium feature. Evidence: [marketing|docs]",
+      "checklist": {
+        "multi_author": {"presence": "yes", "notes": "Real-time co-authoring confirmed for Team and Enterprise plans"},
+        "inline_commenting": {"presence": "yes", "notes": "Page-level and general comments, @mentions, in-app notifications confirmed"},
+        "review_approval_workflow": {"presence": "yes", "notes": "Review links for external reviewers, password protection, comment tracking confirmed"},
+        "version_history": {"presence": "unknown", "notes": "Not explicitly confirmed in public sources reviewed"},
+        "roles_permissions": {"presence": "yes", "notes": "Organisations feature with roles, groups, and course transfer/sharing confirmed"}
+      }
+    },
+    "templates": {
+      "score": 4,
+      "narrative": "Hundreds of ready-to-use course templates confirmed in the Course Library, covering onboarding, compliance, product training, and soft skills. Templates are available in multiple languages. Branded theme system (logo, colours, fonts) confirmed with save-as-theme functionality. Authors can set and lock a default branded theme across the organisation to enforce consistency. Custom CSS/JS/HTML customisation of open-source templates is possible for developers. White-label (removing Easygenerator branding) not confirmed. Custom domain not confirmed. Evidence: [marketing|docs]",
+      "checklist": {
+        "course_templates": {"presence": "yes", "notes": "Course Library with hundreds of templates confirmed"},
+        "lesson_templates": {"presence": "partial", "notes": "Page/section-level templates implied within course templates but not independently documented"},
+        "theme_customisation": {"presence": "yes", "notes": "Full theme customisation: logo, colours, fonts, backgrounds — saveable as branded themes"},
+        "white_label": {"presence": "no", "notes": "No white-label (removal of Easygenerator platform branding) confirmed"},
+        "custom_domain": {"presence": "unknown", "notes": "Custom domain for published courses not confirmed in public sources"}
+      }
+    },
+    "branching": {
+      "score": 2,
+      "narrative": "Conditional branching/navigation is not confirmed as a named feature in Easygenerator public documentation. The platform's architecture is linear-first, matching its SME-simplicity positioning. LTI and SCORM/xAPI can carry completion/score data, but in-course branching logic is not mentioned in the features list or help docs reviewed. Personalised learning paths at the platform level are not confirmed. Prerequisites not confirmed. This is a known gap relative to more advanced authoring tools. Evidence: [marketing|docs]",
+      "checklist": {
+        "conditional_navigation": {"presence": "no", "notes": "No in-course branching or conditional navigation confirmed in public sources"},
+        "prerequisites": {"presence": "no", "notes": "Prerequisites not confirmed"},
+        "personalised_paths": {"presence": "no", "notes": "Personalised learning paths not confirmed as a platform feature"}
+      }
+    },
+    "media": {
+      "score": 4,
+      "narrative": "Direct video upload confirmed. CDN hosting implied by cloud-based publishing (courses served from Easygenerator infrastructure). EasyVideo adds AI avatar and narration video generation in-product. Text-to-speech confirmed. AI image generation (from prompts) confirmed. AI subtitles for uploaded video confirmed. Built-in stock media library not confirmed — reviewers note it is 'tedious to find and upload external images,' suggesting no Unsplash/Pixabay integration. In-product image editing not confirmed. Screen recording not confirmed (unlike Elucidat). Subtitle/caption support is confirmed via AI subtitles. Evidence: [marketing|docs|review]",
+      "checklist": {
+        "direct_video_upload": {"presence": "yes", "notes": "Video upload confirmed"},
+        "cdn_hosting": {"presence": "yes", "notes": "Cloud hosting implied; courses served from Easygenerator infrastructure"},
+        "stock_media_library": {"presence": "no", "notes": "No built-in stock library confirmed; reviewers flag this as a gap"},
+        "in_product_image_editing": {"presence": "no", "notes": "Not confirmed; AI image generation is available but not traditional image editing"},
+        "subtitle_caption_support": {"presence": "yes", "notes": "AI-generated subtitles for video confirmed"}
+      }
+    },
+    "accessibility": {
+      "score": 4,
+      "narrative": "WCAG compliance is confirmed at the platform level. Screen reader support, keyboard navigation, and alt text for images are all explicitly listed in marketing materials. Text-to-speech and AI subtitles further improve accessibility for learners. One reviewer notes that the platform's limited layout flexibility can make it harder to ensure custom accessibility needs are met — the tool's simplicity is a double-edged sword here. GDPR compliance with EU server hosting confirmed. ISO 27001 confirmed. Section 508 compliance not explicitly mentioned (unlike Elucidat). Evidence: [marketing|docs|review]",
+      "checklist": {
+        "wcag_21_aa": {"presence": "yes", "notes": "WCAG compliance confirmed; specific version (2.1 AA) not explicitly stated"},
+        "keyboard_navigation": {"presence": "yes", "notes": "Keyboard navigation confirmed"},
+        "screen_reader_support": {"presence": "yes", "notes": "Screen reader support confirmed in marketing"},
+        "alt_text_support": {"presence": "yes", "notes": "Alt text for images confirmed"}
+      }
+    },
+    "publishing": {
+      "score": 5,
+      "narrative": "Publishing flexibility is excellent and a core competitive strength. Shareable private link, QR code, iframe embed, SCORM 1.2, SCORM 2004, xAPI/Tin Can, LTI 1.2, HTML hosting, and PDF export all confirmed. Dynamic SCORM (upload-once, update-in-place in LMS) is a strong differentiator. Password protection on published links confirmed. SSO for learner access via LTI confirmed. Embed in external sites (website, intranet, blog, Facebook, mobile apps) confirmed. Evidence: [marketing|docs]",
+      "checklist": {
+        "shareable_link_no_lms": {"presence": "yes", "notes": "Private shareable link and QR code confirmed"},
+        "password_protection": {"presence": "yes", "notes": "Password protection on published and review links confirmed"},
+        "sso_learner_access": {"presence": "yes", "notes": "SSO for learners via LTI confirmed"},
+        "embed_in_external_site": {"presence": "yes", "notes": "Iframe embed confirmed; websites, intranets, mobile apps, Facebook all mentioned"}
+      }
+    },
+    "extensibility": {
+      "score": 3,
+      "narrative": "Webhooks confirmed (push learner ID, course ID, completion time, score, pass/fail to a provided URL). API confirmed at the platform level but appears limited in scope and documentation compared to Elucidat's full REST API — user reviews suggest API capabilities do not always meet enterprise integration needs and may be plan-gated. SAML 2.0 SSO for author access confirmed. Native LXP integrations with EdCast, Degreed, HowNow, LearnUpon, and BlendLXP. No Zapier or Make connectors found. No MCP server. EasyAI uses OpenAI with GDPR-compliant enterprise DPA; data not used for model training. Evidence: [marketing|docs|review]",
+      "checklist": {
+        "rest_api": {"presence": "partial", "notes": "API confirmed but scope is limited and likely plan-gated; not a fully public REST API"},
+        "webhooks": {"presence": "yes", "notes": "Webhooks confirmed: learner ID, course ID, completion time, score, pass/fail"},
+        "zapier_make": {"presence": "no", "notes": "No Zapier or Make native connectors found"},
+        "mcp_server": {"presence": "no", "notes": "No MCP server found"},
+        "sso_author_access": {"presence": "yes", "notes": "SAML 2.0 SSO for author access confirmed"}
+      }
+    }
+  }
+}
