@@ -168,8 +168,17 @@ Search for `style={{` in Index.tsx — should return zero results.
 - [ ] **Step 5: Run lint** — `npm run lint` — PASS
 - [ ] **Step 6: Run MCP tests** — `cd mcp && npm test` — all 173+ pass (sanity check, A.4 touches no MCP code)
 
-- [ ] **Step 7: Visual check at 375px**
+- [ ] **Step 7: Start dev server and open browser**
 
+Start the dev server and open a Chromium browser for visual verification:
+```bash
+npm run dev
+```
+Use the Chrome DevTools MCP (`chrome-devtools`) or Claude Preview tools to open the app at `http://localhost:8080`. Log in with Google using your credentials (stored in memory) — you have a registered TideLearn account.
+
+- [ ] **Step 8: Visual check at 375px**
+
+Resize the browser to 375px width. Take a screenshot. Verify:
 - Hamburger nav visible, links hidden
 - Hero text readable, no overflow
 - EditorCard: sidebar hidden, single column
@@ -177,15 +186,17 @@ Search for `style={{` in Index.tsx — should return zero results.
 - CTA buttons: stacked vertically
 - No horizontal scroll
 
-- [ ] **Step 8: Visual check at 768px**
+- [ ] **Step 9: Visual check at 768px**
 
+Resize to 768px. Take a screenshot. Verify:
 - EditorCard: two-column layout still fits
 - Feature grid: three-column or graceful wrap
 - Nav: desktop links visible (above md breakpoint)
 - No horizontal scroll
 
-- [ ] **Step 9: Visual check at 1440px**
+- [ ] **Step 10: Visual check at 1440px**
 
+Resize to 1440px. Take a screenshot. Verify:
 - Full nav visible
 - Hero: no gradient text, no glow effects, clean teal emphasis
 - EditorCard: two-column layout
@@ -193,18 +204,18 @@ Search for `style={{` in Index.tsx — should return zero results.
 - No monospace font in chips or URL bar
 - No inline styles remaining
 
-- [ ] **Step 10: Anti-pattern verification**
+- [ ] **Step 11: Anti-pattern verification**
 
-Confirm removal of: gradient text, glowing dot, neon CTA shadow, radial gradient overlay, monospace in chips/URL bar, emoji logo, "What it does" kicker.
+On the 1440px view, confirm removal of: gradient text, glowing dot, neon CTA shadow, radial gradient overlay, monospace in chips/URL bar, emoji logo, "What it does" kicker.
 
-- [ ] **Step 11: Keyboard navigation check**
+- [ ] **Step 12: Keyboard navigation check**
 
 Tab through the landing page:
 - Skip link → nav links → CTA buttons → feature section → footer links
 - Hamburger menu opens/closes with Enter/Space, Escape closes
 - No focus traps, logical tab order
 
-- [ ] **Step 12: Commit unified result**
+- [ ] **Step 13: Commit unified result**
 
 ```bash
 git add src/pages/Index.tsx

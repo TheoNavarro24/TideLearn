@@ -151,21 +151,32 @@ If zero matches, delete lines 40–349 (the entire style object). This is the wh
 - [ ] **Step 5: Run lint** — `npm run lint` — PASS
 - [ ] **Step 6: Run MCP tests** — `cd mcp && npm test` — all 173+ pass (sanity check)
 
-- [ ] **Step 7: Visual check at 375px**
+- [ ] **Step 7: Start dev server and open browser**
 
+Start the dev server and open a Chromium browser for visual verification:
+```bash
+npm run dev
+```
+Use the Chrome DevTools MCP (`chrome-devtools`) or Claude Preview tools to open the app at `http://localhost:8080`. Log in with Google using your credentials (stored in memory) — you have a registered TideLearn account. Navigate to the Courses page (`/courses`).
+
+- [ ] **Step 8: Visual check at 375px**
+
+Resize the browser to 375px width. Take a screenshot. Verify:
 - Sidebar hidden, mobile header visible
 - Cards stack to single column
 - Cover images have consistent aspect ratio
 - No horizontal scroll
 
-- [ ] **Step 8: Visual check at 768px**
+- [ ] **Step 9: Visual check at 768px**
 
+Resize to 768px. Take a screenshot. Verify:
 - Cards in 2-column grid
 - Sidebar visible (above md breakpoint)
 - No horizontal scroll
 
-- [ ] **Step 9: Visual check at 1440px**
+- [ ] **Step 10: Visual check at 1440px**
 
+Resize to 1440px. Take a screenshot. Verify:
 - Sidebar visible at full width
 - Cards in 3-column grid
 - Cover images uniform height
@@ -173,13 +184,13 @@ If zero matches, delete lines 40–349 (the entire style object). This is the wh
 - No inline styles remaining
 - SVG logo renders consistently
 
-- [ ] **Step 10: Keyboard navigation check**
+- [ ] **Step 11: Keyboard navigation check**
 
 Tab through the Courses page:
 - Skip link → mobile header (if visible) or sidebar nav items → card grid → card actions
 - Logical tab order, no focus traps
 
-- [ ] **Step 11: Commit unified result**
+- [ ] **Step 12: Commit unified result**
 
 ```bash
 git add src/pages/Courses.tsx
