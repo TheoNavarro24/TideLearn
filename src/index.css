@@ -25,7 +25,7 @@ All colors MUST be HSL.
     --secondary-foreground:   174 52% 11%;
 
     --muted:                  171 76% 97%;   /* #f0fdfb */
-    --muted-foreground:       215 20% 65%;   /* #94a3b8 */
+    --muted-foreground:       215 25% 47%;   /* #64748b */
 
     --accent:                 171 76% 97%;
     --accent-foreground:      174 52% 11%;
@@ -81,7 +81,7 @@ All colors MUST be HSL.
     /* Text */
     --text-primary:     #0d2926;
     --text-body:        #334155;
-    --text-muted:       #94a3b8;
+    --text-muted:       #64748b;
     --text-on-dark:     #ccfbf1;
     --text-on-dark-dim: rgba(204,251,241,0.6);
 
@@ -96,6 +96,14 @@ All colors MUST be HSL.
     --shadow-hover:  0 4px 20px rgba(13,148,136,0.12);
     --shadow-modal:  0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(13,148,136,0.1);
     --shadow-popup:  0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(13,148,136,0.08);
+
+    /* Layout constants (used by Editor, Viewer, all pages) */
+    --sidebar-w-editor: 220px;
+    --sidebar-w-viewer: 200px;
+    --topbar-h: 48px;
+    --canvas-max-w: 828px;
+    --reading-max-w: 680px;
+    --content-px: 64px;
   }
 }
 
