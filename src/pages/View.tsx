@@ -422,74 +422,43 @@ export default function View() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="font-sans h-screen flex flex-col overflow-hidden">
 
       {/* Progress stripe — very top */}
-      <div style={{ height: 3, background: "#e0fdf4", flexShrink: 0 }}
-           aria-label={`Course progress ${Math.round(courseProgress)} percent`}
-           role="progressbar"
-           aria-valuenow={Math.round(courseProgress)}
-           aria-valuemin={0}
-           aria-valuemax={100}>
-        <div style={{
-          height: "100%",
-          width: `${courseProgress}%`,
-          background: "linear-gradient(90deg, #14b8a6, #0891b2)",
-          borderRadius: "0 2px 2px 0",
-          transition: "width 0.3s ease",
-        }} />
+      <div
+        role="progressbar"
+        aria-label="Course progress"
+        aria-valuenow={Math.round(courseProgress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="h-[3px] w-full bg-[var(--border-subtle)] shrink-0"
+      >
+        <div
+          className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 transition-all duration-300"
+          style={{ width: `${courseProgress}%` }}
+        />
       </div>
 
       {/* Topbar */}
-      <header style={{
-        height: 48,
-        background: "#0f1f1d",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 20px",
-        flexShrink: 0,
-        position: "relative",
-      }}>
+      <header className="h-[var(--topbar-h)] bg-[var(--ocean-surface)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
         {/* Left: logo */}
-        <a href="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 7,
-            background: "linear-gradient(135deg, #14b8a6, #0891b2)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, lineHeight: 1, flexShrink: 0,
-          }}>🌊</div>
-          <span style={{ color: "#fff", fontWeight: 800, fontSize: 14, letterSpacing: "-0.02em" }}>TideLearn</span>
+        <a href="/courses" aria-label="TideLearn home" className="flex items-center gap-2 no-underline">
+          <span aria-hidden="true" className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-sm leading-none shrink-0">🌊</span>
+          <span className="text-white font-extrabold text-sm tracking-tight">TideLearn</span>
         </a>
 
         {/* Center: course title (absolute) */}
-        <div style={{
-          position: "absolute",
-          left: "50%",
-          transform: "translateX(-50%)",
-          color: "#fff",
-          fontSize: 13,
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          opacity: 0.9,
-          maxWidth: "calc(100% - 300px)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}>
+        <div className="absolute left-1/2 -translate-x-1/2 text-white text-[13px] font-semibold whitespace-nowrap opacity-90 max-w-[calc(100%-300px)] overflow-hidden text-ellipsis hidden md:block">
           {course.title}
         </div>
 
         {/* Right: view-mode toggle + exit */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="flex items-center gap-3">
           {/* Subtle paged/view-all toggle */}
-          <div role="group" aria-label="View mode" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div role="group" aria-label="View mode" className="flex items-center gap-2">
             {canResume && (
               <button
-                style={{
-                  background: "none", border: "none", color: "#94a3b8",
-                  fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
-                  fontFamily: "Inter, sans-serif",
-                }}
+                className="bg-transparent border-none text-slate-400 text-xs cursor-pointer px-2 py-0.5 rounded font-sans hover:text-teal-400 transition-colors"
                 onClick={() => {
                   if (!lastLessonId) return;
                   setIsPaged(true);
@@ -500,18 +469,12 @@ export default function View() {
                   history.replaceState(null, "", url.toString());
                 }}
               >
-                Resume
+                Resume: {currentLesson?.title || "Continue"}
               </button>
             )}
             <button
               aria-pressed={isPaged}
-              style={{
-                background: "none", border: "none",
-                color: isPaged ? "#14b8a6" : "#64748b",
-                fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
-                fontFamily: "Inter, sans-serif",
-                fontWeight: isPaged ? 600 : 400,
-              }}
+              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${isPaged ? "text-teal-400 font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
               onClick={() => {
                 if (isPaged) return;
                 setIsPaged(true);
@@ -526,13 +489,7 @@ export default function View() {
             </button>
             <button
               aria-pressed={!isPaged}
-              style={{
-                background: "none", border: "none",
-                color: !isPaged ? "#14b8a6" : "#64748b",
-                fontSize: 12, cursor: "pointer", padding: "3px 8px", borderRadius: 4,
-                fontFamily: "Inter, sans-serif",
-                fontWeight: !isPaged ? 600 : 400,
-              }}
+              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${!isPaged ? "text-teal-400 font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
               onClick={() => {
                 if (!isPaged) return;
                 setIsPaged(false);
@@ -548,12 +505,7 @@ export default function View() {
 
           <a
             href="/courses"
-            style={{
-              background: "none", border: "none", color: "#14b8a6",
-              fontSize: 13, fontWeight: 500, cursor: "pointer",
-              padding: "5px 10px", borderRadius: 6, textDecoration: "none",
-              fontFamily: "Inter, sans-serif",
-            }}
+            className="text-teal-400 text-[13px] font-medium px-2.5 py-1 rounded-[var(--radius-sm)] no-underline font-sans hover:text-teal-300 transition-colors"
           >
             Exit
           </a>
