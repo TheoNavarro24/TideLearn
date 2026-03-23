@@ -125,15 +125,4 @@ All colors MUST be HSL.
       radial-gradient(ellipse 40% 40% at 80% 80%, rgba(6,182,212,0.08) 0%, transparent 55%);
   }
 
-  .card-surface {
-    @apply bg-card/80 backdrop-blur-md border rounded-lg;
-    box-shadow: var(--shadow-card);
-  }
-
-  .text-gradient {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
 }
