@@ -594,43 +594,22 @@ export default function View() {
         </nav>
 
         {/* Reading area */}
-        <main style={{
-          flex: 1,
-          overflowY: "auto",
-          background: "#fff",
-          display: "flex",
-          justifyContent: "center",
-        }}>
-          <div style={{ width: "100%", maxWidth: 680, padding: "40px 64px 120px" }}>
+        <main id="main-content" className="flex-1 overflow-y-auto bg-white">
+          <div className="max-w-[var(--reading-max-w)] mx-auto px-4 md:px-16 py-10 pb-32">
 
             {isPaged ? (
               currentLesson ? (
                 <section key={currentLesson.id} ref={lessonRef as React.RefObject<HTMLElement>}>
                   {/* Lesson breadcrumb */}
-                  <div style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "#0d9488",
-                    marginBottom: 12,
-                  }}>
+                  <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--teal-primary)] mb-3">
                     Lesson {idx + 1}
                   </div>
 
                   {/* Lesson title — hidden for assessment lessons (AssessmentView renders its own) */}
                   {currentLesson.kind !== "assessment" && (
-                  <h1 style={{
-                    fontFamily: "Lora, serif",
-                    fontSize: 28,
-                    fontWeight: 700,
-                    color: "#0d2926",
-                    lineHeight: 1.3,
-                    marginBottom: 32,
-                    letterSpacing: "-0.01em",
-                  }}>
-                    {currentLesson.title}
-                  </h1>
+                    <h1 className="font-display text-[28px] font-bold text-[var(--text-primary)] leading-[1.3] mb-8 tracking-tight">
+                      {currentLesson.title}
+                    </h1>
                   )}
 
                   {/* Blocks */}
@@ -649,31 +628,29 @@ export default function View() {
 
                   {/* Mark complete toggle — not shown for assessment lessons */}
                   {currentLesson.kind !== "assessment" && (
-                  <div style={{ marginTop: 32, display: "flex", justifyContent: "flex-end" }}>
-                    <button
-                      aria-pressed={completed.has(currentLesson.id)}
-                      onClick={() => toggleComplete(currentLesson.id)}
-                      style={{
-                        background: completed.has(currentLesson.id)
-                          ? "linear-gradient(135deg, #14b8a6, #0891b2)"
-                          : "none",
-                        border: completed.has(currentLesson.id) ? "none" : "1.5px solid #e0fdf4",
-                        color: completed.has(currentLesson.id) ? "#fff" : "#64748b",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        padding: "8px 16px",
-                        borderRadius: 8,
-                        fontFamily: "Inter, sans-serif",
-                      }}
-                    >
-                      {completed.has(currentLesson.id) ? "✓ Completed" : "Mark complete"}
-                    </button>
-                  </div>
+                    <div className="mt-8 flex justify-end">
+                      <button
+                        aria-label={completed.has(currentLesson.id) ? "Completed" : "Mark as complete"}
+                        aria-pressed={completed.has(currentLesson.id)}
+                        onClick={() => toggleComplete(currentLesson.id)}
+                        className={cn(
+                          "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
+                          completed.has(currentLesson.id)
+                            ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white border-none"
+                            : "bg-transparent border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-teal-300 hover:text-[var(--teal-primary)]"
+                        )}
+                      >
+                        {completed.has(currentLesson.id) ? (
+                          <><span aria-hidden="true">&#10003; </span>Completed</>
+                        ) : (
+                          "Mark complete"
+                        )}
+                      </button>
+                    </div>
                   )}
                 </section>
               ) : (
-                <p style={{ color: "#64748b" }}>Select a lesson to begin.</p>
+                <p className="text-[var(--text-muted)]">Select a lesson to begin.</p>
               )
             ) : (
               /* View All mode */
@@ -688,41 +665,26 @@ export default function View() {
                   const correctChecks = quizIds.filter((id: string) => answers[id]).length;
 
                   return (
-                    <section key={l.id} id={l.id} style={{ marginBottom: 64, scrollMarginTop: 96 }}>
+                    <section key={l.id} id={l.id} className="mb-16 scroll-mt-24">
                       {/* Lesson breadcrumb */}
-                      <div style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "#0d9488",
-                        marginBottom: 12,
-                      }}>
+                      <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--teal-primary)] mb-3">
                         Lesson {lessonIdx + 1}
                       </div>
 
                       {/* Lesson title */}
-                      <h2 style={{
-                        fontFamily: "Lora, serif",
-                        fontSize: 28,
-                        fontWeight: 700,
-                        color: "#0d2926",
-                        lineHeight: 1.3,
-                        marginBottom: 32,
-                        letterSpacing: "-0.01em",
-                      }}>
+                      <h2 className="font-display text-[28px] font-bold text-[var(--text-primary)] leading-[1.3] mb-8 tracking-tight">
                         {l.title}
                       </h2>
 
                       {gateEnabled && !isUnlocked ? (
-                        <div style={{
-                          borderRadius: 8,
-                          border: "1px solid #e0fdf4",
-                          padding: 24,
-                          textAlign: "center",
-                          background: "#f8fffe",
-                        }}>
-                          <p style={{ color: "#64748b", fontSize: 14 }}>This section is locked. Continue the previous section to unlock.</p>
+                        <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] p-6 text-center bg-[var(--surface-subtle)]">
+                          <p className="text-[var(--text-muted)] text-sm">This section is locked. Continue the previous section to unlock.</p>
+                          <button
+                            className="text-[var(--teal-primary)] hover:underline text-sm mt-1"
+                            onClick={() => { const prev = course.lessons.findLast((_l, i) => i < lessonIdx && unlocked.has(_l.id)); if (prev) { setCurrentLessonId(prev.id); setIsPaged(true); } }}
+                          >
+                            Go to previous section
+                          </button>
                         </div>
                       ) : (
                         <>
@@ -737,58 +699,54 @@ export default function View() {
                               );
                             })}
                             {l.kind === "assessment" && (
-                              <div style={{ padding: "16px 0", color: "#64748b", fontSize: 14, fontStyle: "italic" }}>
-                                Assessment: {(l as any).questions?.length ?? 0} questions — navigate to this lesson to take the assessment.
+                              <div className="italic text-[var(--text-muted)] text-sm py-4">
+                                Assessment: {(l as any).questions?.length ?? 0} questions —{" "}
+                                <button
+                                  className="text-[var(--teal-primary)] hover:underline font-medium not-italic"
+                                  onClick={() => { setIsPaged(true); setCurrentLessonId(l.id); }}
+                                >
+                                  Take assessment
+                                </button>
                               </div>
                             )}
                           </div>
 
                           {/* Mark complete toggle */}
-                          <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
+                          <div className="mt-6 flex justify-end">
                             <button
+                              aria-label={completed.has(l.id) ? "Completed" : "Mark as complete"}
                               aria-pressed={completed.has(l.id)}
                               onClick={() => toggleComplete(l.id)}
-                              style={{
-                                background: completed.has(l.id)
-                                  ? "linear-gradient(135deg, #14b8a6, #0891b2)"
-                                  : "none",
-                                border: completed.has(l.id) ? "none" : "1.5px solid #e0fdf4",
-                                color: completed.has(l.id) ? "#fff" : "#64748b",
-                                fontSize: 13,
-                                fontWeight: 500,
-                                cursor: "pointer",
-                                padding: "8px 16px",
-                                borderRadius: 8,
-                                fontFamily: "Inter, sans-serif",
-                              }}
+                              className={cn(
+                                "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
+                                completed.has(l.id)
+                                  ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white border-none"
+                                  : "bg-transparent border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-teal-300 hover:text-[var(--teal-primary)]"
+                              )}
                             >
-                              {completed.has(l.id) ? "✓ Completed" : "Mark complete"}
+                              {completed.has(l.id) ? (
+                                <><span aria-hidden="true">&#10003; </span>Completed</>
+                              ) : (
+                                "Mark complete"
+                              )}
                             </button>
                           </div>
 
                           {gateEnabled && nextId && !unlocked.has(nextId) && (
-                            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                            <div className="mt-4 flex flex-col gap-2">
                               {gateQuiz && (
-                                <p style={{ fontSize: 13, color: "#64748b" }}>
+                                <p className="text-[13px] text-[var(--text-muted)]">
                                   Checks: {correctChecks}/{totalChecks} correct{totalChecks > 0 && correctChecks < totalChecks ? " — answer all to continue" : ""}
                                 </p>
                               )}
-                              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                              <div className="flex justify-end">
                                 <button
                                   disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
                                   onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })}
-                                  style={{
-                                    background: "linear-gradient(135deg, #14b8a6, #0891b2)",
-                                    border: "none",
-                                    color: "#fff",
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    cursor: (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "not-allowed" : "pointer",
-                                    padding: "8px 18px",
-                                    borderRadius: 8,
-                                    fontFamily: "Inter, sans-serif",
-                                    opacity: (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? 0.5 : 1,
-                                  }}
+                                  className={cn(
+                                    "bg-gradient-to-br from-teal-500 to-cyan-600 border-none text-white text-[13px] font-semibold px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
+                                    (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-90"
+                                  )}
                                 >
                                   Continue
                                 </button>
