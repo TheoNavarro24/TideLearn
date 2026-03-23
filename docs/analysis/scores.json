@@ -45,8 +45,614 @@
         "narrative": "TideLearn's MCP server is its primary differentiator and is best-in-class among authoring tools. The server exposes 32 tools covering the complete authoring lifecycle: auth (login/logout), courses (list, get, create, update, delete, save, restructure, review), lessons (add, update, delete, get, generate, rewrite), blocks (add, update, move, delete, rewrite, rewrite_all), assessment (add_assessment_lesson, list/add/update/delete/import/replace questions, update_assessment_config), media (upload_media), and preview (preview_course). Semantic/AI tools include generate_lesson, generate_quiz_for_lesson, rewrite_block, rewrite_lesson, restructure_course, and review_course. No other course authoring tool on the market exposes this depth of programmatic control via the Model Context Protocol.",
         "screenshots": []
       }
+    },
+    "rise": {
+      "onboarding": {
+        "score": 5,
+        "evidence": "[marketing|docs]",
+        "narrative": "Rise 360 offers the most open onboarding of any enterprise authoring tool in this benchmark: a genuine self-serve 30-day free trial requiring no demo, no credit card gatekeeping, and no sales call. The tool is browser-based — nothing to install. The dashboard presents a clear + Create New or Create with AI entry point. 1,000+ templates (including 100+ onboarding-specific ones) are available immediately. An E-Learning Heroes onboarding learning path provides guided in-product tutorials. The AI course generation flow prompts for topic, audience, tone, and objectives before drafting a complete course outline with interactivity and knowledge checks. This is the gold standard for low-friction onboarding. Note: AI features revert to a paid-only tier after 30 days.",
+        "screenshots": ["rise-onboarding-1.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing|docs|review]",
+        "narrative": "Rise 360 produces genuinely polished, modern, responsive course output. Three built-in themes (Rise, Apex, Horizon) with eight cover page layouts provide immediate visual variety. Custom hex colors, custom font upload, logo placement, and Content Library 360 (13M+ stock images) give meaningful branding control. AI image generation adds editorial, 3D, cartoon, and watercolor style options. G2 reviewers consistently describe the learner output as professional-looking and well-suited for modern L&D. The main limitation — flagged frequently by reviewers — is the single accent color constraint and the block-based layout system, which prevents complex brand palette matching and freeform visual compositions. The output is polished but has a recognisable 'Rise look' that skilled designers may find constraining. Scored 4 rather than 5 due to this known brand flexibility ceiling.",
+        "screenshots": ["rise-onboarding-1.png"]
+      },
+      "editor": {
+        "score": 4,
+        "evidence": "[marketing|docs|review]",
+        "narrative": "Rise's block editor is purpose-built for speed: fully browser-based, WYSIWYG, with a clear block palette, inline configuration panels, and live preview. Real-time collaborative editing (Teams tier) is a strong differentiator. AI Assistant is pervasive throughout the editor — content generation, rewrite, tone, quiz generation, image generation, captions. The Manage Blocks feature (Q4 2025) allows multi-select reorder and cross-lesson copy. Code Block (Q3 2025) unlocks custom HTML/CSS/JS. Storyline embeds extend interactivity significantly. G2 reviewers praise the ease and speed of authoring. The ceiling is the block-constrained layout — no freeform canvas, no pixel-level control. Reviewers note all courses have a similar structural look. Scored 4: exceptional ease and speed, but the layout rigidity prevents a 5.",
+        "screenshots": []
+      },
+      "blocks": {
+        "score": 5,
+        "evidence": "[marketing|docs]",
+        "narrative": "Rise 360 has one of the most comprehensive and well-documented block libraries in the e-learning authoring market. Confirmed interactive blocks: accordion, tabs, labeled graphic (hotspot), process, timeline, scenario (branching with characters), sorting activity (drag-drop), flashcards, buttons. Media blocks: image (multiple layouts), gallery, audio, video upload/embed, attachment, iframe/embed. Text blocks: text, statement, quote, list. Assessment blocks: multiple choice, multiple response, fill-in-the-blank, matching (knowledge check and quiz). Chart blocks (bar, line, pie). Structural: continue, divider, spacer. Plus: table, math equation editor, code block (custom HTML/CSS/JS), and Storyline embed. AI generates timeline and table blocks from prompts. Block templates are saveable and shareable. This is a 5 — the named block catalogue is comprehensive and every block type in the benchmark template is confirmed.",
+        "screenshots": []
+      },
+      "learner": {
+        "score": 5,
+        "evidence": "[marketing|docs|review]",
+        "narrative": "The Rise 360 learner experience is widely regarded as one of the best in the market. Courses are fully responsive across all devices and orientations. Navigation is customisable (sidebar type, progress indicators, button styles). Continue blocks enable progressive content reveal. Scenarios deliver branching roleplay. Sorting activities provide auto-feedback. AI-generated captions (Q4 2025) support video accessibility. Audio transcripts (AI or author-written) are supported. Keyboard navigation is supported. Quick Share provides no-LMS-needed delivery with light analytics. Reach 360 adds formal assignment, group, and progress tracking. G2 reviewers consistently praise the learner-facing quality and ease of interaction. The learner experience is a clear competitive strength — scored 5.",
+        "screenshots": []
+      },
+      "publishing": {
+        "score": 5,
+        "evidence": "[marketing|docs]",
+        "narrative": "Rise 360 supports the full spectrum of e-learning publishing standards: SCORM 1.2, SCORM 2004, xAPI (Tin Can), cmi5, and AICC — all from a single built-in Publish flow with no third-party tools required. Multiple tracking modes (completion %, quiz result, Storyline block). Quick Share for trackable no-LMS delivery. Reach 360 for full LMS-style delivery with direct publish (no zip export/upload cycle). PDF export available. Web publish available. The only confirmed gap is LTI (not natively supported — achieved via SCORM upload into an LTI-enabled LMS). This is a best-in-class publishing story — five standards plus two delivery modes plus PDF/web. Scored 5.",
+        "screenshots": []
+      },
+      "extensibility": {
+        "score": 3,
+        "evidence": "[marketing|docs]",
+        "narrative": "Reach 360 (the delivery/LMS layer) has a REST API and a Webhooks API with meaningful events (course.completed, user.created, enrollment events) — confirming integration capability at the delivery layer. Okta SSO integration (OIDC/SWA) is confirmed; enterprise SAML SSO is available via enterprise contact. However, Rise 360's authoring layer has no native REST API — a gap that community members have flagged repeatedly without resolution. No Zapier/Make native connector found. No MCP server. The extensibility story is solid for LMS/delivery integration (Reach 360 API + webhooks) but notably weak for authoring workflow automation. Scored 3: good delivery-layer extensibility, limited authoring-layer extensibility.",
+        "screenshots": []
+      }
+    },
+    "easygenerator": {
+      "onboarding": {
+        "score": 5,
+        "evidence": "[marketing|review]",
+        "narrative": "Self-serve 14-day free trial with no credit card required is the cleanest onboarding gate in this benchmark. The platform's 'employee-generated learning' philosophy is embedded into the sign-up flow: messaging explicitly targets SMEs and non-technical authors. G2 and Capterra reviewers consistently rate onboarding as fast and friction-free, noting that new SME authors can be productive the same day. Vendor-assisted admin onboarding (the team helps organisations onboard their trainer population) is reported as a genuine differentiator. The free tier post-trial preserves access, avoiding a hard cutoff. Note: scored from marketing and review sources; no direct trial access during this audit.",
+        "screenshots": ["easygenerator-onboarding-1.png", "easygenerator-onboarding-2.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Learner-facing output is consistently described as polished and contemporary in reviewer feedback. The branding system (logo, colour scheme, fonts at body/headline/content level) and the branded theme feature allow organisations to lock in a consistent look across all SME-created courses. Hundreds of ready-to-use templates accelerate branded production. The main limitation — noted by several reviewers — is that layout flexibility is intentionally restricted to keep the tool simple for SMEs, which constrains design ambition compared to pixel-precise tools. No white-label option (Easygenerator branding persists on the platform UI). Note: scored from marketing and review sources only.",
+        "screenshots": ["easygenerator-onboarding-1.png"]
+      },
+      "editor": {
+        "score": 4,
+        "evidence": "[marketing|docs|review]",
+        "narrative": "The six-tab block palette (Text, Images, Media, Docs, Interactive, Embed) is clean and logically organised. EasyAI 2.0 is deeply integrated: authors can describe what they need in a block prompt and the AI selects the right format and generates content — removing the need for instructional design expertise. Course Guidelines (tone, audience, terminology, reference files) give AI output consistent organisational context. The Chat AI sidebar supports longer-form generation. The editor is intentionally simplified for SME use, which is a strength for breadth of adoption but a limitation for L&D power users who want layout control. Reviewers praise speed but note occasional performance lags and limited layout options. Note: scored from marketing, docs, and review sources only.",
+        "screenshots": ["easygenerator-blocks-1.png"]
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[marketing|docs]",
+        "narrative": "Core media blocks (rich text, image, video embed/upload, audio, iframe embed) are confirmed. The Interactive category includes flip cards, card sorting, how-to steps, and walkthrough (screenshot simulation with hotspots) — a reasonable set for an SME tool but lacking accordion/tabs and timeline blocks that more advanced tools offer. Assessment question types are notably broad: MCQ, multiple-choice, True/False, fill-in-the-blank, text matching, drag-and-drop, ranking, hotspot image, and open questions are all confirmed. AI image generation is available inline. No dedicated code block or quote/callout block confirmed in public sources. Note: scored from marketing and help docs; no direct editor access.",
+        "screenshots": ["easygenerator-blocks-1.png"]
+      },
+      "learner": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Learner-facing output is mobile-responsive by default across desktop, tablet, and mobile. Two layout modes (paginated / scroll-through microlearning) give authors flexibility for different content types. Reviewers describe the learner experience as polished and modern with a 'contemporary design.' Text-to-speech, AI subtitles, and screen reader support improve accessibility and engagement. EasyVideo enables AI avatar-narrated video without studio production. The notable gap is the inability to gate progression on video completion — a compliance training limitation flagged by enterprise reviewers. No learner social features, leaderboards, or certificates confirmed in public sources. Note: scored from marketing and review sources.",
+        "screenshots": []
+      },
+      "publishing": {
+        "score": 5,
+        "evidence": "[marketing|docs]",
+        "narrative": "Publishing is one of Easygenerator's strongest dimensions. SCORM 1.2, SCORM 2004, xAPI/Tin Can, LTI 1.2, shareable link, QR code, iframe embed, HTML hosting, and PDF export are all confirmed. Dynamic SCORM — upload once, update in place without re-uploading — is a genuine workflow differentiator for L&D teams managing frequent content updates. Direct LXP integrations with EdCast, Degreed, HowNow, LearnUpon, and BlendLXP cover the major enterprise LXP market. SCORM import (from Articulate Rise) added December 2025 enables migration of existing content. Password protection on published links and review links is confirmed. Note: scored from marketing and help docs.",
+        "screenshots": ["easygenerator-publishing-1.png"]
+      },
+      "extensibility": {
+        "score": 3,
+        "evidence": "[marketing|docs|review]",
+        "narrative": "Webhooks are confirmed (learner ID, course ID, completion time, score, pass/fail push to a provided URL). API access is confirmed at the platform level but user reviews suggest it is limited in scope and likely plan-gated — not a fully documented public REST API of the kind Elucidat offers. SAML 2.0 / SSO for author access is confirmed. Native LXP integrations exist but are relatively narrow (five platforms). No Zapier or Make connectors found. No MCP server. EasyAI runs on OpenAI under an enterprise GDPR-compliant DPA with a guarantee that data is not used for model training. ISO 27001 and GDPR compliance confirmed. Note: scored from marketing, docs, and review sources.",
+        "screenshots": ["easygenerator-extensibility-1.png"]
+      }
+    },
+    "elucidat": {
+      "onboarding": {
+        "score": 3,
+        "evidence": "[marketing]",
+        "narrative": "Elucidat's marketing emphasizes that 'anyone' can get started quickly, with templates and guided workflows aimed at novice authors and SMEs. However, there is no self-serve free trial — you must book a demo first, and the 14-day trial is only unlocked post-demo. This gated entry creates friction and makes genuine onboarding assessment from public sources impossible. Note: scored from marketing/public sources only.",
+        "screenshots": ["elucidat-onboarding-1.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Marketing imagery shows polished, professional course output with clean UI, consistent branding, and well-designed components panels. G2 reviewers describe the interface as 'clean and intuitive.' The platform supports global brand control, customizable styles, and custom fonts — suggesting strong visual consistency for enterprise teams. Some reviewers note limited animation/design flexibility compared to Articulate Storyline. Note: scored from marketing/public sources only.",
+        "screenshots": ["elucidat-visual-1.png", "elucidat-editor-1.png"]
+      },
+      "editor": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "The dual authoring model (Author for advanced users, Create for SMEs) is a strong architectural choice. Marketing shows a component-based editor with a clear panel structure. G2 reviewers praise ease of use and speed of course creation, though some flag editing as 'clunky' for complex layouts. Built-in screen recording, text-to-speech, and AI generation reduce reliance on external tools. Note: no direct editor access; scored from marketing imagery and G2 reviews only.",
+        "screenshots": ["elucidat-editor-1.png", "elucidat-blocks-1.png"]
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[marketing]",
+        "narrative": "The All Features page lists rich media blocks (text, image, video embed/upload, audio, polling, branching), but does not enumerate specific interactive block types like accordions, tabs, or timelines by name. The 'customizable page layouts' and 'best practice templates' suggest a wide range, but without direct access the precise block catalogue is unclear. G2 reviewers mention 'many features' and 'pre-built interactions.' Note: scored from marketing/public sources only.",
+        "screenshots": ["elucidat-blocks-1.png"]
+      },
+      "learner": {
+        "score": 4,
+        "evidence": "[marketing]",
+        "narrative": "Marketing imagery of published courses shows clean, modern, mobile-responsive learner interfaces with branding, imagery, and interactive elements visible. The 'Create' tool is designed specifically for fast, high-quality learner-facing output. Personalized learning paths, gamification (badges), and branching all target learner engagement. Offline access is mentioned for areas without connectivity. Note: scored from marketing/public sources only.",
+        "screenshots": ["elucidat-learner-1.png"]
+      },
+      "publishing": {
+        "score": 5,
+        "evidence": "[marketing]",
+        "narrative": "Elucidat's publishing story is one of its clearest strengths: SCORM 1.2 and SCORM 2004 export, xAPI/Tin Can support, URL release (no LMS needed), direct integrations with 15+ LMS platforms, instant re-release without re-uploading SCORM packages, and multi-language SCORM in a single package. This is enterprise-grade publishing with very broad compatibility. Note: scored from marketing/public sources only.",
+        "screenshots": ["elucidat-publishing-1.png"]
+      },
+      "extensibility": {
+        "score": 4,
+        "evidence": "[marketing|docs]",
+        "narrative": "Elucidat has a documented REST API (Account, Projects, Authors, Releases endpoints), Webhooks, and a TinCan/xAPI LRS API — confirming serious extensibility. SSO (SAML) is available for authors. Deep native integrations exist with Docebo and CrossKnowledge. No Zapier/Make connectors or MCP server found. API access is gated to higher tiers. Note: API details from public help docs; scored from marketing and docs only.",
+        "screenshots": ["elucidat-extensibility-1.png"]
+      }
+    },
+    "sana": {
+      "onboarding": {
+        "score": 2,
+        "evidence": "[marketing]",
+        "narrative": "Sana is fully demo-gated with no self-serve trial or free tier — a harder gate than most competitors. Pricing is custom per-user-per-month requiring a sales conversation and country/headcount selection. Marketing pitches 'zero design skills required' and AI-assisted creation, which would make onboarding fast once inside. A Creator's Checklist and Admin's Checklist exist in the help center, and full implementation support is bundled. However, the complete absence of a self-service path is a material barrier for evaluation and early adoption. Scored from marketing and public sources only.",
+        "screenshots": []
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Marketing imagery and YouTube demos consistently show a polished, modern interface with a clean card-based learner homepage, a slide-metaphor editor, and well-structured course layouts. Custom branding is thorough: custom fonts, colors, logos, and a dedicated media library are all confirmed. G2 reviewers describe the UI as 'intuitive' and 'easy to navigate.' The platform appears visually opinionated toward clean, minimal enterprise design — strong for brand consistency but potentially limiting for highly creative custom layouts. Scored from marketing and public sources only.",
+        "screenshots": []
+      },
+      "editor": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Sana's AI-native editor is a genuine differentiator: PDF/URL/document upload generates a structured course in seconds, with AI handling content generation, translation, and quiz creation. The drag-and-drop slide-metaphor editor is confirmed, with inline AI commands for rewriting and expanding content. One G2 reviewer noted typed comments disappear when switching windows — a minor friction point. The 3-weeks-to-3-hours claim from an L&D Manager at Ebury and similar quotes suggest the editor dramatically accelerates production. Lack of direct trial access means the block canvas depth is unconfirmed. Scored from marketing and public sources only.",
+        "screenshots": []
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[marketing]",
+        "narrative": "Confirmed block types include text/rich content, polls, quizzes, reflection cards, image, video, wiki pages, and AI-generated content from documents. The editor is slide-metaphor based. No explicit confirmation of accordion, tabs, timeline, hotspot, flashcard, code block, or table types. The platform's philosophy prioritises AI-generated content structure over manual block assembly, which may explain the narrower explicit block catalogue. G2 features list confirms course builder, assessments/quizzes, questions, ILT, and customised learning paths. Scored from marketing only.",
+        "screenshots": []
+      },
+      "learner": {
+        "score": 5,
+        "evidence": "[marketing|review]",
+        "narrative": "The learner experience is Sana's strongest selling point and the most differentiated dimension of the platform. Key features: AI tutor ('Ask') available on demand for any question, personalised homepage with AI-recommended content, spaced repetition via 'personalised reviews', scenario-based practice, skill badges and leaderboards, Slack/Teams/email reminders, iOS mobile app, and natural language search across all organisational knowledge. The combination of structured courses and conversational AI coaching is unique. G2 reviewers consistently praise ease of access, progress visibility, and intuitive module structure. Scored from marketing and public sources only.",
+        "screenshots": []
+      },
+      "publishing": {
+        "score": 3,
+        "evidence": "[marketing|docs]",
+        "narrative": "Sana is a walled-garden LMS — content is published and hosted natively within the platform behind user authentication. SCORM 1.2, SCORM 2004, xAPI, and IMS LTI are all confirmed (from elearningindustry.com directory and learning-management page), enabling integration with external LMSes. SAML SSO and SCIM provisioning mean enterprise access control is strong. However, there is no confirmed anonymous shareable URL option (no-LMS-required sharing), and SCORM export from Sana-native content is not explicitly confirmed — SCORM import is the primary confirmed use case. For an enterprise LMS this is appropriate, but it is a limitation for use cases requiring frictionless public sharing. Scored from marketing and docs.",
+        "screenshots": []
+      },
+      "extensibility": {
+        "score": 4,
+        "evidence": "[marketing|docs]",
+        "narrative": "REST API confirmed for managing users, groups, assignments, content, and reporting. 100+ named integrations confirmed across SSO providers (Okta, Entra ID, Google Workspace, etc.), HRIS systems (Workday, BambooHR, Personio, SAP SuccessFactors, Rippling, 40+ others), productivity tools (Slack, Teams, Office 365, Power BI, Salesforce), and content libraries (LinkedIn Learning, Coursera, Pluralsight, Udemy). GDPR, ISO 27001, and SOC 2 Type I & II certified. SAML SSO and SCIM provisioning confirmed. No Zapier/Make native connectors or MCP server found. Webhooks not explicitly confirmed but REST API scope is broad. Scored from marketing and public docs only.",
+        "screenshots": []
+      }
+    },
+    "courseau": {
+      "onboarding": {
+        "score": 4,
+        "evidence": "[direct|marketing]",
+        "narrative": "Courseau's onboarding is notably friction-free: a 14-day free trial with no credit card required, a minimal sign-up form (first name, last name, company email), and a clear value proposition of 'publish your first course in minutes.' The marketing landing page is benefit-led and visually clean with strong social proof. The requirement for a company email may exclude solo creators or personal users, which is a minor but real barrier. Overall this is competitive with the best in the mid-market segment.",
+        "screenshots": ["courseau-onboarding-1.png", "courseau-onboarding-2.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing|review]",
+        "narrative": "Course output shown in landing page mockups is polished and slide-based — clean typography, consistent spacing, and professional imagery. The learner-facing UI appears modern and mobile-responsive. G2 reviewers consistently praise the 'impressive design and user interface.' The platform's AI-generated courses are described as 'beautiful, interactive, professional' out of the box. Some design inflexibility is implied by the structured slide/card format, which may limit bespoke visual customisation compared to more template-rich tools like Elucidat.",
+        "screenshots": ["courseau-onboarding-1.png", "courseau-visual-1.png"]
+      },
+      "editor": {
+        "score": 3,
+        "evidence": "[marketing|review]",
+        "narrative": "The live editor was not captured in screenshots — the session did not successfully navigate to the authenticated authoring environment. From marketing imagery and G2 reviews, the editor is AI-first: authors define objectives and upload source material, then review and refine the AI-generated draft. Manual editing, image/video insertion, and block manipulation are supported. Reviewers note the interface is intuitive but flag an inability to copy/paste lessons across courses. Without direct editor access, a score of 3 (functional, competitive) is appropriate.",
+        "screenshots": ["courseau-editor-1.png", "courseau-editor-2.png"]
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[marketing|review]",
+        "narrative": "Confirmed block types from marketing and reviews include: lesson slides, MCQ quizzes, flip cards, key takeaways, examples, and actionable steps. Images and video can be embedded and edited. AI narration is added per lesson. However, advanced interactive block types — accordion, tabs, hotspot, timeline, code block — are not confirmed in any public source. The block palette appears narrower than enterprise competitors, reflecting Courseau's AI-generation-first philosophy over deep manual block authoring.",
+        "screenshots": ["courseau-blocks-1.png", "courseau-blocks-2.png"]
+      },
+      "learner": {
+        "score": 3,
+        "evidence": "[marketing|review]",
+        "narrative": "The learner view was not directly captured; the screenshot slot rendered the marketing page. From marketing mockups and reviews, learner output is slide/card-based, visually polished, and mobile-responsive. AI narration provides audio accompaniment. Sharing options include link, QR code, and embed — covering common learner access patterns. No confirmed learner dashboard, progress tracking, or gamification in the free tier. Compared to tools with dedicated learner portals, the experience is functional but limited.",
+        "screenshots": ["courseau-learner-1.png"]
+      },
+      "publishing": {
+        "score": 3,
+        "evidence": "[marketing|review]",
+        "narrative": "Courseau supports six publishing/sharing modes: shareable link, QR code, SCORM export, website embed, editable PowerPoint, and live embed. SCORM export for LMS delivery is confirmed. xAPI is not confirmed in any public source. Password protection (master password) is available as a basic access control. This is a solid publishing story for the mid-market but lacks the enterprise publishing breadth of tools like Elucidat (SCORM 2004, xAPI, instant re-release, 15+ LMS integrations). LearnUpon integration is planned for 2026.",
+        "screenshots": ["courseau-publishing-1.png", "courseau-extensibility-1.png"]
+      },
+      "extensibility": {
+        "score": 2,
+        "evidence": "[marketing|review]",
+        "narrative": "The pricing/features screenshot shows a plan comparison table but does not surface any API, webhook, or integration features. No REST API, webhooks, Zapier, or Make connectors are confirmed in any public source for the standalone Courseau product. The LearnUpon acquisition (November 2025) signals future LMS integration depth, but as of the current product state, extensibility is limited to SCORM export and shareable links. This is a clear weakness relative to enterprise-grade competitors.",
+        "screenshots": ["courseau-extensibility-1.png"]
+      }
+    },
+    "mindsmith": {
+      "onboarding": {
+        "score": 4,
+        "evidence": "[marketing|docs]",
+        "narrative": "Mindsmith has a genuine, ungated free tier — sign up with email and start creating immediately, no demo booking required. The free plan grants 450 AI credits at signup and allows full lesson creation and editing. The 4-step flow (Generate > Author > Share > Analyze) is clearly communicated on marketing pages. The core value proposition — paste a document and get a shareable lesson in minutes — is easy to grasp. Friction points: the free plan caps sharing at 2 lessons and courses at 5 lessons, which is limiting for thorough evaluation but does not block initial onboarding. The AI-first framing means the fastest path to first output is feeding the AI a document, not understanding a tile palette — which suits non-technical authors well. Note: scored from marketing and public docs; app.mindsmith.ai redirects to sign-in.",
+        "screenshots": ["mindsmith-onboarding-1.png", "mindsmith-onboarding-2.png"]
+      },
+      "visual": {
+        "score": 4,
+        "evidence": "[marketing]",
+        "narrative": "Mindsmith's marketing imagery presents a clean, modern SaaS aesthetic — dark-and-light interface, professional course output, and consistent branding. The platform claims WCAG 2.2 AA compliance (a newer standard than most competitors who cite 2.1 AA). Custom branding with logo is available from Professional tier ($39/month); full workspace branding is Business tier. The AI design generation philosophy explicitly positions itself against 'template blandness,' claiming AI-generated layouts are more contextually appropriate than one-size templates. Limitations: no evidence of advanced animation or interaction design capabilities; the microlearning format constrains visual complexity compared to enterprise authoring tools. Note: scored from marketing only.",
+        "screenshots": []
+      },
+      "editor": {
+        "score": 4,
+        "evidence": "[marketing|docs]",
+        "narrative": "The Mindsmith editor is genuinely AI-native — not an AI bolt-on to a traditional authoring tool. Two primary edit modes: (1) storyboard-guided AI generation from source documents, with the user directing the AI at each step; (2) tile-by-tile editing with an AI assistant that can rewrite, restructure, or restyle content via natural language. The 'whole-lesson agent' mode can apply stylistic or content changes across all tiles simultaneously from a single instruction — a strong differentiator. The Experience Canvas provides a visual branching map for scenario design. Real-time collaborative editing with commenting is available (Business tier). Built-in TTS narration (Eleven Labs integration on Business) reduces dependency on external audio tools. Weak points: no screen recording, no built-in screen capture, no complex animation timeline. The microlearning-first design means the editor is optimised for short, focused lessons rather than long-form multi-chapter courses. Note: scored from marketing and blog content only.",
+        "screenshots": []
+      },
+      "blocks": {
+        "score": 3,
+        "evidence": "[marketing|review]",
+        "narrative": "Mindsmith confirms 20+ interactive tile types but does not enumerate all in public-facing sources. Confirmed block types: text, image, accordion, flashcard, assessment questions (MCQ, short answer, multiple selection with conditional logic), sorting activity, branching scenario, knowledge check, AI role-play conversation, AI-generated video with avatar. The AI role-play conversation block is a genuine differentiator — learners interact with an AI character in a simulated dialogue, useful for soft skills and scenario practice. Not confirmed from public sources: tabs, timeline, table, code block, hotspot image, iframe embed, quote/callout. The block catalogue is meaningfully smaller and more constrained than enterprise tools like Articulate Rise, but the AI conversation and branching blocks are above average. Note: scored from marketing and third-party review aggregators.",
+        "screenshots": []
+      },
+      "learner": {
+        "score": 4,
+        "evidence": "[marketing]",
+        "narrative": "The learner experience is designed for accessibility and reach: no learner account required for link-based access, mobile-responsive output, and WCAG 2.2 AA compliant content. The auto-updating SCORM model is a strong differentiator — when authors update content in Mindsmith, the LMS course updates automatically without re-uploading, meaning learners always receive the latest version. AI role-play conversations provide a genuinely interactive learner experience beyond multiple-choice quizzing. Analytics per learner (completion, answer distribution, results) are available. Free plan limits sharing to 2 lessons, which constrains learner reach at no cost. No evidence of gamification (badges, leaderboards), offline access, or personalised learning path adaptation at the learner level. Note: scored from marketing only.",
+        "screenshots": []
+      },
+      "publishing": {
+        "score": 4,
+        "evidence": "[marketing]",
+        "narrative": "Publishing options are solid and include SCORM export (free tier), xAPI, direct link sharing, and embed in external sites. The auto-updating SCORM package is the headline differentiator: unlike a static SCORM zip, Mindsmith's package maintains a server connection so content changes propagate to LMS-enrolled learners without re-upload. Multi-language support across 70+ languages via dynamic packaging is a strong enterprise capability. Weaknesses: specific SCORM version (1.2 vs 2004) is not confirmed in public sources; no LTI support mentioned; password protection not confirmed; no video export. The auto-updating SCORM creates an ongoing cloud dependency that may be a concern for air-gapped or strict-LMS enterprise environments. Overall publishing story is strong, especially for SMB and mid-market, but lacks the breadth of Elucidat's confirmed multi-standard output. Note: scored from marketing only.",
+        "screenshots": []
+      },
+      "extensibility": {
+        "score": 2,
+        "evidence": "[marketing]",
+        "narrative": "Mindsmith's extensibility story is thin below Enterprise tier. SAML/SSO is Enterprise-only. No public REST API documentation was found. No webhooks confirmed. No Zapier or Make native connectors. No MCP server. Multi-workspace management is Enterprise-only. The platform is SOC 2 Type II certified, GDPR and CCPA compliant — strong security posture, but these are compliance certifications not integration mechanisms. Below Enterprise, Mindsmith is essentially a self-contained, non-programmable SaaS. This is a deliberate product stance for the SMB/PLG market but creates a ceiling for enterprise customers who need deep LMS integration, automation, or custom workflows. Note: scored from marketing only.",
+        "screenshots": []
+      }
     }
   },
-  "journeys": {},
-  "methodology": {}
+  "journeys": {
+    "journey1_create_course": {
+      "description": "Create a new course and add a first lesson",
+      "tools": {
+        "tidelearn": {
+          "step_count": 4,
+          "friction_points": [
+            "Google OAuth only — no email/password alternative",
+            "No onboarding tour or empty-state guidance after first login",
+            "No templates or getting-started prompts; blank-slate start",
+            "Via MCP: create_course + add_lesson is 2 tool calls, but requires Claude setup"
+          ],
+          "design_quality": "Clean inline course-creation input on dashboard is clever; the flow is fast once understood but offers no scaffolding for new users. MCP path is the fastest in the benchmark for users with Claude configured."
+        },
+        "rise": {
+          "step_count": 4,
+          "friction_points": [
+            "No free tier (only 30-day trial)",
+            "AI features require separate AI tier after trial"
+          ],
+          "design_quality": "Gold standard onboarding: sign up, open browser, click Create, choose template or AI generation. 1,000+ templates provide immediate scaffolding. AI-guided course creation is the most polished in the benchmark."
+        },
+        "easygenerator": {
+          "step_count": 5,
+          "friction_points": [
+            "No friction at sign-up — 14-day trial requires only email",
+            "Course structure must be built manually in base flow (no AI outline builder at course level)",
+            "Block selection requires familiarity with the six category tabs"
+          ],
+          "design_quality": "SME-optimised flow. Reviewers report first course possible within an hour for non-technical authors. EasyAI accelerates block creation from prompts."
+        },
+        "elucidat": {
+          "step_count": 5,
+          "friction_points": [
+            "Demo-gated trial — must book a call before accessing the product",
+            "Enterprise-focused onboarding requires implementation support",
+            "Pricing starts at $1,650/user/year — high barrier"
+          ],
+          "design_quality": "Rich template library and dual authoring modes (Author + Create) scaffold well once access is granted. AI course generation from source material is confirmed. The demo gate is the primary friction point."
+        },
+        "sana": {
+          "step_count": 3,
+          "friction_points": [
+            "No self-serve trial — must book a demo first",
+            "Custom pricing requires sales contact",
+            "Full onboarding requires implementation support engagement"
+          ],
+          "design_quality": "Cannot be tested directly. Marketing describes a 3-step AI-assisted flow: log in, upload source material, AI generates course. The estimated creation speed is impressive (3 weeks to 3 hours) but unverifiable without access."
+        },
+        "courseau": {
+          "step_count": 3,
+          "friction_points": [
+            "Must enter company email to start trial (may block personal users)",
+            "AI generation requires defining learning objectives and learner profile before draft is produced"
+          ],
+          "design_quality": "Fastest confirmed path to first course output: sign up, define objectives, AI generates draft. Marketing claims 'content to course in minutes.' The AI-first workflow is the primary path."
+        },
+        "mindsmith": {
+          "step_count": 4,
+          "friction_points": [
+            "Free plan limited to 5 lessons per course",
+            "AI credits are finite (450 at signup on free)",
+            "No direct editor access achieved during audit — marketing-only research"
+          ],
+          "design_quality": "Sub-10-minute path from document to shareable lesson is the marketing claim. Storyboard system allows human oversight at each AI step. The 4-step funnel (Generate, Author, Share, Analyze) is clearly communicated."
+        }
+      }
+    },
+    "journey2_mixed_content": {
+      "description": "Build a mixed-content lesson with text, media, interactive elements, and a knowledge check",
+      "tools": {
+        "tidelearn": {
+          "step_count": 5,
+          "friction_points": [
+            "No drag-to-reorder blocks (only up/down arrow buttons)",
+            "No hotspot, flashcard, branching, or sorting blocks",
+            "Block picker is functional but not visually rich",
+            "Via MCP: add_block calls are fast but require knowing block type slugs"
+          ],
+          "design_quality": "Slash-command block insertion is smooth. Inline block editing is clean. The 15-block palette covers essentials but the absence of interactive blocks beyond accordion/tabs limits content variety. MCP enables rapid mixed-content assembly for Claude users."
+        },
+        "rise": {
+          "step_count": 5,
+          "friction_points": [
+            "Single accent color limits complex brand matching",
+            "No freeform canvas — layout is block-constrained",
+            "Storyline embeds require a separate Storyline 360 license"
+          ],
+          "design_quality": "Best-in-class block diversity: accordion, tabs, hotspot, timeline, scenario, sorting, flashcards, charts, code block. Drag-and-drop reorder. AI generates timeline and table blocks from prompts. The most capable mixed-content authoring experience in the benchmark."
+        },
+        "easygenerator": {
+          "step_count": 6,
+          "friction_points": [
+            "No dedicated accordion or tab block confirmed",
+            "Video completion enforcement not available",
+            "No stock media library — users report tedious external image sourcing"
+          ],
+          "design_quality": "Interactive tab provides flip cards, card sorting, how-to, and walkthrough. AI can transform text into interactive elements. Assessment block variety (9 question types) is a standout strength. Layout options are limited by design."
+        },
+        "elucidat": {
+          "step_count": 5,
+          "friction_points": [
+            "Specific interactive block types not enumerated in public sources",
+            "Editor described as 'clunky' for complex layouts by some reviewers",
+            "Analytics dashboards are add-ons on lower tiers"
+          ],
+          "design_quality": "Dual authoring model (Author + Create) handles different skill levels. Built-in screen recording and Pixabay stock library reduce external dependencies. Branching content and personalization are confirmed. Block catalogue depth is unclear without direct access."
+        },
+        "sana": {
+          "step_count": 4,
+          "friction_points": [
+            "Block type variety appears narrower than dedicated authoring tools",
+            "Editor is slide-metaphor, not freeform canvas",
+            "No confirmed hotspot, accordion, or timeline blocks"
+          ],
+          "design_quality": "AI handles most content structuring. Polls, quizzes, reflection cards, and wiki pages are confirmed. The AI-native editor reduces manual block assembly but limits granular content control. Cannot assess step count from direct access."
+        },
+        "courseau": {
+          "step_count": 5,
+          "friction_points": [
+            "In-app editor not captured — flow inferred from marketing",
+            "No confirmed accordion, tabs, hotspot, or timeline blocks",
+            "Block palette appears narrower than enterprise competitors"
+          ],
+          "design_quality": "AI generates initial slide deck; author reviews and edits. Flip cards, quizzes, key takeaways are the primary interactive elements. Manual block insertion is supported alongside AI generation."
+        },
+        "mindsmith": {
+          "step_count": 5,
+          "friction_points": [
+            "Tile palette not fully enumerable from public sources",
+            "No screen recording or in-product image editing confirmed",
+            "Microlearning format constrains lesson length"
+          ],
+          "design_quality": "AI conversation block and branching scenarios are standout differentiators. Accordion, flashcard, sorting activity, and quiz types provide good interactive variety. Whole-lesson agent mode for bulk changes is a unique capability."
+        }
+      }
+    },
+    "journey3_publish_share": {
+      "description": "Publish a course and share it with learners (via link, SCORM, or LMS)",
+      "tools": {
+        "tidelearn": {
+          "step_count": 2,
+          "friction_points": [
+            "No SCORM 2004 or xAPI export",
+            "No password protection on shared links",
+            "No SSO-gated learner access",
+            "No analytics on shared link views"
+          ],
+          "design_quality": "One of the cleanest publish flows in the benchmark: single modal with 4 export options (URL, SCORM 1.2, HTML, JSON) and inline validation warnings. The breadth of output formats is strong for the tool's maturity. The simplicity is a genuine UX strength."
+        },
+        "rise": {
+          "step_count": 3,
+          "friction_points": [
+            "SCORM packages must be manually re-uploaded to third-party LMSes on update",
+            "No LTI native support",
+            "Reach 360 analytics are basic"
+          ],
+          "design_quality": "Best-in-class: 5 LMS standards (SCORM 1.2, SCORM 2004, xAPI, cmi5, AICC) plus Quick Share link plus Reach 360 direct publish plus PDF plus web. One-click publish with configurable tracking."
+        },
+        "easygenerator": {
+          "step_count": 4,
+          "friction_points": [
+            "Dynamic SCORM upload requires initial LMS configuration",
+            "LTI tracking limited to pass/fail score only",
+            "Analytics requires per-course report generation"
+          ],
+          "design_quality": "Strong publish flow: link, QR, embed, SCORM 1.2/2004, xAPI, LTI, HTML, PDF. Dynamic SCORM (update-in-place) is a genuine workflow differentiator. Password protection on links is confirmed."
+        },
+        "elucidat": {
+          "step_count": 3,
+          "friction_points": [
+            "No LTI mentioned",
+            "Analytics dashboards are add-ons on lower tiers",
+            "No confirmed password protection on URL releases"
+          ],
+          "design_quality": "Enterprise-grade: SCORM 1.2/2004, xAPI, URL release, instant re-release, 15+ LMS direct integrations, multi-language SCORM. The instant re-release without re-uploading is a strong enterprise feature."
+        },
+        "sana": {
+          "step_count": 2,
+          "friction_points": [
+            "Walled-garden platform — no anonymous shareable link confirmed",
+            "SCORM export from Sana-native content not explicitly confirmed",
+            "Requires user authentication for all learner access"
+          ],
+          "design_quality": "Publishing is native within the Sana LMS. SSO + SCIM for learner provisioning. SCORM/xAPI/LTI for external LMS integration. The walled-garden model is appropriate for enterprise but limits flexibility."
+        },
+        "courseau": {
+          "step_count": 2,
+          "friction_points": [
+            "SCORM export may be plan-gated",
+            "xAPI not confirmed",
+            "No instant re-release confirmed"
+          ],
+          "design_quality": "6 sharing modes (link, QR, SCORM, embed, PowerPoint, live embed) cover common mid-market needs. Password protection is available. The variety is competitive for the price point."
+        },
+        "mindsmith": {
+          "step_count": 3,
+          "friction_points": [
+            "Free plan restricts sharing to 2 lessons",
+            "SCORM version not confirmed (1.2 vs 2004)",
+            "Auto-updating SCORM may not be compatible with all LMS configurations"
+          ],
+          "design_quality": "Auto-updating SCORM is the headline differentiator. Link sharing without learner accounts is smooth. Multi-language dynamic packaging across 70+ languages is impressive. The 2-lesson sharing cap on free is a significant constraint."
+        }
+      }
+    }
+  },
+  "roadmap": [
+    {
+      "suggested_order": 1,
+      "gap": "No onboarding tour, empty-state guidance, or getting-started prompt for new users",
+      "dimension": "onboarding",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "rise", "score": 5},
+      "impact": "high",
+      "effort": "quick_win",
+      "audience_urgency": "L&D testers",
+      "rationale": "First-time users who sign in and see an empty dashboard with no guidance will bounce. A simple welcome modal with 3 suggested actions (create a course, try the MCP server, read the docs) would meaningfully improve first-session retention. Every competitor except Elucidat and Sana (which are demo-gated) provides onboarding scaffolding."
+    },
+    {
+      "suggested_order": 2,
+      "gap": "No course or lesson templates — every course starts from scratch",
+      "dimension": "onboarding",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "rise", "score": 5},
+      "impact": "high",
+      "effort": "larger_effort",
+      "audience_urgency": "L&D testers",
+      "rationale": "Templates are table-stakes for every competitor in the benchmark. L&D testers expect to start from a pre-built structure (compliance, onboarding, product training) and customise. The absence of templates makes TideLearn feel empty on first use and forces manual construction that competitors automate. Even 3-5 starter templates would close this gap significantly."
+    },
+    {
+      "suggested_order": 3,
+      "gap": "No drag-to-reorder blocks — only up/down arrow buttons",
+      "dimension": "editor",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "rise", "score": 4},
+      "impact": "medium",
+      "effort": "larger_effort",
+      "audience_urgency": "L&D testers",
+      "rationale": "Drag-and-drop block reordering is the expected interaction pattern in every block-based editor (Rise, Easygenerator, Notion, WordPress). The arrow-button approach works but feels dated and slow for lessons with many blocks. This is the single most visible editor ergonomic gap."
+    },
+    {
+      "suggested_order": 4,
+      "gap": "No alternative sign-in method (email/password) — Google OAuth only",
+      "dimension": "onboarding",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "easygenerator", "score": 5},
+      "impact": "medium",
+      "effort": "quick_win",
+      "audience_urgency": "MA supervisors",
+      "rationale": "Academic evaluators and enterprise users may not want to use a personal Google account. A basic email/password option removes a barrier to access. Supabase supports this natively with minimal configuration."
+    },
+    {
+      "suggested_order": 5,
+      "gap": "No completion certificates for learners",
+      "dimension": "learner",
+      "tidelearn_score": 4,
+      "best_in_class": {"tool": "sana", "score": 5},
+      "impact": "medium",
+      "effort": "quick_win",
+      "audience_urgency": "L&D testers",
+      "rationale": "Completion certificates are expected by L&D professionals for compliance and professional development use cases. Sana, Elucidat, and Rise all offer them. A simple auto-generated PDF certificate on course completion would satisfy this expectation."
+    },
+    {
+      "suggested_order": 6,
+      "gap": "No learner progress persistence between sessions",
+      "dimension": "learner",
+      "tidelearn_score": 4,
+      "best_in_class": {"tool": "rise", "score": 5},
+      "impact": "medium",
+      "effort": "larger_effort",
+      "audience_urgency": "L&D testers",
+      "rationale": "Learners who close a course and return later start from the beginning. SCORM handles this when using an LMS, but the shareable URL mode has no persistence. Easygenerator, Rise, and Sana all save progress server-side."
+    },
+    {
+      "suggested_order": 7,
+      "gap": "Block picker lacks visual richness — text labels only, no preview thumbnails",
+      "dimension": "editor",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "rise", "score": 4},
+      "impact": "low",
+      "effort": "quick_win",
+      "audience_urgency": "investors",
+      "rationale": "The block picker is functional but does not convey the breadth of available block types visually. Adding small preview thumbnails or icons to each block type in the picker would improve perceived richness and help new users discover capabilities."
+    },
+    {
+      "suggested_order": 8,
+      "gap": "Course card grid uses letter-initial placeholders instead of cover images",
+      "dimension": "visual",
+      "tidelearn_score": 4,
+      "best_in_class": {"tool": "rise", "score": 4},
+      "impact": "low",
+      "effort": "quick_win",
+      "audience_urgency": "investors",
+      "rationale": "The dashboard's visual appeal is reduced by uniform letter-initial placeholders. Allowing course cover image uploads (or auto-generating from first image in course) would make the dashboard feel more polished in demos and screenshots."
+    },
+    {
+      "suggested_order": 9,
+      "gap": "Lesson sidebar becomes crowded with many lessons — no collapsible sections or search",
+      "dimension": "editor",
+      "tidelearn_score": 3,
+      "best_in_class": {"tool": "elucidat", "score": 4},
+      "impact": "low",
+      "effort": "quick_win",
+      "audience_urgency": "L&D testers",
+      "rationale": "Courses with 10+ lessons make the sidebar difficult to navigate. A simple search/filter or collapsible module grouping would improve ergonomics for real-world course sizes."
+    },
+    {
+      "suggested_order": 10,
+      "gap": "No password protection on shareable course URLs",
+      "dimension": "publishing",
+      "tidelearn_score": 4,
+      "best_in_class": {"tool": "easygenerator", "score": 5},
+      "impact": "medium",
+      "effort": "quick_win",
+      "audience_urgency": "L&D testers",
+      "rationale": "L&D professionals sharing courses via URL for review or limited distribution need basic access control. Easygenerator and Courseau both offer password protection. A simple password gate on the shareable URL would cover this use case."
+    }
+  ],
+  "methodology": {
+    "date_of_research": "2026-03-22",
+    "evidence_source_distribution": {
+      "direct_access": ["tidelearn", "courseau"],
+      "marketing_docs_review": ["rise", "easygenerator", "elucidat", "mindsmith"],
+      "marketing_only_limited": ["sana"],
+      "notes": "TideLearn scored from full direct access (developer-owner). Courseau had partial direct access (free tier sign-up achieved but editor screenshots failed). Rise, Easygenerator, Elucidat, and Mindsmith scored from marketing pages, help documentation, and G2/Capterra reviews. Sana scored from marketing only — fully demo-gated with no self-serve access."
+    },
+    "tools_with_limited_access": {
+      "sana": "Fully demo-gated. Zero direct product access. All scores derived from marketing, YouTube demos, G2 reviews, and help center content. Scores may overstate or understate actual product quality.",
+      "elucidat": "Demo-gated 14-day trial. No direct access. Scores derived from marketing, help docs, G2 reviews, and REST API documentation. Block catalogue depth is the least certain dimension.",
+      "mindsmith": "Free tier exists but app.mindsmith.ai redirected to sign-in during audit. Screenshots failed (black captures). All scores from marketing and help docs.",
+      "rise": "30-day free trial exists but was not activated during this audit. Scores from extensive marketing documentation, help center, and G2 reviews.",
+      "easygenerator": "14-day free trial exists but was not activated during this audit. Scores from marketing, help docs, and extensive G2/Capterra reviews."
+    },
+    "known_limitations_and_bias": [
+      "TideLearn is scored by its developer-owner, creating an inherent knowledge advantage — TideLearn's score reflects actual capability while competitor scores reflect marketed/documented capability. Competitors may have undocumented features that would raise their scores.",
+      "Marketing-sourced scores tend to reflect best-case product presentation. Features described in marketing may be plan-gated, partially implemented, or not yet shipped.",
+      "G2/Capterra review scores reflect user sentiment but are subject to selection bias (satisfied users over-represented) and recency issues (reviews may describe older product versions).",
+      "Block catalogue scores for Elucidat, Sana, and Courseau are particularly uncertain — these tools do not enumerate block types publicly, and scores may understate their actual capabilities.",
+      "AI feature scores for tools with in-app AI (Rise, Easygenerator, Sana, Mindsmith) reflect marketed capabilities; actual AI output quality was not tested.",
+      "Journey step counts for Sana are estimated at 0 (meaning not measurable) due to complete lack of product access."
+    ],
+    "scoring_scale": "1-5 scale. 1 = critically weak or absent. 2 = below market expectations. 3 = functional and competitive at baseline. 4 = strong, at or near market standard. 5 = best-in-class or category-defining."
+  }
 }
