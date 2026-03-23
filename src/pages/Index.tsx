@@ -1,127 +1,98 @@
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { Link } from "react-router-dom";
+import { Waves, Menu, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-
-/* ─── colour / style constants ─────────────────────────── */
-const TEAL_GRAD = "linear-gradient(135deg, #14b8a6, #06b6d4)";
-const TEAL_GRAD_TEXT = "linear-gradient(135deg, #14b8a6, #67e8f9)";
-const OCEAN_DEEP = "#0a1f1c";
 
 /* ─── Nav ─────────────────────────────────────────────── */
 function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void> }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const closeNav = useCallback(() => setMobileNavOpen(false), []);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeNav();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileNavOpen, closeNav]);
+
   return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "18px 56px",
-        background:
-          "linear-gradient(180deg, rgba(10,31,28,0.95) 0%, transparent 100%)",
-        backdropFilter: "blur(4px)",
-      }}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-14 py-4 bg-gradient-to-b from-[rgba(10,31,28,0.95)] to-transparent backdrop-blur-sm">
       {/* Logo */}
-      <Link
-        to="/"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          textDecoration: "none",
-        }}
-      >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
-            background: "var(--gradient-primary)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-            flexShrink: 0,
-          }}
-        >
-          🌊
+      <Link to="/" className="flex items-center gap-2.5 no-underline">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0">
+          <Waves className="w-5 h-5 text-white" />
         </div>
-        <span
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 800,
-            fontSize: 18,
-            color: "#fff",
-            letterSpacing: "-0.01em",
-          }}
-        >
+        <span className="font-sans font-extrabold text-lg text-white tracking-tight">
           TideLearn
         </span>
       </Link>
 
-      {/* Right links */}
-      <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-        <Link
-          to="/courses"
-          style={{
-            color: "var(--teal-bright)",
-            fontSize: 14,
-            fontWeight: 500,
-            textDecoration: "none",
-          }}
-        >
+      {/* Desktop links */}
+      <div className="hidden md:flex items-center gap-7">
+        <Link to="/courses" className="text-[var(--teal-bright)] text-sm font-medium no-underline">
           My Courses
         </Link>
-        <a
-          href="#features"
-          style={{
-            color: "var(--teal-bright)",
-            fontSize: 14,
-            fontWeight: 500,
-            textDecoration: "none",
-          }}
-        >
+        <a href="#features" className="text-[var(--teal-bright)] text-sm font-medium no-underline">
           Features
         </a>
         {user ? (
           <button
             onClick={signOut}
-            style={{
-              padding: "7px 18px",
-              border: "1.5px solid var(--teal-bright)",
-              borderRadius: 8,
-              background: "transparent",
-              color: "var(--teal-bright)",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
+            className="px-4 py-1.5 border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-sm font-medium cursor-pointer"
           >
             Sign Out
           </button>
         ) : (
           <Link
             to="/auth"
-            style={{
-              padding: "7px 18px",
-              border: "1.5px solid var(--teal-bright)",
-              borderRadius: 8,
-              color: "var(--teal-bright)",
-              fontSize: 14,
-              fontWeight: 500,
-              textDecoration: "none",
-              display: "inline-block",
-            }}
+            className="px-4 py-1.5 border-[1.5px] border-[var(--teal-bright)] rounded-lg text-[var(--teal-bright)] text-sm font-medium no-underline inline-block"
           >
             Sign In
           </Link>
         )}
       </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="md:hidden p-2 text-white bg-transparent border-none cursor-pointer"
+        onClick={() => setMobileNavOpen(!mobileNavOpen)}
+        aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+        aria-expanded={mobileNavOpen}
+      >
+        {mobileNavOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileNavOpen && (
+        <div className="md:hidden fixed inset-0 top-16 z-40 bg-[#0a1f1c]/95 backdrop-blur-sm flex flex-col items-center gap-6 pt-12">
+          <Link to="/courses" className="text-[var(--teal-bright)] text-lg font-medium no-underline" onClick={closeNav}>
+            My Courses
+          </Link>
+          <a href="#features" className="text-[var(--teal-bright)] text-lg font-medium no-underline" onClick={closeNav}>
+            Features
+          </a>
+          {user ? (
+            <button
+              onClick={() => { signOut(); closeNav(); }}
+              className="px-6 py-2 border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-base font-medium cursor-pointer"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="px-6 py-2 border-[1.5px] border-[var(--teal-bright)] rounded-lg text-[var(--teal-bright)] text-base font-medium no-underline inline-block"
+              onClick={closeNav}
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
@@ -129,93 +100,22 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
 /* ─── Editor preview card (decorative) ───────────────────── */
 function EditorCard() {
   return (
-    <div
-      style={{
-        maxWidth: 1000,
-        width: "100%",
-        margin: "0 auto",
-        marginTop: 64,
-        borderRadius: 16,
-        overflow: "hidden",
-        border: "1px solid rgba(20,184,166,0.18)",
-        boxShadow:
-          "0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(20,184,166,0.08)",
-        background: "#0d1f1d",
-        position: "relative",
-        zIndex: 2,
-      }}
-    >
+    <div className="max-w-[1000px] w-full mx-auto mt-16 rounded-2xl overflow-hidden border border-teal-500/[0.18] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(20,184,166,0.08)] bg-[#0d1f1d] relative z-[2]">
       {/* Browser chrome */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "12px 16px",
-          background: "#0a1a18",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <div
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: "50%",
-            background: "#ff5f57",
-          }}
-        />
-        <div
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: "50%",
-            background: "#febc2e",
-          }}
-        />
-        <div
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: "50%",
-            background: "#28c840",
-          }}
-        />
-        <div
-          style={{
-            flex: 1,
-            marginLeft: 16,
-            background: "rgba(255,255,255,0.06)",
-            borderRadius: 6,
-            padding: "4px 12px",
-            fontSize: 12,
-            color: "#64748b",
-            fontFamily: "monospace",
-          }}
-        >
+      <div className="flex items-center gap-2 px-4 py-3 bg-[#0a1a18] border-b border-white/[0.06]">
+        <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+        <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+        <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+        <div className="flex-1 ml-4 bg-white/[0.06] rounded-md px-3 py-1 font-sans text-xs text-[#cbd5e1]">
           tidelearn.app/view?id=intro-to-learning-design
         </div>
       </div>
 
-      {/* Two-column body */}
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", minHeight: 320 }}>
+      {/* Two-column body — sidebar hidden on mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] min-h-[320px]">
         {/* Sidebar — lesson list */}
-        <div
-          style={{
-            background: "#0c1c1a",
-            borderRight: "1px solid rgba(255,255,255,0.06)",
-            padding: "20px 0",
-          }}
-        >
-          <div
-            style={{
-              padding: "0 16px 12px",
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "#475569",
-            }}
-          >
+        <div className="hidden md:block bg-[#0c1c1a] border-r border-white/[0.06] py-5">
+          <div className="px-4 pb-3 text-[11px] font-bold uppercase tracking-widest text-[#475569]">
             Course outline
           </div>
           {[
@@ -227,29 +127,19 @@ function EditorCard() {
           ].map((lesson) => (
             <div
               key={lesson.num}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "9px 16px",
-                background: lesson.active
-                  ? "rgba(20,184,166,0.12)"
-                  : "transparent",
-                borderLeft: lesson.active
-                  ? "3px solid #14b8a6"
-                  : "3px solid transparent",
-                cursor: "default",
-              }}
+              className={`flex items-center gap-2.5 px-4 py-2 border-l-[3px] cursor-default ${
+                lesson.active
+                  ? "bg-teal-500/[0.12] border-l-teal-500"
+                  : "bg-transparent border-l-transparent"
+              }`}
             >
-              <span style={{ fontSize: 10, color: "#475569", fontFamily: "monospace" }}>
+              <span className="text-[10px] text-[#475569] font-mono">
                 {lesson.num}
               </span>
               <span
-                style={{
-                  fontSize: 13,
-                  color: lesson.active ? "#e0fdf4" : "#94a3b8",
-                  fontWeight: lesson.active ? 600 : 400,
-                }}
+                className={`text-[13px] ${
+                  lesson.active ? "text-[#e0fdf4] font-semibold" : "text-[#cbd5e1]"
+                }`}
               >
                 {lesson.title}
               </span>
@@ -258,58 +148,40 @@ function EditorCard() {
         </div>
 
         {/* Main content area */}
-        <div style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-bright)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+        <div className="p-7 md:px-8 flex flex-col gap-4">
+          <div className="text-[11px] font-bold text-[var(--teal-bright)] uppercase tracking-widest">
             Lesson 02
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#e0fdf4", fontFamily: "Lora, Georgia, serif", lineHeight: 1.3 }}>
+          <div className="text-xl md:text-[22px] font-extrabold text-[#e0fdf4] font-serif leading-snug">
             Adult learning theory
           </div>
-          <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7, maxWidth: 480 }}>
+          <div className="text-sm text-[#cbd5e1] leading-relaxed max-w-[480px]">
             Adults learn differently from children. Andragogy — the art and science of helping adults learn — focuses on self-direction, experience, and relevance to real-world problems.
           </div>
 
           {/* Quiz block */}
-          <div
-            style={{
-              marginTop: 8,
-              background: "rgba(20,184,166,0.07)",
-              border: "1px solid rgba(20,184,166,0.2)",
-              borderRadius: 10,
-              padding: "16px 20px",
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal-bright)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
+          <div className="mt-2 bg-teal-500/[0.07] border border-teal-500/20 rounded-[10px] px-5 py-4">
+            <div className="text-[11px] font-bold text-[var(--teal-bright)] uppercase tracking-wider mb-2.5">
               Knowledge check
             </div>
-            <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600, marginBottom: 12 }}>
+            <div className="text-sm text-[#e2e8f0] font-semibold mb-3">
               Which term describes the science of helping adults learn?
             </div>
             {["Pedagogy", "Andragogy", "Didactics", "Heutagogy"].map((opt, i) => (
               <div
                 key={opt}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "7px 12px",
-                  marginBottom: 6,
-                  borderRadius: 6,
-                  background: i === 1 ? "rgba(20,184,166,0.15)" : "rgba(255,255,255,0.04)",
-                  border: i === 1 ? "1px solid rgba(20,184,166,0.35)" : "1px solid rgba(255,255,255,0.07)",
-                  cursor: "default",
-                }}
+                className={`flex items-center gap-2.5 px-3 py-1.5 mb-1.5 rounded-md cursor-default ${
+                  i === 1
+                    ? "bg-teal-500/[0.15] border border-teal-500/[0.35]"
+                    : "bg-white/[0.04] border border-white/[0.07]"
+                }`}
               >
                 <div
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: "50%",
-                    border: i === 1 ? "4px solid #14b8a6" : "2px solid #475569",
-                    flexShrink: 0,
-                  }}
+                  className={`w-3.5 h-3.5 rounded-full shrink-0 ${
+                    i === 1 ? "border-4 border-teal-500" : "border-2 border-[#475569]"
+                  }`}
                 />
-                <span style={{ fontSize: 13, color: i === 1 ? "#e0fdf4" : "#94a3b8" }}>
+                <span className={`text-[13px] ${i === 1 ? "text-[#e0fdf4]" : "text-[#cbd5e1]"}`}>
                   {opt}
                 </span>
               </div>
@@ -324,11 +196,11 @@ function EditorCard() {
 /* ─── Wave divider SVG ─────────────────────────────────── */
 function WaveDivider() {
   return (
-    <div style={{ lineHeight: 0, background: "var(--ocean-deep)", marginTop: -2 }}>
+    <div className="leading-none bg-[var(--ocean-deep)] -mt-px">
       <svg
         viewBox="0 0 1440 80"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: "block", width: "100%" }}
+        className="block w-full"
         preserveAspectRatio="none"
       >
         <path
@@ -358,13 +230,13 @@ const FEATURES = [
     num: "03",
     title: "SCORM 1.2 export",
     desc: "Download a standards-compliant SCORM package and upload it to any LMS — Moodle, Canvas, Talent LMS.",
-    visual: "📦 course.zip",
+    visual: "course.zip",
   },
   {
     num: "04",
     title: "Cloud sync",
     desc: "Every change is saved to the cloud automatically. Pick up where you left off on any device.",
-    visual: "☁ Auto-saved",
+    visual: "Auto-saved",
   },
   {
     num: "05",
@@ -389,60 +261,27 @@ function FeatureRow({
 }) {
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "80px 1fr 1fr",
-        gap: 32,
-        alignItems: "start",
-        padding: "36px 0",
-        borderBottom: last ? "none" : "1px solid #f0fdf9",
-      }}
+      className={`grid grid-cols-1 md:grid-cols-[80px_1fr_1fr] gap-6 md:gap-8 items-start py-9 ${
+        last ? "" : "border-b border-[#f0fdf9]"
+      }`}
     >
       {/* Number */}
-      <div
-        style={{
-          fontFamily: "Lora, Georgia, serif",
-          fontSize: 48,
-          fontWeight: 900,
-          color: "var(--teal-bright)",
-          lineHeight: 1,
-          paddingTop: 4,
-        }}
-      >
+      <div className="font-serif text-5xl font-black text-[var(--teal-bright)] leading-none pt-1">
         {num}
       </div>
 
       {/* Title + desc */}
       <div>
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 20,
-            fontWeight: 800,
-            color: "var(--text-primary)",
-            marginBottom: 8,
-          }}
-        >
+        <div className="font-sans text-xl font-extrabold text-[var(--text-primary)] mb-2">
           {title}
         </div>
-        <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.7 }}>
+        <div className="text-[15px] text-[#475569] leading-relaxed">
           {desc}
         </div>
       </div>
 
       {/* Visual chip */}
-      <div
-        style={{
-          background: "#f0fdf9",
-          border: "1px solid #99f6e4",
-          borderRadius: 10,
-          padding: "14px 18px",
-          fontFamily: "monospace",
-          fontSize: 13,
-          color: "#0f766e",
-          fontWeight: 600,
-        }}
-      >
+      <div className="font-sans text-sm font-medium bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg border border-teal-200 w-fit">
         {visual}
       </div>
     </div>
@@ -454,167 +293,64 @@ const Index = () => {
   const { user, signOut } = useAuth();
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="font-sans">
       <Nav user={user} signOut={signOut} />
 
       {/* ── Hero ────────────────────────────────────────── */}
-      <section
-        style={{
-          minHeight: "100vh",
-          overflow: "hidden",
-          position: "relative",
-          background: `
-            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(20,184,166,0.22) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 40% at 90% 20%, rgba(6,182,212,0.12) 0%, transparent 50%),
-            linear-gradient(180deg, #0a1f1c 0%, #0d2d2a 50%, #0a2525 100%)
-          `,
-        }}
-      >
+      <section className="min-h-screen overflow-hidden relative bg-gradient-to-b from-[#0a1f1c] via-[#0d2d2a] to-[#0a2525]">
         {/* Subtle horizontal line texture overlay */}
         <div
+          className="absolute inset-0 pointer-events-none"
           style={{
-            position: "absolute",
-            inset: 0,
             backgroundImage:
               "repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 40px)",
-            pointerEvents: "none",
           }}
         />
 
         {/* Content */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            paddingTop: 120,
-            paddingBottom: 0,
-            paddingLeft: 24,
-            paddingRight: 24,
-          }}
-        >
+        <main id="main-content" className="relative z-[1] flex flex-col items-center text-center pt-32 md:pt-40 pb-0 px-6 md:px-14">
           {/* Eyebrow pill */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "6px 16px",
-              borderRadius: 999,
-              background: "rgba(20,184,166,0.12)",
-              border: "1px solid rgba(20,184,166,0.3)",
-              marginBottom: 28,
-            }}
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#14b8a6",
-                boxShadow: "0 0 8px #14b8a6",
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{ fontSize: "11px", color: "#5eead4", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}
-            >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/[0.12] border border-teal-500/30 mb-7">
+            <span className="w-[7px] h-[7px] rounded-full bg-teal-500 shrink-0" />
+            <span className="text-[11px] text-teal-300 font-medium tracking-widest uppercase">
               Personal e-learning authoring tool
             </span>
           </div>
 
           {/* Headline */}
-          <h1
-            style={{
-              fontFamily: "Lora, Georgia, serif",
-              fontSize: "clamp(42px, 7vw, 80px)",
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-              maxWidth: 820,
-              margin: "0 0 24px",
-            }}
-          >
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] max-w-[820px] mb-6">
             Build courses the tide{" "}
-            <em
-              style={{
-                fontStyle: "italic",
-                background: TEAL_GRAD_TEXT,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <em className="text-teal-400 not-italic font-semibold">
               brings in.
             </em>
           </h1>
 
           {/* Subhead */}
-          <p
-            style={{
-              fontSize: 19,
-              color: "#94a3b8",
-              maxWidth: 520,
-              lineHeight: 1.65,
-              margin: "0 0 36px",
-            }}
-          >
+          <p className="text-lg text-slate-400 max-w-[520px] leading-relaxed mb-9">
             Block-based authoring, instant shareable URL,{" "}
-            <strong style={{ color: "#cbd5e1" }}>SCORM export</strong>. Built by
+            <strong className="text-slate-300">SCORM export</strong>. Built by
             an L&amp;D professional, for L&amp;D professionals.
           </p>
 
           {/* CTAs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 16,
-              flexWrap: "wrap",
-              justifyContent: "center",
-              marginBottom: 64,
-            }}
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link
               to="/courses"
-              style={{
-                display: "inline-block",
-                padding: "13px 28px",
-                borderRadius: 10,
-                background: "var(--gradient-primary)",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 15,
-                textDecoration: "none",
-                boxShadow: "0 0 24px rgba(20,184,166,0.35), 0 4px 16px rgba(0,0,0,0.3)",
-              }}
+              className="inline-block px-7 py-3 rounded-[10px] bg-[var(--gradient-primary)] bg-gradient-to-br from-teal-500 to-cyan-600 text-white font-bold text-[15px] no-underline shadow-lg hover:shadow-xl transition-shadow"
             >
-              Start authoring →
+              Start authoring <span aria-hidden="true">&rarr;</span>
             </Link>
             <a
               href="#features"
-              style={{
-                display: "inline-block",
-                padding: "13px 28px",
-                borderRadius: 10,
-                border: "1.5px solid rgba(20,184,166,0.4)",
-                color: "#5eead4",
-                fontWeight: 600,
-                fontSize: 15,
-                textDecoration: "none",
-                background: "transparent",
-              }}
+              className="inline-block px-7 py-3 rounded-[10px] border-[1.5px] border-teal-500/40 text-teal-300 font-semibold text-[15px] no-underline bg-transparent hover:bg-teal-500/10 transition-colors"
             >
-              See what it does ↓
+              See what it does <span aria-hidden="true">&darr;</span>
             </a>
           </div>
 
           {/* Editor preview card */}
           <EditorCard />
-        </div>
+        </main>
       </section>
 
       {/* ── Wave divider ───────────────────────────────── */}
@@ -623,69 +359,16 @@ const Index = () => {
       {/* ── Features ─────────────────────────────────── */}
       <section
         id="features"
-        style={{
-          background: "#fff",
-          padding: "100px 56px",
-          position: "relative",
-        }}
+        className="bg-white px-6 md:px-14 py-16 md:py-24 relative"
       >
         {/* 4px teal top stripe */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            background: "var(--gradient-primary)",
-          }}
-        />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-cyan-600" />
 
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          {/* Kicker */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 16,
-            }}
-          >
-            <div
-              style={{
-                width: 32,
-                height: 3,
-                borderRadius: 2,
-                background: "var(--gradient-primary)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "#0f766e",
-              }}
-            >
-              What it does
-            </span>
-          </div>
-
+        <div className="max-w-[1000px] mx-auto">
           {/* Section title */}
-          <h2
-            style={{
-              fontFamily: "Lora, Georgia, serif",
-              fontSize: 44,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.2,
-              margin: "0 0 56px",
-            }}
-          >
+          <h2 className="font-serif text-3xl md:text-[44px] font-bold text-[var(--text-primary)] tracking-tight leading-snug mb-14">
             Everything you need.{" "}
-            <span style={{ color: "#64748b", fontWeight: 400 }}>
+            <span className="text-[#64748b] font-normal">
               Nothing you don't.
             </span>
           </h2>
@@ -702,44 +385,17 @@ const Index = () => {
       </section>
 
       {/* ── Footer ───────────────────────────────────── */}
-      <footer
-        style={{
-          background: "var(--ocean-deep)",
-          padding: "32px 56px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 7,
-              background: "var(--gradient-primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 15,
-            }}
-          >
-            🌊
+      <footer className="bg-[var(--ocean-deep)] px-6 md:px-14 py-8 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
+            <Waves className="w-4 h-4 text-white" />
           </div>
-          <span
-            style={{
-              fontWeight: 700,
-              fontSize: 15,
-              color: "#fff",
-            }}
-          >
+          <span className="font-bold text-[15px] text-white">
             TideLearn
           </span>
         </div>
-        <span style={{ fontSize: 13, color: "#475569" }}>
-          A personal project by Theo Navarro · © 2026
+        <span className="text-[13px] text-[#475569]">
+          A personal project by Theo Navarro · &copy; {new Date().getFullYear()}
         </span>
       </footer>
     </div>
