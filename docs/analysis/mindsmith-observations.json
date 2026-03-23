@@ -1,0 +1,47 @@
+{
+  "tool": "mindsmith",
+  "evidence_source": "[marketing|docs|review]",
+  "accessed_via": "marketing_only",
+  "screenshots": {
+    "mindsmith-onboarding-1.png": "Black/failed capture — previous agent screenshot did not render",
+    "mindsmith-onboarding-2.png": "Black/failed capture — previous agent screenshot did not render"
+  },
+  "observations": {
+    "onboarding": "Mindsmith has a genuine free tier (no demo gate) which is a strong onboarding differentiator. Sign-up requires email only. The free plan grants 450 AI credits at signup and allows creating and editing lessons immediately, with sharing limited to 2 lessons. The app is Next.js-based and routes to app.mindsmith.ai. The platform targets eLearning designers and L&D teams who want to generate content from existing documents (SOPs, articles, presentations, outlines) without starting from scratch. The 4-step workflow (Generate → Author → Share → Analyze) is clearly communicated on marketing pages. Microlearning framing is central to positioning. Free plan caps at 5 lessons in a course, which is a notable constraint for evaluation.",
+    "visual": "Marketing shows a clean, modern dark-and-light interface consistent with an AI-native SaaS product. The platform is described as 'next-generation authoring' and emphasizes design quality equal to AI speed. Custom branding (logo, theme) is available from the Professional tier. White-label workspace branding is a Business-tier feature. WCAG 2.2 AA accessibility compliance is claimed — notably, this is a more recent standard than the WCAG 2.1 AA claimed by most competitors. The visual design philosophy positions AI layout generation over manual template-picking, claiming to eliminate 'template blandness' in favour of contextually generated designs.",
+    "editor": "The editor centres on two core workflows: (1) AI generation from a storyboard — users guide the AI with instructions or feed it source documents and let it generate slides/tiles; (2) direct tile editing with an inline AI assistant for rewriting, restructuring, or refining specific content. The AI agent can apply changes across an entire lesson simultaneously based on natural language instructions (e.g. 'make this more clinical for a healthcare audience'). The Experience Canvas is a visual workspace for mapping branching scenario paths. Real-time collaborative editing is available (Business tier). The editor supports 20+ interactive tile/element types. Built-in text-to-speech audio narration is available from Professional tier, with Eleven Labs integration on Business tier. No screen recording tool mentioned.",
+    "blocks": "Confirmed interactive tile types from marketing and help docs: text blocks, images, accordions, flashcards, assessment questions (MCQ, short answer, multiple selection), sorting activities, branching scenarios, knowledge checks, quizzes. AI-generated role-play conversations (AI character simulations) are a distinctive block type. AI-generated videos with avatars and voiceovers are mentioned. The platform lists 20+ interactive elements but does not enumerate all by name in public sources. Notable confirmed types include: flashcard, accordion, branching scenario, sorting activity, quiz/assessment, AI role-play conversation. No explicit mention of: tabs, timeline, table, code block, hotspot image, iframe embed.",
+    "learner": "Lessons are shared via direct link (no learner account required) or embedded in external sites. The learner experience is mobile-responsive. Learners can complete interactive modules including branching scenarios and AI conversation role-plays. SCORM packages auto-update in the LMS when content is changed — a notable feature meaning learners always see the latest version without re-uploading. Analytics track per-learner results, completion rate, and answer distribution. The free plan limits sharing to 2 lessons, which significantly constrains learner reach at the free tier.",
+    "publishing": "SCORM export is available (free tier included). The SCORM package is described as 'auto-updating' — a live SCORM concept where the package phones home for content rather than being a static zip. xAPI support is also confirmed. Direct link sharing without learner accounts is confirmed. Embed in external sites is confirmed. Multi-language support: 70+ languages simultaneously via 'dynamic multilingual packaging' — content can be served in multiple languages within the same package, which is a distinctive enterprise capability. PDF export of analytics/metrics is available on Business tier. No explicit mention of SCORM version (1.2 vs 2004), password protection, or video export.",
+    "extensibility": "SAML/SSO is available on Enterprise tier only. No public REST API documentation found. No Zapier or Make integration mentioned. No MCP server. Multi-workspace management is Enterprise-only. The platform is SOC 2 Type II certified, GDPR and CCPA compliant. No webhooks confirmed. Extensibility story is thin below Enterprise tier — primarily an API-less, self-contained authoring and distribution platform."
+  },
+  "journey_notes": {
+    "journey1_create_course": {
+      "step_count": 4,
+      "friction_points": [
+        "Free plan limited to 5 lessons per course — constrains full course creation",
+        "AI credits are finite (450 at signup on free) — generation speed gates content volume",
+        "No direct editor access achieved — marketing-only research"
+      ],
+      "notes": "The documented workflow is: (1) sign up free, (2) upload or paste source document, (3) AI generates storyboard with lesson tiles via guided prompts, (4) edit tiles and publish. This is presented as a sub-10-minute path from document to shareable lesson. The storyboard system allows human oversight at each AI step. The 'Generate → Author → Share → Analyze' funnel is the primary UX frame."
+    },
+    "journey2_mixed_content": {
+      "step_count": 0,
+      "friction_points": [
+        "No direct app access — step count not observable",
+        "Tile palette of 20+ types not fully enumerable from public sources",
+        "No screen recording or in-product image editing confirmed"
+      ],
+      "notes": "From marketing: mixing text, image, video, accordion, flashcard, quiz, and branching scenario tiles within a lesson is described as the expected workflow. AI assistant can insert and rearrange tiles. The Experience Canvas handles branching path visualisation. Audio narration (TTS) is addable per lesson from Professional tier."
+    },
+    "journey3_publish_share": {
+      "step_count": 3,
+      "friction_points": [
+        "Free plan restricts sharing to 2 lessons — major constraint for evaluation",
+        "SCORM version not explicitly confirmed (1.2 vs 2004)",
+        "Auto-updating SCORM is a novel concept that may not be compatible with all LMS configurations"
+      ],
+      "notes": "Publishing options: (1) share link (no learner account required), (2) embed in external site, (3) SCORM/xAPI export to LMS. The auto-updating SCORM package is a key differentiator — the package is not a static export but maintains a connection to Mindsmith servers, meaning content can be updated without re-uploading to the LMS. This is powerful but creates an ongoing hosting dependency on Mindsmith."
+    }
+  }
+}

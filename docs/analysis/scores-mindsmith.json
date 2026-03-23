@@ -1,0 +1,47 @@
+{
+  "tool": "mindsmith",
+  "dimensions": {
+    "onboarding": {
+      "score": 4,
+      "evidence": "[marketing|docs]",
+      "narrative": "Mindsmith has a genuine, ungated free tier — sign up with email and start creating immediately, no demo booking required. The free plan grants 450 AI credits at signup and allows full lesson creation and editing. The 4-step flow (Generate → Author → Share → Analyze) is clearly communicated on marketing pages. The core value proposition — paste a document and get a shareable lesson in minutes — is easy to grasp. Friction points: the free plan caps sharing at 2 lessons and courses at 5 lessons, which is limiting for thorough evaluation but does not block initial onboarding. The AI-first framing means the fastest path to first output is feeding the AI a document, not understanding a tile palette — which suits non-technical authors well. Note: scored from marketing and public docs; app.mindsmith.ai redirects to sign-in.",
+      "screenshots": ["mindsmith-onboarding-1.png", "mindsmith-onboarding-2.png"]
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing]",
+      "narrative": "Mindsmith's marketing imagery presents a clean, modern SaaS aesthetic — dark-and-light interface, professional course output, and consistent branding. The platform claims WCAG 2.2 AA compliance (a newer standard than most competitors who cite 2.1 AA). Custom branding with logo is available from Professional tier ($39/month); full workspace branding is Business tier. The AI design generation philosophy explicitly positions itself against 'template blandness,' claiming AI-generated layouts are more contextually appropriate than one-size templates. Limitations: no evidence of advanced animation or interaction design capabilities; the microlearning format constrains visual complexity compared to enterprise authoring tools. Note: scored from marketing only; no direct editor access.",
+      "screenshots": []
+    },
+    "editor": {
+      "score": 4,
+      "evidence": "[marketing|docs]",
+      "narrative": "The Mindsmith editor is genuinely AI-native — not an AI bolt-on to a traditional authoring tool. Two primary edit modes: (1) storyboard-guided AI generation from source documents, with the user directing the AI at each step; (2) tile-by-tile editing with an AI assistant that can rewrite, restructure, or restyle content via natural language. The 'whole-lesson agent' mode can apply stylistic or content changes across all tiles simultaneously from a single instruction — a strong differentiator. The Experience Canvas provides a visual branching map for scenario design. Real-time collaborative editing with commenting is available (Business tier). Built-in TTS narration (Eleven Labs integration on Business) reduces dependency on external audio tools. Weak points: no screen recording, no built-in screen capture, no complex animation timeline. The microlearning-first design means the editor is optimised for short, focused lessons rather than long-form multi-chapter courses. Note: scored from marketing and blog content only.",
+      "screenshots": []
+    },
+    "blocks": {
+      "score": 3,
+      "evidence": "[marketing|review]",
+      "narrative": "Mindsmith confirms 20+ interactive tile types but does not enumerate all in public-facing sources. Confirmed block types: text, image, accordion, flashcard, assessment questions (MCQ, short answer, multiple selection with conditional logic), sorting activity, branching scenario, knowledge check, AI role-play conversation, AI-generated video with avatar. The AI role-play conversation block is a genuine differentiator — learners interact with an AI character in a simulated dialogue, useful for soft skills and scenario practice. Not confirmed from public sources: tabs, timeline, table, code block, hotspot image, iframe embed, quote/callout. The block catalogue is meaningfully smaller and more constrained than enterprise tools like Articulate Rise, but the AI conversation and branching blocks are above average. Note: scored from marketing and third-party review aggregators.",
+      "screenshots": []
+    },
+    "learner": {
+      "score": 4,
+      "evidence": "[marketing]",
+      "narrative": "The learner experience is designed for accessibility and reach: no learner account required for link-based access, mobile-responsive output, and WCAG 2.2 AA compliant content. The auto-updating SCORM model is a strong differentiator — when authors update content in Mindsmith, the LMS course updates automatically without re-uploading, meaning learners always receive the latest version. AI role-play conversations provide a genuinely interactive learner experience beyond multiple-choice quizzing. Analytics per learner (completion, answer distribution, results) are available. Free plan limits sharing to 2 lessons, which constrains learner reach at no cost. No evidence of gamification (badges, leaderboards), offline access, or personalised learning path adapatation at the learner level. Note: scored from marketing only.",
+      "screenshots": []
+    },
+    "publishing": {
+      "score": 4,
+      "evidence": "[marketing]",
+      "narrative": "Publishing options are solid and include SCORM export (free tier), xAPI, direct link sharing, and embed in external sites. The auto-updating SCORM package is the headline differentiator: unlike a static SCORM zip, Mindsmith's package maintains a server connection so content changes propagate to LMS-enrolled learners without re-upload. Multi-language support across 70+ languages via dynamic packaging is a strong enterprise capability. Weaknesses: specific SCORM version (1.2 vs 2004) is not confirmed in public sources; no LTI support mentioned; password protection not confirmed; no video export. The auto-updating SCORM creates an ongoing cloud dependency that may be a concern for air-gapped or strict-LMS enterprise environments. Overall publishing story is strong, especially for SMB and mid-market, but lacks the breadth of Elucidat's confirmed multi-standard output. Note: scored from marketing only.",
+      "screenshots": []
+    },
+    "extensibility": {
+      "score": 2,
+      "evidence": "[marketing]",
+      "narrative": "Mindsmith's extensibility story is thin below Enterprise tier. SAML/SSO is Enterprise-only. No public REST API documentation was found. No webhooks confirmed. No Zapier or Make native connectors. No MCP server. Multi-workspace management is Enterprise-only. The platform is SOC 2 Type II certified, GDPR and CCPA compliant — strong security posture, but these are compliance certifications not integration mechanisms. Below Enterprise, Mindsmith is essentially a self-contained, non-programmable SaaS. This is a deliberate product stance for the SMB/PLG market but creates a ceiling for enterprise customers who need deep LMS integration, automation, or custom workflows. Note: scored from marketing only.",
+      "screenshots": []
+    }
+  }
+}

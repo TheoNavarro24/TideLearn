@@ -1,0 +1,53 @@
+{
+  "tool": "mindsmith",
+  "category_scores": {
+    "blocks": {
+      "score": 3,
+      "narrative": "Mindsmith confirms 20+ interactive tile types but only partially enumerates them in public sources. Confirmed: text/rich text, image, accordion, flashcard, assessment questions (MCQ, short answer, multiple selection), sorting activity, branching scenario, knowledge check, AI role-play conversation block, AI-generated video with avatar. Not confirmed from public sources: tabs, timeline, table, code block, hotspot image, iframe embed, quote/callout. The AI conversation block is a standout differentiator — learners interact with an AI character in a real-time simulated dialogue. The sorting activity and flashcard types are above the baseline. However, the overall block catalogue is narrower than enterprise tools and the microlearning-first design constrains layout complexity. Evidence: [marketing|review]"
+    },
+    "assessment": {
+      "score": 3,
+      "narrative": "Assessment question types confirmed: MCQ (multiple choice), short answer, and multiple selection (with conditional logic). Knowledge checks (unscored) are confirmed as a tile type. Passing score configuration is implied by SCORM/xAPI tracking but not explicitly confirmed as a setting. Not confirmed: true/false as a distinct type, fill-in-the-blank, matching, drag-and-drop, hotspot image questions, question banks, or randomisation. Multiple attempts are not confirmed. AI grading for short-answer responses is mentioned in one third-party review aggregator. The assessment feature set is adequate for microlearning knowledge checks but is not designed to compete with enterprise assessment platforms. Evidence: [marketing|review]"
+    },
+    "ai": {
+      "score": 5,
+      "narrative": "AI is Mindsmith's central differentiating capability, not a supplementary feature. Confirmed AI features: (1) document-to-eLearning generation from SOPs, articles, presentations, and course outlines using storyboard-guided prompts; (2) AI content rewrite and whole-lesson transformation via natural language instruction; (3) AI quiz and knowledge-check generation as part of lesson generation flow; (4) AI translation across 70+ languages simultaneously with dynamic multilingual packaging; (5) AI image generation confirmed; (6) AI learner feedback implied through AI role-play conversation scoring; (7) AI role-play conversation tutor/chat block — learners interact with an AI character for scenario practice, which is a genuine AI tutor feature. The 'whole-lesson agent' that applies changes across all tiles from a single instruction is a distinctive agentic capability. RAG-based generation grounding content to source documents reduces hallucination risk. Evidence: [marketing|docs]"
+    },
+    "compliance": {
+      "score": 3,
+      "narrative": "SCORM export is confirmed and available on the free tier — a notable accessibility advantage. The SCORM package is described as 'auto-updating' (a live SCORM that phones home to Mindsmith servers) rather than a traditional static zip. xAPI/Tin Can support is confirmed. The specific SCORM version (1.2 vs 2004) is not confirmed in public sources. No LTI support mentioned. PDF export is available (metrics PDF on Business tier; PDF of content not explicitly confirmed). Video export is not mentioned. The auto-updating SCORM is a strong differentiator for ease of updates but introduces a cloud dependency that may not satisfy all enterprise LMS environments. Evidence: [marketing]"
+    },
+    "analytics": {
+      "score": 2,
+      "narrative": "Core analytics are confirmed: completion rate tracking, answer distribution per question, per-learner results view, and analytics dashboard. PDF export of engagement metrics is available on Business tier. An 'actionable insights delivered to you' feature is listed as 'coming soon,' suggesting the current analytics are basic. Not confirmed: time-on-task, cohort analytics, advanced segmentation, CSV/data export, LRS integration. The analytics story is functional for a microlearning tool but is clearly below the depth offered by enterprise authoring tools. Analytics are hosted within Mindsmith's platform — no evidence of integration with external analytics or BI tools. Evidence: [marketing]"
+    },
+    "collaboration": {
+      "score": 3,
+      "narrative": "Real-time simultaneous editing is confirmed on Business tier. Commenting and review workflows are confirmed. Version history and staging environments are confirmed on Business tier. Granular role-based permissions are confirmed. Multi-workspace management is Enterprise-only. Not confirmed: external reviewer links (review without author access), comment audit trail, or review approval workflow as a formal state machine. Collaboration features are present and meaningful at Business tier but are thin on Professional and essentially absent on free. Evidence: [marketing]"
+    },
+    "templates": {
+      "score": 3,
+      "narrative": "Mindsmith's approach to templates is explicitly anti-template: the platform generates contextually appropriate layouts via AI rather than providing a library of pre-made templates. This is a philosophical position that trades template variety for AI-generated relevance. Custom branding (logo, colours) is available from Professional tier. Workspace-level branding controls are available on Business tier. White-label is not explicitly confirmed. Custom domain is not confirmed. The AI generates visual structure rather than applying templates, which means the template concept is partially dissolved into the generation flow. Evidence: [marketing]"
+    },
+    "branching": {
+      "score": 3,
+      "narrative": "Branching scenarios are a confirmed, named feature with dedicated tooling: the Experience Canvas provides a visual decision-tree view of branching paths. AI can generate branching scenarios from prompts. Conditional feedback (showing why a choice was sub-optimal) is confirmed. Scenarios with up to 40-node complexity are described as achievable. Personalised paths are referenced in the platform description. Prerequisites (blocking access to content until earlier content is completed) are not confirmed. The branching feature is above baseline — AI generation of branches is a differentiator — but practical depth is limited by the microlearning format, which constrains scenario complexity. Evidence: [marketing|docs]"
+    },
+    "media": {
+      "score": 3,
+      "narrative": "Direct video upload is implied (media integration is described but not confirmed as upload vs. embed only). CDN hosting for content is implied by the auto-updating SCORM architecture. AI image generation is confirmed. Text-to-speech audio narration with Eleven Labs integration is confirmed (Professional+ tier). AI-generated videos with avatars are confirmed as a content type. Stock media library is not explicitly confirmed. In-product image editing is not confirmed. Subtitle/caption support is not explicitly confirmed (though WCAG 2.2 AA compliance implies some captioning capability). The AI-generated avatar video is a differentiator not seen in most authoring tools. Evidence: [marketing]"
+    },
+    "accessibility": {
+      "score": 4,
+      "narrative": "WCAG 2.2 AA compliance is explicitly confirmed — this is the most recent WCAG standard and more demanding than the 2.1 AA claimed by most competitors. The claim is that published content is WCAG AA compliant upon export. SOC 2 Type II, GDPR, and CCPA compliance are also confirmed. Keyboard navigation and screen reader support are implied by WCAG 2.2 AA conformance but not individually confirmed. Alt text support is not explicitly mentioned. The WCAG 2.2 claim is a meaningful differentiator if substantiated — it should be verified against published accessibility documentation for full confidence. Evidence: [marketing]"
+    },
+    "publishing": {
+      "score": 3,
+      "narrative": "Shareable link without learner accounts is confirmed and available on all tiers. Embed in external sites is confirmed. SCORM export is confirmed (free tier). xAPI is confirmed. Password protection for shared links is not confirmed. SSO for learner access is Enterprise-only (SAML). The auto-updating SCORM is a strong differentiator for LMS-based deployment. Multi-language dynamic packaging across 70+ languages is confirmed. However, specific SCORM version, LTI, and offline access are not confirmed. The free plan's 2-lesson sharing limit is a significant publishing constraint for evaluation and small-scale use. Evidence: [marketing]"
+    },
+    "extensibility": {
+      "score": 1,
+      "narrative": "Extensibility is the weakest dimension of Mindsmith's feature set below Enterprise tier. No public REST API found. No webhooks documented. No Zapier or Make native connectors. No MCP server. SAML/SSO is Enterprise-only. Multi-workspace management is Enterprise-only. The platform is designed as a self-contained product-led growth tool, not an open integration platform. SOC 2 Type II, GDPR, CCPA compliance and AES-256 + TLS 1.3 security are confirmed, but these are security posture items not extensibility features. For teams that need API access, custom integrations, or automation pipelines, Mindsmith is not a viable choice below the Enterprise tier (custom pricing). Evidence: [marketing]"
+    }
+  }
+}
