@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Inter', 'system-ui', 'sans-serif'],
+				sans: ['DM Sans', 'system-ui', 'sans-serif'],
 				display: ['Lora', 'Georgia', 'serif'],
 			},
 			colors: {
