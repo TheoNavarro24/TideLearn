@@ -1,0 +1,47 @@
+{
+  "tool": "rise",
+  "dimensions": {
+    "onboarding": {
+      "score": 5,
+      "evidence": "[marketing|docs]",
+      "narrative": "Rise 360 offers the most open onboarding of any enterprise authoring tool in this benchmark: a genuine self-serve 30-day free trial requiring no demo, no credit card gatekeeping, and no sales call. The tool is browser-based — nothing to install. The dashboard presents a clear + Create New or Create with AI entry point. 1,000+ templates (including 100+ onboarding-specific ones) are available immediately. An E-Learning Heroes onboarding learning path provides guided in-product tutorials. The AI course generation flow prompts for topic, audience, tone, and objectives before drafting a complete course outline with interactivity and knowledge checks. This is the gold standard for low-friction onboarding. Deducting zero points — this is a 5 by any measure. Note: AI features revert to a paid-only tier after 30 days.",
+      "screenshots": ["rise-onboarding-1.png"]
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing|docs|review]",
+      "narrative": "Rise 360 produces genuinely polished, modern, responsive course output. Three built-in themes (Rise, Apex, Horizon) with eight cover page layouts provide immediate visual variety. Custom hex colors, custom font upload, logo placement, and Content Library 360 (13M+ stock images) give meaningful branding control. AI image generation adds editorial, 3D, cartoon, and watercolor style options. G2 reviewers consistently describe the learner output as professional-looking and well-suited for modern L&D. The main limitation — flagged frequently by reviewers — is the single accent color constraint and the block-based layout system, which prevents complex brand palette matching and freeform visual compositions. The output is polished but has a recognisable 'Rise look' that skilled designers may find constraining. Scored 4 rather than 5 due to this known brand flexibility ceiling.",
+      "screenshots": ["rise-onboarding-1.png"]
+    },
+    "editor": {
+      "score": 4,
+      "evidence": "[marketing|docs|review]",
+      "narrative": "Rise's block editor is purpose-built for speed: fully browser-based, WYSIWYG, with a clear block palette, inline configuration panels, and live preview. Real-time collaborative editing (Teams tier) is a strong differentiator. AI Assistant is pervasive throughout the editor — content generation, rewrite, tone, quiz generation, image generation, captions. The Manage Blocks feature (Q4 2025) allows multi-select reorder and cross-lesson copy. Code Block (Q3 2025) unlocks custom HTML/CSS/JS. Storyline embeds extend interactivity significantly. G2 reviewers praise the ease and speed of authoring. The ceiling is the block-constrained layout — no freeform canvas, no pixel-level control. Reviewers note all courses have a similar structural look. Scored 4: exceptional ease and speed, but the layout rigidity prevents a 5.",
+      "screenshots": []
+    },
+    "blocks": {
+      "score": 5,
+      "evidence": "[marketing|docs]",
+      "narrative": "Rise 360 has one of the most comprehensive and well-documented block libraries in the e-learning authoring market. Confirmed interactive blocks: accordion, tabs, labeled graphic (hotspot), process, timeline, scenario (branching with characters), sorting activity (drag-drop), flashcards, buttons. Media blocks: image (multiple layouts), gallery, audio, video upload/embed, attachment, iframe/embed. Text blocks: text, statement, quote, list. Assessment blocks: multiple choice, multiple response, fill-in-the-blank, matching (knowledge check and quiz). Chart blocks (bar, line, pie). Structural: continue, divider, spacer. Plus: table, math equation editor, code block (custom HTML/CSS/JS), and Storyline embed. AI generates timeline and table blocks from prompts. Block templates are saveable and shareable. This is a 5 — the named block catalogue is comprehensive and every block type in the benchmark template is confirmed.",
+      "screenshots": []
+    },
+    "learner": {
+      "score": 5,
+      "evidence": "[marketing|docs|review]",
+      "narrative": "The Rise 360 learner experience is widely regarded as one of the best in the market. Courses are fully responsive across all devices and orientations. Navigation is customisable (sidebar type, progress indicators, button styles). Continue blocks enable progressive content reveal. Scenarios deliver branching roleplay. Sorting activities provide auto-feedback. AI-generated captions (Q4 2025) support video accessibility. Audio transcripts (AI or author-written) are supported. Keyboard navigation is supported. Quick Share provides no-LMS-needed delivery with light analytics. Reach 360 adds formal assignment, group, and progress tracking. G2 reviewers consistently praise the learner-facing quality and ease of interaction. The learner experience is a clear competitive strength — scored 5.",
+      "screenshots": []
+    },
+    "publishing": {
+      "score": 5,
+      "evidence": "[marketing|docs]",
+      "narrative": "Rise 360 supports the full spectrum of e-learning publishing standards: SCORM 1.2, SCORM 2004, xAPI (Tin Can), cmi5, and AICC — all from a single built-in Publish flow with no third-party tools required. Multiple tracking modes (completion %, quiz result, Storyline block). Quick Share for trackable no-LMS delivery. Reach 360 for full LMS-style delivery with direct publish (no zip export/upload cycle). PDF export available. Web publish available. The only confirmed gap is LTI (not natively supported — achieved via SCORM upload into an LTI-enabled LMS). This is a best-in-class publishing story — five standards plus two delivery modes plus PDF/web. Scored 5.",
+      "screenshots": []
+    },
+    "extensibility": {
+      "score": 3,
+      "evidence": "[marketing|docs]",
+      "narrative": "Reach 360 (the delivery/LMS layer) has a REST API and a Webhooks API with meaningful events (course.completed, user.created, enrollment events) — confirming integration capability at the delivery layer. Okta SSO integration (OIDC/SWA) is confirmed; enterprise SAML SSO is available via enterprise contact. However, Rise 360's authoring layer has no native REST API — a gap that community members have flagged repeatedly without resolution. No Zapier/Make native connector found. No MCP server. The extensibility story is solid for LMS/delivery integration (Reach 360 API + webhooks) but notably weak for authoring workflow automation. Scored 3: good delivery-layer extensibility, limited authoring-layer extensibility.",
+      "screenshots": []
+    }
+  }
+}
