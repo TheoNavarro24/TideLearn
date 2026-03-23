@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   getCoursesIndex,
   createNewCourse,
@@ -380,7 +381,6 @@ function CourseCard({
 }: CardProps) {
   const isOpen = openDropdownId === course.id;
   const dropRef = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState(false);
 
   const lessonCount = Array.isArray(course.lessons)
     ? course.lessons.length
@@ -406,38 +406,16 @@ function CourseCard({
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen, setOpenDropdownId]);
 
-  const cardStyle: React.CSSProperties = {
-    background: "#fff",
-    border: `1px solid ${hovered ? "#5eead4" : "#e2f4f1"}`,
-    borderRadius: 10,
-    position: "relative",
-    transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-    boxShadow: hovered ? "0 4px 20px rgba(13,148,136,0.12)" : "none",
-    transform: hovered ? "translateY(-2px)" : "none",
-    display: "flex",
-    flexDirection: "column",
-  };
-
   return (
     <div
-      style={cardStyle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-teal-300 hover:shadow-md transition-all cursor-pointer flex flex-col"
     >
       {/* Cover image area */}
       <div
-        style={{
-          height: 120,
-          background: course.coverImageUrl
-            ? `url(${course.coverImageUrl}) center/cover no-repeat`
-            : "linear-gradient(135deg, #0d9488 0%, #0891b2 100%)",
-          borderRadius: "10px 10px 0 0",
-          position: "relative",
-          cursor: isLoggedIn ? "pointer" : "default",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+        className={cn(
+          "aspect-video overflow-hidden relative flex items-center justify-center",
+          isLoggedIn ? "cursor-pointer" : "cursor-default"
+        )}
         onClick={() => {
           if (!isLoggedIn) return;
           const input = document.createElement("input");
@@ -451,83 +429,44 @@ function CourseCard({
         }}
         title={isLoggedIn ? "Click to upload cover image" : undefined}
       >
-        {!course.coverImageUrl && (
-          <span style={{ fontSize: 28, opacity: 0.5, color: "#fff" }}>
-            {course.title.charAt(0).toUpperCase()}
-          </span>
+        {course.coverImageUrl ? (
+          <img
+            src={course.coverImageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-teal-600 to-cyan-600 flex items-center justify-center">
+            <span className="text-[28px] opacity-50 text-white">
+              {course.title.charAt(0).toUpperCase()}
+            </span>
+          </div>
         )}
         {uploadingCoverId === course.id && (
-          <div style={{
-            position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontSize: 12, borderRadius: "10px 10px 0 0",
-          }}>
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs">
             Uploading…
           </div>
         )}
         {/* Lesson count bottom-left */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 14,
-            fontSize: 11,
-            fontWeight: 600,
-            color: "rgba(255,255,255,0.9)",
-          }}
-        >
+        <div className="absolute bottom-2.5 left-3.5 text-xs font-semibold text-white/90">
           {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
         </div>
       </div>
 
       {/* Card body */}
-      <div
-        style={{
-          padding: "14px 16px 16px",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          gap: 4,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 15,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            letterSpacing: "-0.02em",
-            lineHeight: 1.3,
-          }}
-        >
+      <div className="p-4 flex flex-col flex-1 gap-1">
+        <div className="font-sans text-[15px] font-bold text-[var(--text-primary)] tracking-tight leading-snug">
           {course.title}
         </div>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: "#94a3b8",
-            marginBottom: 10,
-          }}
-        >
+        <div className="text-xs font-medium text-slate-400 mb-2.5">
           {updatedLabel}
         </div>
 
         {/* Footer */}
-        <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
+        <div className="flex gap-1.5 mt-auto">
           <button
             onClick={() => onOpen(course.id)}
-            style={{
-              flex: 1,
-              background: "var(--gradient-primary)",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 13,
-              borderRadius: 6,
-              padding: "7px 0",
-              border: "none",
-              cursor: "pointer",
-            }}
+            className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-md py-1.5 border-none cursor-pointer"
           >
             Open →
           </button>
@@ -537,61 +476,30 @@ function CourseCard({
             <button
               onClick={(e) => { e.stopPropagation(); onToggleVisibility(course.id, course.isPublic ?? true); }}
               title={course.isPublic !== false ? "Public — click to make private" : "Private — click to make public"}
-              style={{
-                background: "none",
-                border: "1px solid #e0fdf4",
-                borderRadius: 6,
-                cursor: "pointer",
-                padding: "4px 6px",
-                color: course.isPublic !== false ? "#0d9488" : "#94a3b8",
-                fontSize: 13,
-                width: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className={cn(
+                "bg-transparent border border-emerald-100 rounded-md cursor-pointer px-1.5 py-1 text-sm w-8 flex items-center justify-center",
+                course.isPublic !== false ? "text-teal-600" : "text-slate-400"
+              )}
             >
               {course.isPublic !== false ? "🌐" : "🔒"}
             </button>
           )}
 
           {/* Overflow button */}
-          <div ref={dropRef} style={{ position: "relative" }}>
+          <div ref={dropRef} className="relative">
             <button
               onClick={() => setOpenDropdownId(isOpen ? null : course.id)}
-              style={{
-                width: 32,
-                height: 32,
-                background: isOpen ? "#f0fdfb" : "#f8fffe",
-                border: "1px solid #e0fdf4",
-                borderRadius: 6,
-                cursor: "pointer",
-                fontSize: 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#94a3b8",
-              }}
+              className={cn(
+                "w-8 h-8 border border-emerald-100 rounded-md cursor-pointer text-base flex items-center justify-center text-slate-400",
+                isOpen ? "bg-emerald-50" : "bg-[#f8fffe]"
+              )}
               title="More options"
             >
               ···
             </button>
 
             {isOpen && (
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "calc(100% + 6px)",
-                  right: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                  border: "1px solid #e0fdf4",
-                  borderRadius: 8,
-                  boxShadow: "0 8px 24px rgba(13,148,136,0.12)",
-                  minWidth: 172,
-                  padding: "4px 0",
-                }}
-              >
+              <div className="absolute bottom-full right-0 mb-1.5 z-[100] bg-white border border-gray-200 rounded-lg shadow-lg min-w-[172px] py-1">
                 <DropItem
                   icon="📋"
                   label="Duplicate"
@@ -627,13 +535,7 @@ function CourseCard({
                     );
                   }}
                 />
-                <div
-                  style={{
-                    height: 1,
-                    background: "#e0fdf4",
-                    margin: "4px 0",
-                  }}
-                />
+                <div className="h-px bg-emerald-100 my-1" />
                 <DropItem
                   icon="🗑"
                   label="Delete"
@@ -663,27 +565,15 @@ function DropItem({
   danger?: boolean;
   onClick: () => void;
 }) {
-  const [hov, setHov] = useState(false);
   return (
     <button
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
       onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        width: "100%",
-        padding: "7px 14px",
-        background: hov ? (danger ? "#fff5f5" : "#f0fdfb") : "transparent",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 13,
-        color: danger ? "#ef4444" : "#334155",
-        textAlign: "left",
-      }}
+      className={cn(
+        "w-full flex items-center gap-2 px-3 py-2 text-sm rounded transition-colors border-none cursor-pointer text-left",
+        danger ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-50"
+      )}
     >
-      <span style={{ fontSize: 14 }}>{icon}</span>
+      <span className="text-sm">{icon}</span>
       {label}
     </button>
   );
@@ -969,111 +859,111 @@ export default function Courses() {
       </aside>
 
       {/* ── Main ── */}
-      <main style={S.main}>
-        {/* Topbar */}
-        <div style={S.topbar}>
-          <span style={S.topbarTitle}>My Courses</span>
-          <button
-            style={S.importBtn}
-            onClick={() => importRef.current?.click()}
-          >
-            Import
-          </button>
-          <button style={S.newCourseBtn} onClick={onCreate} disabled={creating}>
-            + New Course
-          </button>
-        </div>
+      <main className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="px-6 md:px-10 py-8 max-w-7xl mx-auto">
+          {/* Topbar */}
+          <div style={S.topbar}>
+            <span style={S.topbarTitle}>My Courses</span>
+            <button
+              style={S.importBtn}
+              onClick={() => importRef.current?.click()}
+            >
+              Import
+            </button>
+            <button style={S.newCourseBtn} onClick={onCreate} disabled={creating}>
+              + New Course
+            </button>
+          </div>
 
-        {/* New course prompt */}
-        <div style={S.newCoursePrompt}>
-          <input
-            ref={newCourseInputRef}
-            style={S.newCourseInput}
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") onCreate();
-            }}
-            placeholder="Name your new course — e.g. Fire Safety Induction 2026…"
-          />
-          <button
-            style={{
-              ...S.newCourseBtn,
-              borderRadius: 0,
-              padding: "10px 18px",
-              fontSize: 13,
-              flexShrink: 0,
-            }}
-            onClick={onCreate}
-            disabled={creating}
-          >
-            Create →
-          </button>
-        </div>
+          {/* New course prompt */}
+          <div className="mt-5 bg-white border-[1.5px] border-emerald-100 rounded-lg flex items-center overflow-hidden flex-shrink-0">
+            <input
+              ref={newCourseInputRef}
+              className="flex-1 border-none bg-transparent text-sm px-3.5 py-2.5 outline-none text-[var(--text-primary)]"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onCreate();
+              }}
+              placeholder="Name your new course — e.g. Fire Safety Induction 2026…"
+            />
+            <button
+              className="bg-[var(--gradient-primary)] bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-none py-2.5 px-[18px] border-none cursor-pointer flex-shrink-0"
+              onClick={onCreate}
+              disabled={creating}
+            >
+              Create →
+            </button>
+          </div>
 
-        {/* Search bar */}
-        <div style={S.searchBar}>
-          <input
-            style={S.searchInput}
-            placeholder="Search courses…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <span style={S.searchCount}>
-            <strong>{filteredCourses.length}</strong> courses
-          </span>
-        </div>
+          {/* Search bar */}
+          <div className="py-3.5 bg-white border-b border-green-50 flex items-center gap-3 mt-3.5 flex-shrink-0">
+            <input
+              className="w-[260px] bg-[#f5fffe] border-[1.5px] border-[#d1faf4] rounded-[7px] py-[7px] px-3 text-[13px] outline-none text-[var(--text-primary)]"
+              placeholder="Search courses…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <span className="ml-auto text-[13px] text-slate-400">
+              <strong>{filteredCourses.length}</strong> courses
+            </span>
+          </div>
 
-        {/* Grid area */}
-        <div style={S.gridArea}>
-          {courses.length === 0 ? (
-            /* Empty state */
-            <div style={S.emptyWrap}>
-              <div style={S.emptyIcon}>🌊</div>
-              <div style={S.emptyTitle}>Your ocean is empty</div>
-              <div style={S.emptySub}>
-                Create your first course to get started with TideLearn.
+          {/* Grid area */}
+          <div className="pt-5 pb-12">
+            {courses.length === 0 ? (
+              /* Empty state */
+              <div className="flex flex-col items-center justify-center py-20 px-10 gap-4 text-center">
+                <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center text-[40px]">
+                  🌊
+                </div>
+                <div className="font-display text-[22px] font-bold text-[var(--text-primary)]">
+                  Your ocean is empty
+                </div>
+                <div className="text-sm text-[var(--text-muted)]">
+                  Create your first course to get started with TideLearn.
+                </div>
+                <button
+                  className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-lg py-2.5 px-6 border-none cursor-pointer"
+                  onClick={() => {
+                    newCourseInputRef.current?.focus();
+                  }}
+                >
+                  + Create a course
+                </button>
+                <button
+                  className="text-[13px] text-[var(--teal-primary)] cursor-pointer underline bg-transparent border-none"
+                  onClick={() => importRef.current?.click()}
+                >
+                  or import an existing JSON file
+                </button>
               </div>
-              <button
-                style={S.emptyCta}
-                onClick={() => {
-                  newCourseInputRef.current?.focus();
-                }}
-              >
-                + Create a course
-              </button>
-              <button
-                style={S.emptyLink}
-                onClick={() => importRef.current?.click()}
-              >
-                or import an existing JSON file
-              </button>
-            </div>
-          ) : filteredCourses.length === 0 ? (
-            <div style={{ padding: "40px 0", textAlign: "center", color: "#94a3b8", fontSize: 14 }}>
-              No courses match your search.
-            </div>
-          ) : (
-            <div style={S.grid}>
-              {filteredCourses.map((c) => (
-                <CourseCard
-                  key={c.id}
-                  course={c}
-                  onOpen={onOpen}
-                  onDelete={onDelete}
-                  onDuplicate={onDuplicate}
-                  onExport={onExport}
-                  onExportScorm={onExportScorm}
-                  onCoverUpload={handleCoverUpload}
-                  onToggleVisibility={handleToggleVisibility}
-                  uploadingCoverId={uploadingCoverId}
-                  isLoggedIn={!!user}
-                  openDropdownId={openDropdownId}
-                  setOpenDropdownId={setOpenDropdownId}
-                />
-              ))}
-            </div>
-          )}
+            ) : filteredCourses.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 text-sm">
+                No courses match your search.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredCourses.map((c) => (
+                  <CourseCard
+                    key={c.id}
+                    course={c}
+                    onOpen={onOpen}
+                    onDelete={onDelete}
+                    onDuplicate={onDuplicate}
+                    onExport={onExport}
+                    onExportScorm={onExportScorm}
+                    onCoverUpload={handleCoverUpload}
+                    onToggleVisibility={handleToggleVisibility}
+                    uploadingCoverId={uploadingCoverId}
+                    isLoggedIn={!!user}
+                    openDropdownId={openDropdownId}
+                    setOpenDropdownId={setOpenDropdownId}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
@@ -1104,30 +994,13 @@ export default function Courses() {
           <DialogFooter>
             <button
               onClick={cancelDelete}
-              style={{
-                background: "#f1f5f9",
-                border: "none",
-                borderRadius: 7,
-                padding: "8px 18px",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontSize: 13,
-              }}
+              className="bg-slate-100 border-none rounded-[7px] py-2 px-[18px] font-semibold cursor-pointer text-[13px]"
             >
               Cancel
             </button>
             <button
               onClick={confirmDelete}
-              style={{
-                background: "#ef4444",
-                color: "#fff",
-                border: "none",
-                borderRadius: 7,
-                padding: "8px 18px",
-                fontWeight: 700,
-                cursor: "pointer",
-                fontSize: 13,
-              }}
+              className="bg-red-500 text-white border-none rounded-[7px] py-2 px-[18px] font-bold cursor-pointer text-[13px]"
             >
               Delete
             </button>
