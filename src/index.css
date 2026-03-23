@@ -118,6 +118,16 @@ All colors MUST be HSL.
   }
 }
 
+@layer components {
+  /* Editor block controls */
+  .abr { @apply opacity-0 transition-opacity duration-150; }
+  .abr-container:hover .abr,
+  .abr.open { @apply opacity-100; }
+  .block-item:hover .bctrl,
+  .block-item:focus-within .bctrl { @apply opacity-100; }
+  .bctrl { @apply opacity-0 transition-opacity duration-150; }
+}
+
 @layer utilities {
   .bg-hero {
     background:
