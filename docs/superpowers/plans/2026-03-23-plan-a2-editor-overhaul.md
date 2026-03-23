@@ -16,6 +16,8 @@
 
 ### Task 1: Extract ConfirmModal component
 
+**Commands:** `/harden` (window.confirm blocked in SCORM iframe, "Remove lesson" no confirmation)
+
 **Files:**
 - Create: `src/components/editor/ConfirmModal.tsx`
 - Modify: `src/pages/Editor.tsx`
@@ -124,6 +126,8 @@ git commit -m "feat(editor): replace window.confirm with ConfirmModal (SCORM ifr
 
 ### Task 2: Extract PublishModal component
 
+**Commands:** `/harden` (dialog semantics, focus trap, Escape), `/polish` (emoji → Lucide icons), `/clarify` (heading text, import section reachable)
+
 **Files:**
 - Create: `src/components/editor/PublishModal.tsx`
 - Modify: `src/pages/Editor.tsx`
@@ -226,6 +230,8 @@ git commit -m "feat(editor): extract PublishModal with dialog semantics, Lucide 
 
 ### Task 3: Extract BlockPicker component
 
+**Commands:** `/harden` (block picker keyboard nav, Escape to close), `/normalize` (style injection anti-pattern), `/polish` (🔍 → Lucide Search)
+
 **Files:**
 - Create: `src/components/editor/BlockPicker.tsx`
 - Modify: `src/pages/Editor.tsx`
@@ -320,6 +326,8 @@ git commit -m "feat(editor): extract BlockPicker with combobox ARIA, keyboard na
 
 ### Task 4: Migrate Editor.tsx topbar to Tailwind
 
+**Commands:** `/normalize` (inline → Tailwind), `/harden` (focus rings on title input, undo/redo aria-labels)
+
 **Files:**
 - Modify: `src/pages/Editor.tsx` (lines 495–659)
 
@@ -363,6 +371,8 @@ git commit -m "refactor(editor): migrate topbar to Tailwind, add focus rings and
 ---
 
 ### Task 5: Migrate Editor.tsx sidebar to Tailwind + responsive
+
+**Commands:** `/adapt` (responsive sidebar collapse), `/polish` (emoji → Lucide icons), `/clarify` ("Course settings" → "Publish & Export")
 
 **Files:**
 - Modify: `src/pages/Editor.tsx` (lines 663–819)
@@ -436,6 +446,8 @@ git commit -m "refactor(editor): migrate sidebar to Tailwind, add responsive col
 
 ### Task 6: Migrate Editor.tsx canvas/content area to Tailwind + responsive
 
+**Commands:** `/adapt` (responsive canvas padding), `/normalize` (magic number arithmetic → CSS vars), `/clarify` (empty lesson placeholder text)
+
 **Files:**
 - Modify: `src/pages/Editor.tsx` (lines 822–947)
 
@@ -488,6 +500,8 @@ git commit -m "refactor(editor): migrate canvas to Tailwind, responsive padding,
 
 ### Task 7: Migrate BlockItem to Tailwind + accessibility fixes
 
+**Commands:** `/harden` (block controls keyboard-accessible, proper aria-labels, chip font size)
+
 **Files:**
 - Modify: `src/pages/Editor.tsx` (BlockItem component, lines 1187–1270)
 
@@ -525,6 +539,8 @@ git commit -m "refactor(editor): migrate BlockItem to Tailwind, fix block contro
 ---
 
 ### Task 8: Remaining interaction fixes
+
+**Commands:** `/normalize` (navigator.platform deprecated), `/clarify` (autosave failure toast, "Remove lesson" confirmation), `/harden` (lesson remove confirmation)
 
 **Files:**
 - Modify: `src/pages/Editor.tsx`

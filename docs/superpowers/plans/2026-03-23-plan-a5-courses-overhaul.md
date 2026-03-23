@@ -16,6 +16,8 @@
 
 ### Task 1: Delete `const S` and migrate sidebar to Tailwind
 
+**Commands:** `/normalize` (H-1 styling split → Tailwind), `/polish` (M-8 emoji logo → SVG)
+
 **Files:**
 - Modify: `src/pages/Courses.tsx` (lines 40–349 style object, sidebar lines 914–969)
 
@@ -88,6 +90,8 @@ git commit -m "refactor(courses): migrate sidebar to Tailwind, SVG logo"
 
 ### Task 2: Migrate main content area + responsive card grid
 
+**Commands:** `/adapt` (responsive card grid, M-9 cover image aspect ratio)
+
 **Files:**
 - Modify: `src/pages/Courses.tsx` (main area lines 972–1078, CourseCard lines 367–653)
 
@@ -149,6 +153,8 @@ git commit -m "refactor(courses): responsive card grid, aspect-ratio covers, Tai
 ---
 
 ### Task 3: Migrate remaining components + delete `const S`
+
+**Commands:** `/normalize` (H-1 complete const S elimination)
 
 **Files:**
 - Modify: `src/pages/Courses.tsx`

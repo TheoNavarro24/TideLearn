@@ -17,6 +17,8 @@
 
 ### Task 1: Move pulseStyle to CSS
 
+**Commands:** `/normalize` (module-level side effect → proper CSS)
+
 **Files:**
 - Modify: `src/index.css`
 - Modify: `src/pages/View.tsx` (lines 39–54)
@@ -54,6 +56,8 @@ git commit -m "refactor(viewer): move pulse-ring animation to CSS, remove module
 ---
 
 ### Task 2: Migrate header/topbar to Tailwind
+
+**Commands:** `/typeset` (Inter → DM Sans), `/harden` (logo aria-label), `/clarify` (resume button context)
 
 **Files:**
 - Modify: `src/pages/View.tsx` (lines 461–578)
@@ -121,6 +125,8 @@ git commit -m "refactor(viewer): migrate header to Tailwind, fix logo aria-label
 ---
 
 ### Task 3: Migrate sidebar to Tailwind + responsive + P0 fix
+
+**Commands:** `/harden` (div onClick → button, keyboard-accessible sidebar), `/adapt` (responsive sidebar collapse)
 
 **Files:**
 - Modify: `src/pages/View.tsx` (lines 584–667)
@@ -206,6 +212,8 @@ git commit -m "feat(viewer): sidebar div→button (P0 a11y), responsive collapse
 ---
 
 ### Task 4: Migrate main content area to Tailwind + responsive
+
+**Commands:** `/adapt` (responsive reading area padding), `/harden` ("Mark complete" aria-label), `/clarify` ("View All" assessment placeholder action, gate mode navigation)
 
 **Files:**
 - Modify: `src/pages/View.tsx` (lines 670–880)
@@ -296,6 +304,8 @@ git commit -m "refactor(viewer): migrate content area to Tailwind, responsive pa
 
 ### Task 5: Migrate bottom nav to Tailwind + accessibility fixes
 
+**Commands:** `/adapt` (iOS safe area inset), `/harden` (arrow chars aria-hidden, aria-labels on prev/next)
+
 **Files:**
 - Modify: `src/pages/View.tsx` (lines 883–995)
 
@@ -351,6 +361,8 @@ git commit -m "refactor(viewer): migrate bottom nav to Tailwind, fix arrow a11y,
 ---
 
 ### Task 6: Fix remaining P0/P1 and interaction issues
+
+**Commands:** `/harden` (arrow key contentEditable guard, role="alert" on error states, progress bar aria-label), `/clarify` (progress stripe unification, postMessage documentation)
 
 **Files:**
 - Modify: `src/pages/View.tsx`

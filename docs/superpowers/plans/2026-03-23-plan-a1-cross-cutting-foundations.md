@@ -14,6 +14,8 @@
 
 ### Task 1: Add layout CSS custom properties
 
+**Commands:** `/harden` (C-1 contrast fix), `/normalize` (magic numbers → CSS vars)
+
 **Files:**
 - Modify: `src/index.css` (`:root` block, lines 10–99)
 
@@ -58,6 +60,8 @@ git commit -m "fix(tokens): add layout CSS vars, fix muted text contrast to WCAG
 ---
 
 ### Task 2: Swap Inter → DM Sans
+
+**Commands:** `/typeset` (H-6 Inter typeface)
 
 **Files:**
 - Modify: `index.html` (Google Fonts link)
@@ -114,6 +118,8 @@ git commit -m "feat(typography): swap Inter for DM Sans across the app"
 
 ### Task 3: Remove dead CSS and dark mode infrastructure
 
+**Commands:** `/normalize` (L-5, M-6 dead CSS), `/colorize` (M-3 dark mode infra), `/optimize` (M-4 backdrop-blur)
+
 **Files:**
 - Modify: `src/index.css` (lines 120–130)
 - Modify: `tailwind.config.ts` (line 5)
@@ -168,6 +174,8 @@ git commit -m "chore: remove dead CSS (.card-surface, .text-gradient) and dark m
 ---
 
 ### Task 4: Add skip-to-content link (H-4)
+
+**Commands:** `/harden` (H-4 skip-to-content link)
 
 **Files:**
 - Modify: `src/App.tsx` (line 29, inside BrowserRouter)

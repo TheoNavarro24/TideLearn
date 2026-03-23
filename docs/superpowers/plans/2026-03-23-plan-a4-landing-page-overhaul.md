@@ -16,6 +16,8 @@
 
 ### Task 1: Migrate Nav component to Tailwind + responsive
 
+**Commands:** `/polish` (M-8 emoji logo → SVG), `/adapt` (responsive nav + hamburger)
+
 **Files:**
 - Modify: `src/pages/Index.tsx` (Nav component, lines 11–127)
 
@@ -86,6 +88,8 @@ git commit -m "refactor(landing): migrate Nav to Tailwind, SVG logo, responsive 
 ---
 
 ### Task 2: Strip anti-patterns from hero section
+
+**Commands:** `/distill` (H-2 gradient text, H-3 dark hero glow), `/polish` (neon CTA shadow), `/harden` (M-2 arrow chars aria-hidden)
 
 **Files:**
 - Modify: `src/pages/Index.tsx` (hero section, lines 461–618 + constants lines 6–8)
@@ -164,6 +168,8 @@ git commit -m "fix(landing): strip gradient text, glow effects, neon shadows (an
 
 ### Task 3: Migrate EditorCard mockup to Tailwind + responsive
 
+**Commands:** `/adapt` (M-5 responsive stack on mobile), `/harden` (M-1 dark contrast fix), `/normalize` (L-1 monospace URL bar)
+
 **Files:**
 - Modify: `src/pages/Index.tsx` (EditorCard component, lines 130–322)
 
@@ -227,6 +233,8 @@ git commit -m "refactor(landing): EditorCard to Tailwind, responsive stack, fix 
 
 ### Task 4: Migrate features section to Tailwind + fix anti-patterns
 
+**Commands:** `/clarify` (M-7 redundant "What it does" copy), `/adapt` (responsive feature grid), `/polish` (H-5 monospace chips → sans pill)
+
 **Files:**
 - Modify: `src/pages/Index.tsx` (FeatureRow + features section, lines 344–702)
 
@@ -282,6 +290,8 @@ git commit -m "refactor(landing): features to Tailwind, fix monospace chips, dro
 ---
 
 ### Task 5: Migrate footer + final cleanup
+
+**Commands:** `/normalize` (L-2 duplicate constants, L-4 hardcoded year), `/typeset` (remaining Inter → font-sans), `/polish` (footer emoji logo)
 
 **Files:**
 - Modify: `src/pages/Index.tsx` (footer, lines 705–744 + WaveDivider)
