@@ -25,6 +25,21 @@ import {
   duplicateCourseInCloud,
 } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
+import { cn } from "@/lib/utils";
+import {
+  Waves,
+  BookOpen,
+  Zap,
+  Upload,
+  Copy,
+  Download,
+  Package,
+  Link,
+  Trash2,
+  Globe,
+  Lock,
+  LogOut,
+} from "lucide-react";
 
 /* ─── Types ────────────────────────────────────────────────── */
 interface CourseIndex {
@@ -551,7 +566,7 @@ function CourseCard({
                 justifyContent: "center",
               }}
             >
-              {course.isPublic !== false ? "🌐" : "🔒"}
+              {course.isPublic !== false ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             </button>
           )}
 
@@ -593,7 +608,7 @@ function CourseCard({
                 }}
               >
                 <DropItem
-                  icon="📋"
+                  icon={<Copy className="w-3.5 h-3.5" />}
                   label="Duplicate"
                   onClick={() => {
                     setOpenDropdownId(null);
@@ -601,7 +616,7 @@ function CourseCard({
                   }}
                 />
                 <DropItem
-                  icon="📤"
+                  icon={<Download className="w-3.5 h-3.5" />}
                   label="Export JSON"
                   onClick={() => {
                     setOpenDropdownId(null);
@@ -609,7 +624,7 @@ function CourseCard({
                   }}
                 />
                 <DropItem
-                  icon="📦"
+                  icon={<Package className="w-3.5 h-3.5" />}
                   label="Export SCORM"
                   onClick={() => {
                     setOpenDropdownId(null);
@@ -617,7 +632,7 @@ function CourseCard({
                   }}
                 />
                 <DropItem
-                  icon="🔗"
+                  icon={<Link className="w-3.5 h-3.5" />}
                   label={course.isPublic !== false ? "Copy share link" : "Copy share link (private)"}
                   onClick={() => {
                     if (course.isPublic === false) return;
@@ -635,7 +650,7 @@ function CourseCard({
                   }}
                 />
                 <DropItem
-                  icon="🗑"
+                  icon={<Trash2 className="w-3.5 h-3.5" />}
                   label="Delete"
                   danger
                   onClick={() => {
@@ -658,7 +673,7 @@ function DropItem({
   danger,
   onClick,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   danger?: boolean;
   onClick: () => void;
@@ -683,7 +698,7 @@ function DropItem({
         textAlign: "left",
       }}
     >
-      <span style={{ fontSize: 14 }}>{icon}</span>
+      <span className="flex items-center justify-center w-4">{icon}</span>
       {label}
     </button>
   );
@@ -697,28 +712,29 @@ function NavItem({
   badge,
   onClick,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: number;
   onClick?: () => void;
 }) {
-  const [hov, setHov] = useState(false);
-  const style: React.CSSProperties = {
-    ...S.navItem(!!active),
-    background:
-      active
-        ? "rgba(20,184,166,0.18)"
-        : hov
-        ? "rgba(20,184,166,0.12)"
-        : "transparent",
-    color: active || hov ? "#ccfbf1" : "rgba(209,250,229,0.65)",
-  };
   return (
-    <button style={style} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} onClick={onClick}>
-      <span>{icon}</span>
+    <button
+      className={cn(
+        "w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors border-none cursor-pointer text-left",
+        active
+          ? "bg-white/15 text-white font-medium"
+          : "text-white/70 hover:bg-white/10 hover:text-white"
+      )}
+      onClick={onClick}
+    >
+      <span className="flex items-center">{icon}</span>
       <span>{label}</span>
-      {badge !== undefined && <span style={S.navBadge}>{badge}</span>}
+      {badge !== undefined && (
+        <span className="ml-auto bg-teal-500/25 text-teal-300 text-[11px] font-bold rounded-full px-1.5 py-px">
+          {badge}
+        </span>
+      )}
     </button>
   );
 }
@@ -909,58 +925,63 @@ export default function Courses() {
   const displayName = user?.email?.split("@")[0] ?? "Theo";
 
   return (
-    <div style={S.shell}>
+    <div className="grid md:grid-cols-[var(--sidebar-w-editor)_1fr] grid-cols-1 h-screen overflow-hidden">
+      {/* ── Mobile header ── */}
+      <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
+        <Waves className="w-5 h-5 text-teal-600" />
+        <span className="font-display text-lg font-semibold text-[var(--ocean-mid)]">TideLearn</span>
+      </div>
+
       {/* ── Sidebar ── */}
-      <aside style={S.sidebar}>
+      <aside className="w-[var(--sidebar-w-editor)] bg-[var(--ocean-mid)] text-white flex flex-col h-screen shrink-0 hidden md:flex">
         {/* Logo */}
-        <div style={S.logoArea}>
-          <div style={S.logoMark}>🌊</div>
-          <span style={S.logoText}>TideLearn</span>
+        <div className="px-3.5 py-4 pb-4 border-b border-teal-500/[0.18] flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0">
+            <Waves className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-sans font-extrabold text-[15px] text-white tracking-tight">TideLearn</span>
         </div>
 
         {/* Nav */}
-        <nav style={S.nav}>
-          <span style={S.sectionLabel}>Library</span>
-          <NavItem icon="📚" label="My Courses" active badge={courses.length} />
+        <nav className="flex-1 px-2.5 py-3.5 overflow-y-auto flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold text-teal-300/50 uppercase tracking-widest px-2.5 pt-2 pb-1">Library</span>
+          <NavItem icon={<BookOpen className="w-4 h-4" />} label="My Courses" active badge={courses.length} />
           <NavItem
-            icon="⚡"
+            icon={<Zap className="w-4 h-4" />}
             label="Quick Draft"
             onClick={() => navigate("/editor")}
           />
-          <span style={{ ...S.sectionLabel, marginTop: 8 }}>Tools</span>
+          <span className="text-[10px] font-bold text-teal-300/50 uppercase tracking-widest px-2.5 pt-4 pb-1">Tools</span>
           <NavItem
-            icon="📤"
+            icon={<Upload className="w-4 h-4" />}
             label="Import JSON"
             onClick={() => importRef.current?.click()}
           />
         </nav>
 
         {/* Footer */}
-        <div style={S.sidebarFooter}>
+        <div className="border-t border-teal-500/[0.18] p-3.5 flex items-center gap-2.5">
           {user ? (
             <>
-              <div style={S.avatar}>{initial}</div>
-              <div style={S.avatarMeta}>
-                <div style={S.avatarName}>{displayName}</div>
-                <div style={S.avatarEmail}>{user.email}</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-[13px] font-bold text-white shrink-0">
+                {initial}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-emerald-200 truncate">{displayName}</div>
+                <div className="text-[10px] text-teal-300/50 truncate">{user.email}</div>
               </div>
               <button
-                style={S.signOutBtn}
+                className="bg-transparent border-none text-teal-300/50 text-sm cursor-pointer p-0.5 rounded shrink-0 leading-none hover:text-teal-200 transition-colors"
                 onClick={signOut}
                 title="Sign out"
               >
-                ↩
+                <LogOut className="w-4 h-4" />
               </button>
             </>
           ) : (
             <a
               href="/auth"
-              style={{
-                color: "#5eead4",
-                fontSize: 13,
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
+              className="text-teal-300 text-[13px] no-underline font-semibold hover:text-teal-200 transition-colors"
             >
               Sign in →
             </a>
@@ -971,15 +992,19 @@ export default function Courses() {
       {/* ── Main ── */}
       <main style={S.main}>
         {/* Topbar */}
-        <div style={S.topbar}>
-          <span style={S.topbarTitle}>My Courses</span>
+        <div className="bg-white border-b border-teal-100 h-[54px] flex items-center px-7 gap-3 shrink-0">
+          <span className="font-display text-lg font-bold text-[var(--text-primary)] flex-1">My Courses</span>
           <button
-            style={S.importBtn}
+            className="bg-transparent border-[1.5px] border-teal-200 text-[var(--teal-primary)] font-semibold text-[13px] rounded-[7px] px-3.5 py-1.5 cursor-pointer hover:bg-teal-50 transition-colors"
             onClick={() => importRef.current?.click()}
           >
             Import
           </button>
-          <button style={S.newCourseBtn} onClick={onCreate} disabled={creating}>
+          <button
+            className="bg-[image:var(--gradient-primary)] text-white font-bold text-[13px] rounded-[7px] px-4 py-1.5 border-none cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={onCreate}
+            disabled={creating}
+          >
             + New Course
           </button>
         </div>
@@ -1029,7 +1054,9 @@ export default function Courses() {
           {courses.length === 0 ? (
             /* Empty state */
             <div style={S.emptyWrap}>
-              <div style={S.emptyIcon}>🌊</div>
+              <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center">
+                <Waves className="w-10 h-10 text-teal-500" />
+              </div>
               <div style={S.emptyTitle}>Your ocean is empty</div>
               <div style={S.emptySub}>
                 Create your first course to get started with TideLearn.
