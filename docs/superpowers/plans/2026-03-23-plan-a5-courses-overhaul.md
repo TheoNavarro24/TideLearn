@@ -149,15 +149,22 @@ If zero matches, delete lines 40–349 (the entire style object). This is the wh
 
 - [ ] **Step 4: Run full build** — `npm run build` — SUCCESS
 - [ ] **Step 5: Run lint** — `npm run lint` — PASS
+- [ ] **Step 6: Run MCP tests** — `cd mcp && npm test` — all 173+ pass (sanity check)
 
-- [ ] **Step 6: Visual check at 375px**
+- [ ] **Step 7: Visual check at 375px**
 
 - Sidebar hidden, mobile header visible
 - Cards stack to single column
 - Cover images have consistent aspect ratio
 - No horizontal scroll
 
-- [ ] **Step 7: Visual check at 1440px**
+- [ ] **Step 8: Visual check at 768px**
+
+- Cards in 2-column grid
+- Sidebar visible (above md breakpoint)
+- No horizontal scroll
+
+- [ ] **Step 9: Visual check at 1440px**
 
 - Sidebar visible at full width
 - Cards in 3-column grid
@@ -166,7 +173,13 @@ If zero matches, delete lines 40–349 (the entire style object). This is the wh
 - No inline styles remaining
 - SVG logo renders consistently
 
-- [ ] **Step 8: Commit unified result**
+- [ ] **Step 10: Keyboard navigation check**
+
+Tab through the Courses page:
+- Skip link → mobile header (if visible) or sidebar nav items → card grid → card actions
+- Logical tab order, no focus traps
+
+- [ ] **Step 11: Commit unified result**
 
 ```bash
 git add src/pages/Courses.tsx

@@ -86,6 +86,7 @@ Invoke the `impeccable:adapt` skill. Context for the skill:
 - **Features grid:** `grid-cols-1 md:grid-cols-[80px_1fr_1fr]` with `gap-6 md:gap-8`.
 - **Footer:** Responsive padding `px-6 md:px-14`.
 - **Replace all** `onMouseEnter`/`onMouseLeave` handlers with Tailwind `hover:` utilities.
+- **Migrate all remaining** inline `style={{}}` objects to Tailwind utilities — not just the named sections above. Every `style={{` in the file should be eliminated.
 
 - [ ] **Step 2: Verify build**
 
@@ -126,6 +127,7 @@ Invoke the `impeccable:clarify` skill. Context for the skill:
 Invoke the `impeccable:typeset` skill. Context for the skill:
 - **Target file:** `src/pages/Index.tsx`
 - Replace all remaining `fontFamily: "Inter"` and `fontFamily: "Inter, sans-serif"` references with Tailwind `font-sans` class (which now maps to DM Sans from A.1).
+- **Do not change** Lora serif references — those are correct and intentional for headings.
 
 - [ ] **Step 4: Verify build**
 
@@ -164,8 +166,9 @@ Search for `style={{` in Index.tsx — should return zero results.
 
 - [ ] **Step 4: Run full build** — `npm run build` — SUCCESS
 - [ ] **Step 5: Run lint** — `npm run lint` — PASS
+- [ ] **Step 6: Run MCP tests** — `cd mcp && npm test` — all 173+ pass (sanity check, A.4 touches no MCP code)
 
-- [ ] **Step 6: Visual check at 375px**
+- [ ] **Step 7: Visual check at 375px**
 
 - Hamburger nav visible, links hidden
 - Hero text readable, no overflow
@@ -174,7 +177,14 @@ Search for `style={{` in Index.tsx — should return zero results.
 - CTA buttons: stacked vertically
 - No horizontal scroll
 
-- [ ] **Step 7: Visual check at 1440px**
+- [ ] **Step 8: Visual check at 768px**
+
+- EditorCard: two-column layout still fits
+- Feature grid: three-column or graceful wrap
+- Nav: desktop links visible (above md breakpoint)
+- No horizontal scroll
+
+- [ ] **Step 9: Visual check at 1440px**
 
 - Full nav visible
 - Hero: no gradient text, no glow effects, clean teal emphasis
@@ -183,11 +193,18 @@ Search for `style={{` in Index.tsx — should return zero results.
 - No monospace font in chips or URL bar
 - No inline styles remaining
 
-- [ ] **Step 8: Anti-pattern verification**
+- [ ] **Step 10: Anti-pattern verification**
 
 Confirm removal of: gradient text, glowing dot, neon CTA shadow, radial gradient overlay, monospace in chips/URL bar, emoji logo, "What it does" kicker.
 
-- [ ] **Step 9: Commit unified result**
+- [ ] **Step 11: Keyboard navigation check**
+
+Tab through the landing page:
+- Skip link → nav links → CTA buttons → feature section → footer links
+- Hamburger menu opens/closes with Enter/Space, Escape closes
+- No focus traps, logical tab order
+
+- [ ] **Step 12: Commit unified result**
 
 ```bash
 git add src/pages/Index.tsx
