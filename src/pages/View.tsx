@@ -37,23 +37,6 @@ interface ProgressMessage {
   correctAnswers: number;
 }
 
-// Pulse-ring keyframe injected once
-const pulseStyle = `
-@keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(20,184,166,0.25); }
-  50%       { box-shadow: 0 0 0 5px rgba(20,184,166,0.1); }
-}
-`;
-if (typeof document !== "undefined") {
-  const styleId = "rockpool-pulse-ring";
-  if (!document.getElementById(styleId)) {
-    const s = document.createElement("style");
-    s.id = styleId;
-    s.textContent = pulseStyle;
-    document.head.appendChild(s);
-  }
-}
-
 export default function View() {
   const [course, setCourse] = useState<Course | null>(null);
   const [error, setError] = useState<string | null>(null);
