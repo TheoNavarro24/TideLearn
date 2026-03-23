@@ -19,6 +19,11 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
     return () => document.removeEventListener("keydown", onKey);
   }, [mobileNavOpen, closeNav]);
 
+  const navLinkClasses =
+    "text-[var(--teal-bright)] text-sm font-medium no-underline hover:text-teal-300 transition-colors";
+  const authBtnClasses =
+    "border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-sm font-medium cursor-pointer hover:bg-[var(--teal-bright)] hover:text-white transition-colors";
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-14 py-4 bg-gradient-to-b from-[rgba(10,31,28,0.95)] to-transparent backdrop-blur-sm">
       {/* Logo */}
@@ -33,24 +38,18 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
 
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-7">
-        <Link to="/courses" className="text-[var(--teal-bright)] text-sm font-medium no-underline">
+        <Link to="/courses" className={navLinkClasses}>
           My Courses
         </Link>
-        <a href="#features" className="text-[var(--teal-bright)] text-sm font-medium no-underline">
+        <a href="#features" className={navLinkClasses}>
           Features
         </a>
         {user ? (
-          <button
-            onClick={signOut}
-            className="px-4 py-1.5 border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-sm font-medium cursor-pointer"
-          >
+          <button onClick={signOut} className={`${authBtnClasses} px-4 py-1.5`}>
             Sign Out
           </button>
         ) : (
-          <Link
-            to="/auth"
-            className="px-4 py-1.5 border-[1.5px] border-[var(--teal-bright)] rounded-lg text-[var(--teal-bright)] text-sm font-medium no-underline inline-block"
-          >
+          <Link to="/auth" className={`${authBtnClasses} px-4 py-1.5 no-underline inline-block`}>
             Sign In
           </Link>
         )}
@@ -69,23 +68,23 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
       {/* Mobile overlay */}
       {mobileNavOpen && (
         <div className="md:hidden fixed inset-0 top-16 z-40 bg-[#0a1f1c]/95 backdrop-blur-sm flex flex-col items-center gap-6 pt-12">
-          <Link to="/courses" className="text-[var(--teal-bright)] text-lg font-medium no-underline" onClick={closeNav}>
+          <Link to="/courses" className={`${navLinkClasses} text-lg`} onClick={closeNav}>
             My Courses
           </Link>
-          <a href="#features" className="text-[var(--teal-bright)] text-lg font-medium no-underline" onClick={closeNav}>
+          <a href="#features" className={`${navLinkClasses} text-lg`} onClick={closeNav}>
             Features
           </a>
           {user ? (
             <button
               onClick={() => { signOut(); closeNav(); }}
-              className="px-6 py-2 border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-base font-medium cursor-pointer"
+              className={`${authBtnClasses} px-6 py-2 text-base`}
             >
               Sign Out
             </button>
           ) : (
             <Link
               to="/auth"
-              className="px-6 py-2 border-[1.5px] border-[var(--teal-bright)] rounded-lg text-[var(--teal-bright)] text-base font-medium no-underline inline-block"
+              className={`${authBtnClasses} px-6 py-2 text-base no-underline inline-block`}
               onClick={closeNav}
             >
               Sign In
