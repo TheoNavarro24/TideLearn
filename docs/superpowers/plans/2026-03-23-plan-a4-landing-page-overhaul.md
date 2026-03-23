@@ -174,7 +174,7 @@ Start the dev server and open a Chromium browser for visual verification:
 ```bash
 npm run dev
 ```
-Use the Chrome DevTools MCP (`chrome-devtools`) or Claude Preview tools to open the app at `http://localhost:8080`. Log in with Google using your credentials (stored in memory) — you have a registered TideLearn account.
+Use the Chrome DevTools MCP (`chrome-devtools`) to open the app at `http://localhost:8080`. Google login cookies persist in Chromium, so you should already be authenticated — no need to log in again.
 
 - [ ] **Step 8: Visual check at 375px**
 
