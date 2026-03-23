@@ -1,0 +1,47 @@
+{
+  "tool": "sana",
+  "dimensions": {
+    "onboarding": {
+      "score": 2,
+      "evidence": "[marketing]",
+      "narrative": "Sana is fully demo-gated with no self-serve trial or free tier — a harder gate than most competitors. Pricing is custom per-user-per-month requiring a sales conversation and country/headcount selection. Marketing pitches 'zero design skills required' and AI-assisted creation, which would make onboarding fast once inside. A Creator's Checklist and Admin's Checklist exist in the help center, and full implementation support is bundled. However, the complete absence of a self-service path is a material barrier for evaluation and early adoption. Scored from marketing and public sources only.",
+      "screenshots": []
+    },
+    "visual": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Marketing imagery and YouTube demos consistently show a polished, modern interface with a clean card-based learner homepage, a slide-metaphor editor, and well-structured course layouts. Custom branding is thorough: custom fonts, colors, logos, and a dedicated media library are all confirmed. G2 reviewers describe the UI as 'intuitive' and 'easy to navigate.' The platform appears visually opinionated toward clean, minimal enterprise design — strong for brand consistency but potentially limiting for highly creative custom layouts. Scored from marketing and public sources only.",
+      "screenshots": []
+    },
+    "editor": {
+      "score": 4,
+      "evidence": "[marketing|review]",
+      "narrative": "Sana's AI-native editor is a genuine differentiator: PDF/URL/document upload generates a structured course in seconds, with AI handling content generation, translation, and quiz creation. The drag-and-drop slide-metaphor editor is confirmed, with inline AI commands for rewriting and expanding content. One G2 reviewer noted typed comments disappear when switching windows — a minor friction point. The 3-weeks-to-3-hours claim from an L&D Manager at Ebury and similar quotes suggest the editor dramatically accelerates production. Lack of direct trial access means the block canvas depth is unconfirmed. Scored from marketing and public sources only.",
+      "screenshots": []
+    },
+    "blocks": {
+      "score": 3,
+      "evidence": "[marketing]",
+      "narrative": "Confirmed block types include text/rich content, polls, quizzes, reflection cards, image, video, wiki pages, and AI-generated content from documents. The editor is slide-metaphor based. No explicit confirmation of accordion, tabs, timeline, hotspot, flashcard, code block, or table types. The platform's philosophy prioritises AI-generated content structure over manual block assembly, which may explain the narrower explicit block catalogue. G2 features list confirms course builder, assessments/quizzes, questions, ILT, and customised learning paths. Scored from marketing only.",
+      "screenshots": []
+    },
+    "learner": {
+      "score": 5,
+      "evidence": "[marketing|review]",
+      "narrative": "The learner experience is Sana's strongest selling point and the most differentiated dimension of the platform. Key features: AI tutor ('Ask') available on demand for any question, personalised homepage with AI-recommended content, spaced repetition via 'personalised reviews', scenario-based practice, skill badges and leaderboards, Slack/Teams/email reminders, iOS mobile app, and natural language search across all organisational knowledge. The combination of structured courses and conversational AI coaching is unique. G2 reviewers consistently praise ease of access, progress visibility, and intuitive module structure. Scored from marketing and public sources only.",
+      "screenshots": []
+    },
+    "publishing": {
+      "score": 3,
+      "evidence": "[marketing|docs]",
+      "narrative": "Sana is a walled-garden LMS — content is published and hosted natively within the platform behind user authentication. SCORM 1.2, SCORM 2004, xAPI, and IMS LTI are all confirmed (from elearningindustry.com directory and learning-management page), enabling integration with external LMSes. SAML SSO and SCIM provisioning mean enterprise access control is strong. However, there is no confirmed anonymous shareable URL option (no-LMS-required sharing), and SCORM export from Sana-native content is not explicitly confirmed — SCORM import is the primary confirmed use case. For an enterprise LMS this is appropriate, but it is a limitation for use cases requiring frictionless public sharing. Scored from marketing and docs.",
+      "screenshots": []
+    },
+    "extensibility": {
+      "score": 4,
+      "evidence": "[marketing|docs]",
+      "narrative": "REST API confirmed for managing users, groups, assignments, content, and reporting. 100+ named integrations confirmed across SSO providers (Okta, Entra ID, Google Workspace, etc.), HRIS systems (Workday, BambooHR, Personio, SAP SuccessFactors, Rippling, 40+ others), productivity tools (Slack, Teams, Office 365, Power BI, Salesforce), and content libraries (LinkedIn Learning, Coursera, Pluralsight, Udemy). GDPR, ISO 27001, and SOC 2 Type I & II certified. SAML SSO and SCIM provisioning confirmed. No Zapier/Make native connectors or MCP server found. Webhooks not explicitly confirmed but REST API scope is broad. Scored from marketing and public docs only.",
+      "screenshots": []
+    }
+  }
+}

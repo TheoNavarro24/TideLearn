@@ -1,0 +1,42 @@
+{
+  "tool": "sana",
+  "evidence_source": "[marketing|docs|review]",
+  "accessed_via": "marketing_only",
+  "screenshots": {},
+  "observations": {
+    "onboarding": "Sana is fully demo-gated — no self-serve trial or free tier. Onboarding begins with booking an intro/demo via sanalabs.com. Pricing is custom per-user-per-month and requires selecting company HQ country and user band (below 300 / 300–3000 / above 3000). Marketing positions Sana as requiring zero design skills: 'AI superpowers and an intuitive interface make sharing knowledge as easy for amateurs as learning architects.' The help center provides a 'Getting Started with Sana: The Creator's Checklist' and a parallel 'Admin's Checklist', both gated behind the Intercom help system. Implementation support, content migration services, and L&D strategy consulting are offered as part of onboarding. For enterprise customers this appears thorough; for anyone seeking quick self-service evaluation it is a significant barrier.",
+    "visual": "Marketing materials depict a clean, modern UI with a card-based learner homepage showing skill badges, progress bars, and personalized course recommendations. The editor uses a drag-and-drop slide-like layout. Custom branding is confirmed: admins can upload company fonts, colors, and logos, and a dedicated media library is available. The learner experience is described as 'gorgeous' in marketing. Screenshots across YouTube demo videos and the sanalabs.com site show a polished dark/light interface with clear visual hierarchy. The platform appears strongly opinionated toward clean minimal design rather than highly custom creative layouts.",
+    "editor": "Sana's authoring interface is described as 'drag and drop layout — if you can create a slide, you can share knowledge in Sana.' The editor is AI-native: the primary interaction is typing a slash command or prompt to generate content, with AI translating source files (PDFs, URLs, documents) into structured courses in seconds. Manual block-by-block editing is also possible. Content types include personalized courses, wikis/how-tos, and interactive live sessions. An AI inline assistant is embedded in the editor for rewriting, expanding, and rephrasing. The editor supports polls, quizzes, and reflection cards within the course canvas. G2 reviews flag one friction point: typed comments disappear when switching windows (minor UX bug reported in late 2025). Speed of creation is the headline value prop — one L&D manager reports going from 3 weeks to 3 hours for the same course.",
+    "blocks": "Marketing confirms the following block/content types: polls, quizzes, reflection cards, wikis/how-tos, video (direct upload confirmed via content library), audio, image. The editor is slide-metaphor based (drag and drop). Specific named interactive block types beyond polls and quizzes are not enumerated in public marketing. G2 feature list confirms: course builder, assessments and quizzes, instructor-led training, customized learning paths, questions. The platform's philosophy is AI-generated content rather than manual block assembly, so the block catalogue may be narrower than dedicated authoring tools. No explicit mention of accordion, tabs, timeline, hotspot, or code block types in public sources.",
+    "learner": "The learner experience is a core differentiator. Key features: personalized homepage with AI-recommended content, skill badges and leaderboards (gamification), an embedded AI tutor ('Ask') available on demand for any question about course content, spaced repetition via 'personalized reviews', scenario training, automatic reminders via Slack/Teams/email, mobile app (iOS confirmed), and a natural language search across all company knowledge. Learners can ask questions in chat format and receive answers sourced from organizational training materials. The AI tutor is positioned as 1:1 coaching at scale. Progress tracking and completion visibility are confirmed. The learner UX is described as a significant improvement over traditional LMS interfaces in multiple G2 reviews.",
+    "publishing": "Sana is an all-in-one LMS/LXP — content is published and hosted natively within the platform. SCORM 1.2 and SCORM 2004 support confirmed (for importing SCORM content from other tools). xAPI/Tin Can API confirmed. IMS LTI confirmed. These standards suggest Sana can both consume SCORM packages and integrate with external LMSes via LTI. Custom branded learner portal is included. SSO (SAML) for learner access confirmed. SCIM for user provisioning confirmed. No mention of shareable URL publication to anonymous learners (Sana is a walled-garden LMS requiring user accounts). Multi-language support with AI translation across 60+ languages is confirmed for content creation.",
+    "extensibility": "REST API confirmed: 'Leverage Sana's REST APIs to build custom workflows that help you manage users and groups, assignment, content, and reporting.' SAML SSO and SCIM provisioning confirmed. 100+ pre-built integrations confirmed. Named integrations include: SSO (Okta, Microsoft Entra ID, Google Workspace, OneLogin, ADFS, Auth0, JumpCloud, Ping Identity), HRIS (Workday, BambooHR, Personio, Hibob, SAP SuccessFactors, Rippling, Deel, and 40+ others), Workflows/productivity (Slack, Microsoft Teams, Office 365, Microsoft Power BI, Salesforce, Zoom), Content libraries (LinkedIn Learning, Coursera, Pluralsight, Udemy, Degreed, Workday, SAP SuccessFactors, Edcast). GDPR compliant, ISO 27001, SOC 2 Type I & II certified. No Zapier/Make native connectors mentioned. No MCP server. Webhooks not explicitly confirmed but REST API scope includes users, groups, assignments, content, and reporting."
+  },
+  "journey_notes": {
+    "journey1_create_course": {
+      "step_count": 0,
+      "friction_points": [
+        "No self-serve trial — must book a demo first",
+        "Custom pricing requires sales contact",
+        "Full onboarding requires implementation support engagement"
+      ],
+      "notes": "Cannot be tested directly. From marketing: the intended flow is (1) log in, (2) click Create, (3) upload a PDF/URL or type a prompt, (4) AI generates course structure with polls/quizzes, (5) review and edit via drag-and-drop editor, (6) publish to learners. Estimated 3-step AI-assisted creation vs multi-day manual build in legacy tools."
+    },
+    "journey2_mixed_content": {
+      "step_count": 0,
+      "friction_points": [
+        "Block type variety appears narrower than dedicated authoring tools (no confirmed hotspot, accordion, timeline blocks)",
+        "Editor is slide-metaphor, not freeform canvas — may limit complex layouts"
+      ],
+      "notes": "Marketing confirms polls, quizzes, reflection cards, wikis, video, and AI-generated content from documents. Interactive block depth is unclear without direct access. The AI handles much of the content structuring, which reduces manual block assembly."
+    },
+    "journey3_publish_share": {
+      "step_count": 0,
+      "friction_points": [
+        "Sana is a walled-garden platform — no anonymous shareable link publishing confirmed",
+        "SCORM export from Sana-native content not explicitly confirmed (SCORM import is confirmed)"
+      ],
+      "notes": "Content is published within Sana's hosted LMS. Learners access via the Sana portal with SSO or email login. SCORM 1.2/2004 and LTI support means external LMS integration is possible. No self-serve link sharing to unauthenticated users found in marketing."
+    }
+  }
+}

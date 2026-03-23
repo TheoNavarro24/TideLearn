@@ -1,0 +1,53 @@
+{
+  "tool": "sana",
+  "category_scores": {
+    "blocks": {
+      "score": 2,
+      "narrative": "Confirmed block types: rich text/content, image, video (upload and embed), polls, quizzes, reflection cards, wiki pages. The editor is slide-metaphor based with drag-and-drop layout. No explicit confirmation of accordion, tabs, timeline, table, flashcard, interactive hotspot, or code block types in public marketing. Sana's philosophy centres on AI-generated content structure rather than a comprehensive manual block library, which distinguishes it from dedicated authoring tools like Articulate or Elucidat. The block catalogue appears functional but narrow. Evidence: [marketing]"
+    },
+    "assessment": {
+      "score": 3,
+      "narrative": "Multiple-choice questions, quizzes, and assessments are confirmed. G2 features list confirms 'Questions — provides a range of premade question types.' Reflection cards suggest open-ended/unscored check-ins. Passing scores, question banks, and randomisation are not explicitly confirmed in public marketing. No explicit confirmation of fill-in-the-blank, matching, drag-drop, or hotspot image question types. The AI tutor generates follow-up questions and personalised reviews (spaced repetition), which adds an adaptive assessment layer beyond static quizzes. Certificate generation is confirmed on G2. Evidence: [marketing|review]"
+    },
+    "ai": {
+      "score": 5,
+      "narrative": "AI is the core differentiator of the entire platform — not an add-on. Confirmed AI features: (1) AI course generation from PDFs, URLs, and documents in seconds; (2) AI content rewrite/expand within editor; (3) AI quiz generation embedded in course creation; (4) AI translation across 60+ languages; (5) AI image generation not explicitly confirmed but content generation from source material is; (6) AI learner feedback via the AI Tutor (contextual coaching, 24/7 question answering, scenario practice, personalised reviews/spaced repetition); (7) AI tutor chat — fully confirmed as a core product feature ('Ask' assistant on every course). Natural language analytics ('ask any question about learning performance in plain English') is an additional AI layer. Auto-tagging of skills via AI is confirmed. Evidence: [marketing]"
+    },
+    "compliance": {
+      "score": 4,
+      "narrative": "SCORM 1.2 confirmed. SCORM 2004 confirmed. xAPI/Tin Can confirmed. IMS LTI confirmed — all four major e-learning standards are supported. The learning-management page explicitly lists 'SCORM compliant' as a security/compliance bullet. However, SCORM export from Sana-native content is not explicitly confirmed — SCORM import (consuming external SCORM packages) appears to be the primary use case. PDF export and video export not confirmed. Multi-language content is confirmed but not as a SCORM multi-language package. Evidence: [marketing|docs]"
+    },
+    "analytics": {
+      "score": 4,
+      "narrative": "Natural language analytics is a standout confirmed feature: 'Ask any question about learning performance in plain English and get real-time answers with auto-generated dashboards ready to share.' Completion tracking, compliance tracking, and learner progress views are confirmed. Skill auto-tagging and leaderboards indicate skill-level analytics. Microsoft Power BI integration confirmed for advanced reporting. Time-on-task and cohort-level analytics are not explicitly called out but the natural language interface implies broad data access. Report export not explicitly confirmed as a standalone feature but auto-generated shareable dashboards are mentioned. Evidence: [marketing]"
+    },
+    "collaboration": {
+      "score": 3,
+      "narrative": "Multi-author/collaborative authoring is confirmed ('real-time collaborative authoring with intelligent suggestions'). A G2 reviewer mentions edit mode access and comment visibility during co-authoring, confirming the feature exists but noting a UX bug where comments disappear when switching windows. Review/approval workflow and version history are not explicitly confirmed in public marketing. Custom user roles and advanced permissions are confirmed on the learning-management page. Inline commenting appears to exist (mentioned in G2 review) but is not promoted as a headline feature. Evidence: [marketing|review]"
+    },
+    "templates": {
+      "score": 3,
+      "narrative": "A 'ready-to-use content library' of off-the-shelf, editable courses is included in pricing features, suggesting course-level templates. Custom branding (fonts, colours, logos) is confirmed. Theme customisation is confirmed. White-label/custom domain is not explicitly confirmed but the branded portal with custom colours and fonts suggests it. A dedicated media library is confirmed. No mention of a large numbered template library comparable to Elucidat's 'hundreds of templates.' The AI generation from source materials somewhat substitutes for templates. Evidence: [marketing]"
+    },
+    "branching": {
+      "score": 3,
+      "narrative": "Personalised learning paths confirmed: 'Let AI determine the right path based on individual skill level' and 'customized learning paths based on role or experience' confirmed on G2. Conditional navigation based on quiz scores or role is implied by AI-personalised path assignment. Prerequisites as a named feature are not confirmed. The AI tutor provides adaptive, non-linear learning on demand, which goes beyond simple branching. Evidence: [marketing|review]"
+    },
+    "media": {
+      "score": 3,
+      "narrative": "Direct video upload is confirmed (file support confirmed on G2, content library). CDN hosting is implied by SaaS architecture. A dedicated media library is confirmed. Stock media library is not explicitly confirmed. In-product image editing is not confirmed. Subtitle/caption support is not confirmed. Audio upload is not explicitly confirmed as a standalone block but may be supported. The platform is strong on AI-generated content from documents but the raw media handling features (editing, subtitles, stock) are less documented than dedicated authoring tools. Evidence: [marketing]"
+    },
+    "accessibility": {
+      "score": 3,
+      "narrative": "Section 508 compliance is confirmed (elearningindustry directory). WCAG 2.1 AA is not explicitly stated in Sana's own marketing; ISO 27001 and SOC 2 are the compliance certifications prominently featured. Keyboard navigation and screen reader support are not explicitly confirmed in public sources. The platform does mention 'highest information security standards' and SOC 2 but accessibility standards are not a headline feature of Sana's marketing. Given the enterprise positioning, WCAG compliance is plausible but not confirmed. Evidence: [marketing|docs]"
+    },
+    "publishing": {
+      "score": 3,
+      "narrative": "Publishing is internal to the Sana LMS — content is hosted and accessed within the platform. SAML SSO for learner access is confirmed. SCORM 1.2/2004, xAPI, and LTI support confirmed for external LMS integration. Anonymous/password-protected shareable link publishing is not confirmed (Sana requires user authentication). Embed in external site is not confirmed. Custom branded portal is confirmed. Multi-language content (60+ languages) is confirmed. The walled-garden model is appropriate for enterprise but limits publishing flexibility compared to dedicated authoring tools. Evidence: [marketing]"
+    },
+    "extensibility": {
+      "score": 4,
+      "narrative": "REST API confirmed for users, groups, assignments, content, and reporting. 100+ named integrations confirmed. SAML SSO and SCIM provisioning confirmed. SSO author access is confirmed. Named integrations span SSO (10 providers), HRIS (40+ systems including Workday, BambooHR, SAP SuccessFactors, Rippling, Deel), productivity (Slack, Teams, Office 365, Power BI, Salesforce), and content libraries (LinkedIn Learning, Coursera, Pluralsight, Udemy, Degreed). GDPR, ISO 27001, SOC 2 certified. Webhooks not explicitly confirmed but API scope is comprehensive. No Zapier/Make connectors or MCP server found. API access tier requirements not documented. Evidence: [marketing|docs]"
+    }
+  }
+}
