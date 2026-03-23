@@ -98,7 +98,6 @@ export default function View() {
   }, [params]);
   const [isPaged, setIsPaged] = useState<boolean>(initialPaged);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -218,6 +217,8 @@ export default function View() {
     try {
       if (window.parent && window.parent !== window) {
         const msg: ReadyMessage = { type: "ready" };
+        // SCORM bridge: target origin is "*" intentionally — SCORM players
+        // serve content from unpredictable origins, so scoping is not reliable.
         window.parent.postMessage(msg, "*");
       }
     } catch {}
@@ -274,6 +275,8 @@ export default function View() {
           totalQuestions,
           correctAnswers,
         };
+        // SCORM bridge: target origin is "*" intentionally — SCORM players
+        // serve content from unpredictable origins, so scoping is not reliable.
         window.parent.postMessage(msg, "*");
       }
     } catch {}
@@ -301,55 +304,16 @@ export default function View() {
     return () => io.disconnect();
   }, [course, activeId]);
 
-  // Progress bar based on main scroll
-  useEffect(() => {
-    const onScroll = () => {
-      const main = document.querySelector("main");
-      if (!main) return;
-      const total = main.scrollHeight - window.innerHeight;
-      const scrolled = Math.min(Math.max(window.scrollY - (main as any).offsetTop, 0), total);
-      const pct = total > 0 ? (scrolled / total) * 100 : 0;
-      setProgress(Math.max(0, Math.min(100, pct)));
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
-  // Per-lesson progress tracking in paged mode
+  // Lesson ref for scroll position (kept for future use)
   const lessonRef = useRef<HTMLElement | null>(null);
-  const [lessonProgress, setLessonProgress] = useState(0);
-  useEffect(() => {
-    if (!isPaged) return;
-    const onScroll = () => {
-      const el = lessonRef.current;
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const height = el.scrollHeight;
-      const total = Math.max(height - window.innerHeight, 0);
-      const scrolled = Math.min(Math.max(window.scrollY - top, 0), total);
-      const pct = total > 0 ? (scrolled / total) * 100 : 0;
-      setLessonProgress(Math.max(0, Math.min(100, pct)));
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [isPaged, currentLessonId]);
 
   // Arrow key navigation in paged mode
   useEffect(() => {
     if (!isPaged) return;
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag && ["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+      const el = e.target as HTMLElement;
+      if (el?.tagName && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      if (el?.isContentEditable) return;
       if (e.key === "ArrowLeft") { e.preventDefault(); go("prev"); }
       if (e.key === "ArrowRight") { e.preventDefault(); go("next"); }
     };
@@ -361,10 +325,10 @@ export default function View() {
 
   if (error) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Invalid course data</h1>
-          <p style={{ color: "#64748b" }}>{error}</p>
+      <main role="alert" className="min-h-screen flex items-center justify-center font-sans">
+        <div className="text-center">
+          <h1 className="text-[22px] font-semibold mb-2">Invalid course data</h1>
+          <p className="text-[var(--text-muted)]">{error}</p>
         </div>
       </main>
     );
@@ -372,10 +336,10 @@ export default function View() {
 
   if (!course) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>No course data</h1>
-          <p style={{ color: "#64748b" }}>Provide a valid course URL with data in the hash segment.</p>
+      <main role="alert" className="min-h-screen flex items-center justify-center font-sans">
+        <div className="text-center">
+          <h1 className="text-[22px] font-semibold mb-2">No course data</h1>
+          <p className="text-[var(--text-muted)]">Provide a valid course URL with data in the hash segment.</p>
         </div>
       </main>
     );
