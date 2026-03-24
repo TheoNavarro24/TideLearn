@@ -101,7 +101,7 @@ export function AppShell({ children, sidebar, topBar }: AppShellProps) {
         {/* Top bar */}
         <header
           className="h-[var(--topbar-h)] flex items-center px-5 flex-shrink-0 border-b"
-          style={{ background: "hsl(var(--muted))", borderColor: "hsl(var(--border))" }}
+          style={{ background: "var(--canvas-white)", borderColor: "hsl(var(--border))" }}
         >
           {topBar}
         </header>
@@ -133,7 +133,7 @@ function NavItem({
         "flex items-center gap-2 w-full px-2.5 py-1.5 rounded text-xs font-medium transition-colors",
         active
           ? "text-[var(--accent-hex)]"
-          : "text-[var(--sidebar-text)] hover:text-[#a0b0c4]"
+          : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)]"
       )}
       style={active ? { background: "var(--accent-bg)" } : undefined}
     >

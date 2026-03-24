@@ -61,6 +61,7 @@ All colors MUST be HSL.
     --accent-hex: #40c8a0;
     --accent-bg: rgba(64,200,160,.1);
     --sidebar-text: #7a8da4;
+    --sidebar-text-hover: #a0b0c4;
     --danger: #b04040;
     --danger-bg: rgba(176,64,64,0.06);
 

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { toast } from "@/hooks/use-toast";
 import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
-import { ArrowLeft, Menu, Settings, Package } from "lucide-react";
+import { Undo2, Redo2 } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse, saveCourseToCloud, loadCourseFromCloud } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -38,6 +39,7 @@ const defaultLesson: ContentLesson = {
 };
 
 export default function Editor() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     current: editorState,
@@ -59,7 +61,6 @@ export default function Editor() {
   const [publishWarnings, setPublishWarnings] = useState<BlockWarning[]>([]);
   const [showImportSection, setShowImportSection] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [lessonToRemove, setLessonToRemove] = useState<string | null>(null);
 
@@ -487,24 +488,27 @@ export default function Editor() {
 
   // ── Lesson sidebar ──────────────────────────────────────────────
   const lessonSidebar = (
-    <div className="lesson-list flex flex-col h-full overflow-hidden" style={{ background: "var(--sidebar)" }}>
+    <div className="lesson-list flex flex-col h-full overflow-hidden">
       {/* Header: back link + course title */}
       <div className="px-4 pt-4 pb-3" style={{ borderBottom: "1px solid var(--accent-bg)" }}>
-        <a
-          href="/courses"
-          className="flex items-center gap-1 text-[10px] mb-2 no-underline transition-colors"
+        <button
+          onClick={() => navigate("/courses")}
+          className="flex items-center gap-1 text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0 mb-2"
           style={{ color: "var(--sidebar-text)" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
         >
           ← All courses
-        </a>
+        </button>
         <div className="font-display text-sm font-semibold leading-tight" style={{ color: "hsl(var(--sidebar-foreground))" }}>
           {courseTitle}
         </div>
         <div className="text-[10px] mt-0.5" style={{ color: "var(--sidebar-text)" }}>
           {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
-          {lessons.filter(l => l.kind === "assessment").length > 0 && ` · ${lessons.filter(l => l.kind === "assessment").length} quiz`}
+          {(() => {
+            const quizCount = lessons.filter(l => l.kind === "assessment").length;
+            return quizCount > 0 ? ` · ${quizCount} quiz${quizCount !== 1 ? "zes" : ""}` : "";
+          })()}
         </div>
       </div>
 
@@ -521,7 +525,7 @@ export default function Editor() {
                 background: isActive ? "var(--accent-bg)" : "transparent",
                 color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)",
               }}
-              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#a0b0c4"; }}
+              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text-hover)"; }}
               onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
             >
               <span className="text-[10px] font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)", opacity: isActive ? 1 : 0.6 }}>
@@ -577,15 +581,15 @@ export default function Editor() {
       <div className="flex flex-col justify-center flex-1 min-w-0">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1">
-          <a
-            href="/courses"
-            className="text-[10px] no-underline transition-colors"
+          <button
+            onClick={() => navigate("/courses")}
+            className="text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0"
             style={{ color: "var(--text-muted)" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
           >
             ← {courseTitle || "My Courses"}
-          </a>
+          </button>
         </div>
         {/* Editable lesson title */}
         <input
@@ -608,7 +612,7 @@ export default function Editor() {
           className="hidden md:flex items-center justify-center w-7 h-7 rounded border-none cursor-pointer transition-colors"
           style={{ background: "transparent", color: canUndo ? "var(--ink)" : "var(--text-muted)", opacity: canUndo ? 1 : 0.4 }}
         >
-          ↩
+          <Undo2 className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={redoHistory}
@@ -618,7 +622,7 @@ export default function Editor() {
           className="hidden md:flex items-center justify-center w-7 h-7 rounded border-none cursor-pointer transition-colors"
           style={{ background: "transparent", color: canRedo ? "var(--ink)" : "var(--text-muted)", opacity: canRedo ? 1 : 0.4 }}
         >
-          ↪
+          <Redo2 className="w-3.5 h-3.5" />
         </button>
 
         {/* Preview button */}
