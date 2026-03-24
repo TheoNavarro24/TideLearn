@@ -532,7 +532,7 @@ export default function Editor() {
                 {String(idx + 1).padStart(2, "0")}
               </span>
               <span className="flex-1 truncate">{l.title}</span>
-              <span className="text-[9px] opacity-50">{l.kind === "content" ? "doc" : "quiz"}</span>
+              <span className="text-[9px] opacity-50" aria-label={l.kind === "assessment" ? "Assessment lesson" : undefined}>{l.kind === "content" ? "doc" : "quiz"}</span>
             </button>
           );
         })}
@@ -677,10 +677,7 @@ export default function Editor() {
                   {lessons.length > 1 && (
                     <button
                       onClick={() => setLessonToRemove(selectedLesson.id)}
-                      className="bg-transparent border-0 text-[11px] cursor-pointer p-0 transition-colors rounded"
-                      style={{ color: "hsl(var(--destructive) / 0.7)" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "hsl(var(--destructive))"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "hsl(var(--destructive) / 0.7)"; }}
+                      className="bg-transparent border-0 text-[11px] cursor-pointer p-0 transition-colors rounded text-destructive/70 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
                     >
                       Remove lesson
                     </button>
@@ -854,8 +851,10 @@ function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, o
             disabled={btn.disabled}
             aria-label={btn.ariaLabel}
             className={cn(
-              "bctrl-btn w-[26px] h-[26px] border rounded-[5px] text-[10px] flex items-center justify-center transition-colors",
+              "bctrl-btn relative w-[26px] h-[26px] border rounded-[5px] text-[10px] flex items-center justify-center transition-colors",
               "focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:outline-none",
+              /* Pseudo-element expands touch target to ~44×44px without changing visual size */
+              "after:content-[''] after:absolute after:inset-[-9px]",
               btn.disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer opacity-100",
               btn.cls === "del" ? "hover:bg-red-100 hover:border-red-300 hover:text-red-500" : "hover:border-[var(--accent-hex)]"
             )}
