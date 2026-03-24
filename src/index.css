@@ -8,82 +8,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* ── shadcn semantic tokens (remapped to Rockpool palette) ── */
-    --background:             0 0% 100%;
-    --foreground:             174 52% 11%;   /* #0d2926 */
+    /* ── shadcn semantic tokens (remapped to Gunmetal palette) ── */
+    --background:             218 24% 95%;   /* #edf1f7 (canvas) */
+    --foreground:             220 30% 14%;   /* #1a2030 (ink) */
 
-    --card:                   0 0% 100%;
-    --card-foreground:        174 52% 11%;
+    --card:                   216 50% 98%;   /* #f8fbff (canvas-white) */
+    --card-foreground:        220 30% 14%;
 
-    --popover:                0 0% 100%;
-    --popover-foreground:     174 52% 11%;
+    --popover:                216 50% 98%;
+    --popover-foreground:     220 30% 14%;
 
-    --primary:                175 84% 32%;   /* #0d9488 (teal-primary) */
-    --primary-foreground:     0 0% 100%;
+    --primary:                160 52% 52%;   /* #40c8a0 (accent) */
+    --primary-foreground:     164 75% 8%;    /* #0a1c18 (dark on accent) */
 
-    --secondary:              171 76% 97%;   /* #f0fdfb (surface-tint) */
-    --secondary-foreground:   174 52% 11%;
+    --secondary:              218 24% 95%;   /* #edf1f7 */
+    --secondary-foreground:   220 30% 14%;
 
-    --muted:                  171 76% 97%;   /* #f0fdfb */
-    --muted-foreground:       215 25% 47%;   /* #64748b */
+    --muted:                  214 28% 93%;   /* #e2e9f1 */
+    --muted-foreground:       215 16% 49%;   /* #6a7a90 */
 
-    --accent:                 171 76% 97%;
-    --accent-foreground:      174 52% 11%;
+    --accent:                 160 52% 52%;   /* same as primary for shadcn compatibility */
+    --accent-foreground:      220 30% 14%;
 
-    --destructive:            0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive:            0 47% 47%;     /* #b04040 */
+    --destructive-foreground: 0 0% 98%;
 
-    --border:                 153 100% 93%;   /* #e0fdf4 (border-subtle) */
-    --input:                  174 82% 89%;   /* #d1faf4 (border-mid) */
-    --ring:                   173 80% 40%;   /* #14b8a6 (teal-bright) */
+    --border:                 210 25% 83%;   /* #c8d4e0 */
+    --input:                  210 25% 83%;
+    --ring:                   160 52% 52%;   /* #40c8a0 */
 
-    --radius: 0.5rem;   /* 8px — use --radius-* tokens for finer control */
+    --radius: 0.5rem;
 
     /* shadcn sidebar tokens */
-    --sidebar-background:          172 42% 20%;   /* #1e4a44 (ocean-mid) */
-    --sidebar-foreground:          166 94% 90%;   /* #ccfbf1 */
-    --sidebar-primary:             173 80% 40%;   /* #14b8a6 */
-    --sidebar-primary-foreground:  0 0% 100%;
-    --sidebar-accent:              170 38% 23%;
-    --sidebar-accent-foreground:   166 94% 90%;
-    --sidebar-border:              170 80% 35%;
-    --sidebar-ring:                173 80% 40%;
+    --sidebar-background:          219 20% 18%;   /* #252c38 */
+    --sidebar-foreground:          210 20% 65%;   /* #7a8da4 */
+    --sidebar-primary:             160 52% 52%;   /* #40c8a0 */
+    --sidebar-primary-foreground:  164 75% 8%;
+    --sidebar-accent:              218 18% 22%;   /* #2d3545 */
+    --sidebar-accent-foreground:   160 52% 52%;
+    --sidebar-border:              218 18% 20%;
+    --sidebar-ring:                160 52% 52%;
 
-    /* ── Rockpool custom properties ── */
+    /* ── Gunmetal custom properties ── */
+    --sidebar: #252c38;
+    --sidebar-2: #2d3545;
+    --sidebar-3: #1e242f;
+    --canvas: #edf1f7;
+    --canvas-2: #f2f6fb;
+    --canvas-white: #f8fbff;
+    --ink: #1a2030;
+    --text-muted: #6a7a90;  /* kept as --text-muted (15+ codebase refs use this name) */
+    --accent-hex: #40c8a0;
+    --accent-bg: rgba(64,200,160,.1);
+    --sidebar-text: #7a8da4;
+    --danger: #b04040;
 
-    /* Dark ocean surfaces */
-    --ocean-deepest:  #071612;
-    --ocean-deep:     #0a1f1c;
-    --ocean-surface:  #0f1f1d;
-    --ocean-mid:      #1e4a44;
-
-    /* Teal accent scale */
-    --teal-primary:   #0d9488;
-    --teal-bright:    #14b8a6;
-    --teal-light:     #5eead4;
-    --teal-cyan:      #0891b2;
-    --teal-glow:      #06b6d4;
-
-    /* Semantic gradients */
-    --gradient-primary: linear-gradient(135deg, #0d9488, #0891b2);
-    --gradient-teal:    linear-gradient(90deg, #14b8a6, #06b6d4, #0891b2);
-
-    /* Content surfaces */
-    --surface:          #ffffff;
-    --surface-subtle:   #f8fffe;
-    --surface-tint:     #f0fdfb;
-
-    /* Borders */
-    --border-subtle:    #e0fdf4;
-    --border-emphasis:  #99f6e4;
-    --border-mid:       #d1faf4;
-
-    /* Text */
-    --text-primary:     #0d2926;
-    --text-body:        #334155;
-    --text-muted:       #64748b;
-    --text-on-dark:     #ccfbf1;
-    --text-on-dark-dim: rgba(204,251,241,0.6);
+    /* Shadows (blue-grey tinted) */
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.05), 0 1px 8px rgba(26,44,56,0.04);
+    --shadow-hover: 0 4px 20px rgba(26,44,56,0.12);
+    --shadow-modal: 0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(26,44,56,0.1);
+    --shadow-popup: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(26,44,56,0.08);
 
     /* Radius scale */
     --radius-sm:  6px;
@@ -91,11 +75,8 @@ All colors MUST be HSL.
     --radius-lg:  10px;
     --radius-xl:  14px;
 
-    /* Shadows */
-    --shadow-card:   0 1px 3px rgba(0,0,0,0.05), 0 1px 8px rgba(13,148,136,0.04);
-    --shadow-hover:  0 4px 20px rgba(13,148,136,0.12);
-    --shadow-modal:  0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(13,148,136,0.1);
-    --shadow-popup:  0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(13,148,136,0.08);
+    /* Motion */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
     /* Layout constants (used by Editor, Viewer, all pages) */
     --sidebar-w-editor: 220px;
@@ -131,16 +112,61 @@ All colors MUST be HSL.
 @layer utilities {
   .bg-hero {
     background:
-      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(20,184,166,0.12) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(6,182,212,0.08) 0%, transparent 55%);
+      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(64,200,160,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(64,200,160,0.05) 0%, transparent 55%);
   }
 
   .skip-link {
-    @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-teal-700 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999]
+           focus:bg-white focus:text-emerald-700 focus:px-4 focus:py-2 focus:rounded-md
+           focus:shadow-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none;
   }
 }
 
 @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(20,184,166,0.25); }
-  50%       { box-shadow: 0 0 0 5px rgba(20,184,166,0.1); }
+  0%, 100% { box-shadow: 0 0 0 3px rgba(64,200,160,0.25); }
+  50%      { box-shadow: 0 0 0 5px rgba(64,200,160,0.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes block-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* View Transitions (progressive enhancement) */
+@supports (view-transition-name: card) {
+  .course-card { view-transition-name: course-card; }
+}
+::view-transition-old(course-card),
+::view-transition-new(course-card) {
+  animation-duration: 250ms;
+  animation-timing-function: var(--ease-out);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-hex);
+  outline-offset: 2px;
 }
