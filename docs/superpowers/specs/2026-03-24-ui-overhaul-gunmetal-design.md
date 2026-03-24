@@ -6,11 +6,13 @@
 
 ## Summary
 
-Revolutionary redesign of TideLearn's authoring UI. Replaces the current teal Rockpool palette with the Gunmetal direction — a blue-grey sidebar, off-white canvas, and mint accent. Covers all three authoring screens: My Courses, Editor, and Settings.
+Revolutionary redesign of TideLearn's authoring UI. Replaces the current teal Rockpool palette with the Gunmetal direction — a blue-grey sidebar, off-white canvas, and mint accent. Covers all three authoring screens: My Courses, Editor, and Settings (new page).
 
 ## Design Decisions
 
 ### Palette — Gunmetal
+
+Custom properties used directly in component code:
 
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -29,6 +31,53 @@ Revolutionary redesign of TideLearn's authoring UI. Replaces the current teal Ro
 | `--danger` | `#b04040` | Destructive actions |
 
 **Key principle:** Neutrals are tinted blue-grey, never pure black or pure white. The accent is mint (#40c8a0), not teal — distinct from the old Rockpool palette.
+
+### shadcn Semantic Tokens (HSL triplets)
+
+shadcn/ui requires bare HSL triplets consumed via `hsl(var(--token))`. All existing shadcn tokens must be remapped:
+
+```css
+:root {
+  /* Core */
+  --background:             218 24% 95%;   /* #edf1f7 (canvas) */
+  --foreground:             220 30% 14%;   /* #1a2030 (ink) */
+
+  --card:                   216 50% 98%;   /* #f8fbff (canvas-white) */
+  --card-foreground:        220 30% 14%;
+
+  --popover:                216 50% 98%;
+  --popover-foreground:     220 30% 14%;
+
+  --primary:                160 52% 52%;   /* #40c8a0 (accent) */
+  --primary-foreground:     164 75% 8%;    /* #0a1c18 (dark on accent) */
+
+  --secondary:              218 24% 95%;   /* #edf1f7 */
+  --secondary-foreground:   220 30% 14%;
+
+  --muted:                  214 28% 93%;   /* #e2e9f1 */
+  --muted-foreground:       215 16% 49%;   /* #6a7a90 */
+
+  --accent:                 160 52% 52%;   /* same as primary for shadcn compatibility */
+  --accent-foreground:      220 30% 14%;
+
+  --destructive:            0 47% 47%;     /* #b04040 */
+  --destructive-foreground: 0 0% 98%;
+
+  --border:                 210 25% 83%;   /* #c8d4e0 */
+  --input:                  210 25% 83%;
+  --ring:                   160 52% 52%;   /* #40c8a0 */
+
+  /* Sidebar (shadcn Sidebar component) */
+  --sidebar-background:          219 20% 18%;   /* #252c38 */
+  --sidebar-foreground:          210 20% 65%;   /* #7a8da4 */
+  --sidebar-primary:             160 52% 52%;   /* #40c8a0 */
+  --sidebar-primary-foreground:  164 75% 8%;
+  --sidebar-accent:              218 18% 22%;   /* #2d3545 */
+  --sidebar-accent-foreground:   160 52% 52%;
+  --sidebar-border:              160 52% 52% / 0.1;
+  --sidebar-ring:                160 52% 52%;
+}
+```
 
 ### Typography
 
@@ -58,12 +107,13 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 
 ### 1. My Courses
 
-**Layout:** Gunmetal sidebar (220px) + top bar + 3-column card grid.
+**Layout:** Gunmetal sidebar (220px, uses `--sidebar-w-editor`) + top bar (48px, uses `--topbar-h`) + 3-column card grid.
 
 **Sidebar (shared shell across all pages):**
 - Logo mark (mint square with "T") + "TideLearn" in Lora
-- Nav items: My Courses, Settings, Help — each with icon + label
+- Nav items: My Courses, Settings, Help — each with icon (stroke 2.0) + label (12px, DM Sans 500)
 - Active state: mint background tint + mint text
+- Sidebar nav text: 12px, weight 500 (validates AA at 4.8:1 since 12px bold equivalent)
 - User avatar row at bottom: initials circle + email
 
 **Top bar:**
@@ -71,9 +121,9 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 - Right: Import JSON (ghost button) + New Course (primary mint button)
 
 **Card grid:**
-- 3 columns, 16px gap, responsive (2-col at tablet, 1-col at mobile)
-- Each card: white surface (`--canvas-white`), 9px radius, 1px border (`--border`)
-- Hover: translateY(-2px) + subtle shadow
+- 3 columns, 16px gap
+- Each card: white surface (`--canvas-white`), `--radius-lg` (10px), 1px border (`--border`)
+- Hover: translateY(-2px) + shadow (`--shadow-hover`)
 
 **Card anatomy (top to bottom):**
 1. **Cover strip** — 82px fixed height, dark gradient background, emoji icon in bottom-left. Not a hero image — just a visual identifier. "Change cover" hint appears on hover.
@@ -86,9 +136,11 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 - **Edit button** — appears on hover, shortcut to enter Editor
 - **"+ New Course" card** — dashed border placeholder in last grid slot
 
+**Responsive behavior** is out of scope for this spec — existing breakpoints are preserved as-is, but a dedicated responsive pass follows separately.
+
 ### 2. Editor
 
-**Layout:** Lesson sidebar (220px) + top bar + block canvas.
+**Layout:** Lesson sidebar (220px, `--sidebar-w-editor`) + top bar (48px, `--topbar-h`) + block canvas.
 
 **Lesson sidebar:**
 - **Header:** back link ("← All courses"), course title (Lora), lesson count ("12 lessons · 1 quiz")
@@ -98,13 +150,13 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 
 **Top bar:**
 - **Left:** Two-line structure:
-  - Line 1 (breadcrumb): "← JavaScript Fundamentals" (10px, muted, clickable — navigates back)
+  - Line 1 (breadcrumb): "← Course Name" (10px, muted, clickable — navigates back to My Courses)
   - Line 2 (title): Lesson title (13.5px, 600, click-to-edit with dashed underline hint on hover)
 - **Right:** Undo/Redo icon buttons | Preview (text button) | "✓ Saved" autosave indicator (green) | Publish (primary mint button)
 
 **Block canvas:**
 - White background (`--canvas-white`), 40px padding
-- Content constrained to reading width (max 600px, centered)
+- Content constrained to `--reading-max-w` (680px, unchanged), centered
 - Blocks: heading (Lora), paragraph (DM Sans 14px), callout (mint left border + mint tint bg), image drop zone
 - **Add block rows** between every block: horizontal mint line + circular "+" button. Visible on hover.
 - **Selected block:** 2px mint outline + floating block toolbar above (dark background, icons for: bold, italic, move up, move down, delete)
@@ -113,7 +165,12 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 - No Save button. App autosaves to localStorage.
 - Top bar shows "✓ Saved" in green when synced. Shows "Saving..." during write. Shows "● Unsaved" if there's an error.
 
-### 3. Settings
+### 3. Settings (New Page)
+
+This is a **new page** — no `Settings.tsx` exists yet. Requires:
+- New file: `src/pages/Settings.tsx`
+- New route: `/settings`
+- Sidebar nav link addition
 
 **Layout:** Same sidebar shell (Settings nav item active) + top bar ("Settings") + form content.
 
@@ -145,19 +202,46 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 - **Block types** — All 19 block types keep their current behavior. Only styling tokens change.
 - **MCP server** — No changes.
 - **Data model** — No changes to course JSON, Supabase schema, or localStorage format.
+- **Layout CSS vars** — `--sidebar-w-editor` (220px), `--sidebar-w-viewer` (200px), `--topbar-h` (48px), `--canvas-max-w` (828px), `--reading-max-w` (680px), `--content-px` (64px) — all unchanged.
 
 ## Migration Strategy
 
 ### Token System
 
-Replace the current HSL-based Rockpool tokens in `src/index.css` with the Gunmetal OKLCH/hex tokens above. Map old token names to new values:
+All tokens stay as **bare HSL triplets** for shadcn compatibility (consumed via `hsl(var(--token))`). The new shadcn token values are defined in the "shadcn Semantic Tokens" section above. Custom Gunmetal properties use hex values directly.
 
-| Old token | New token |
-|-----------|-----------|
-| `--teal-primary` | `--accent` (#40c8a0) |
-| `--background` | `--canvas` (#edf1f7) |
-| `--foreground` | `--ink` (#1a2030) |
-| `--muted-foreground` | `--muted` (#6a7a90) |
+### Complete Rockpool → Gunmetal Token Mapping
+
+**Removed (delete entirely):**
+
+| Token | Reason |
+|-------|--------|
+| `--ocean-deepest`, `--ocean-deep`, `--ocean-surface`, `--ocean-mid` | Replaced by `--sidebar`, `--sidebar-2`, `--sidebar-3` |
+| `--teal-primary`, `--teal-bright`, `--teal-light`, `--teal-cyan`, `--teal-glow` | Replaced by `--accent` (#40c8a0). No scale needed — single accent color. |
+| `--gradient-primary`, `--gradient-teal` | No gradients in Gunmetal. |
+| `--surface`, `--surface-subtle`, `--surface-tint` | Replaced by `--canvas`, `--canvas-2`, `--canvas-white` |
+| `--border-subtle`, `--border-emphasis`, `--border-mid` | Replaced by single `--border` (#c8d4e0) |
+| `--text-primary`, `--text-body`, `--text-on-dark`, `--text-on-dark-dim` | Replaced by `--ink`, `--muted`, `--sidebar-text` |
+| `--text-muted` | Replaced by `--muted` (#6a7a90) — same value, new name |
+
+**Updated (change value):**
+
+| Token | Old value | New value |
+|-------|-----------|-----------|
+| `--shadow-card` | teal-tinted rgba | `0 1px 3px rgba(0,0,0,0.05), 0 1px 8px rgba(26,44,56,0.04)` |
+| `--shadow-hover` | teal-tinted rgba | `0 4px 20px rgba(26,44,56,0.12)` |
+| `--shadow-modal` | teal-tinted rgba | `0 32px 80px rgba(0,0,0,0.2), 0 8px 24px rgba(26,44,56,0.1)` |
+| `--shadow-popup` | teal-tinted rgba | `0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(26,44,56,0.08)` |
+
+**Unchanged:** `--radius`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, all layout vars.
+
+### Utility Class Updates
+
+| Utility | Change |
+|---------|--------|
+| `.bg-hero` | Re-tint from teal to Gunmetal: `radial-gradient(ellipse 60% 50% at 50% 40%, rgba(64,200,160,0.08) 0%, transparent 65%), radial-gradient(ellipse 40% 40% at 80% 80%, rgba(64,200,160,0.05) 0%, transparent 55%)` |
+| `.skip-link` | Replace `focus:text-teal-700` with `focus:text-emerald-700`, `focus:ring-teal-500` with `focus:ring-emerald-500` (closest Tailwind match for mint) |
+| `@keyframes pulse-ring` | Re-tint from `rgba(20,184,166,*)` to `rgba(64,200,160,*)` |
 
 ### Removed Concepts
 
@@ -168,23 +252,30 @@ Replace the current HSL-based Rockpool tokens in `src/index.css` with the Gunmet
 
 ### Icon Migration
 
-Lucide is already installed. Change is stroke-width only — add a global CSS rule for interactive surfaces and leave decorative icons at default.
+Lucide is already installed. Change is stroke-width only — add a global CSS rule for interactive surfaces and leave decorative icons at default 1.5.
 
 ## Accessibility
 
 - All text meets WCAG AA contrast on its target background:
   - `--ink` (#1a2030) on `--canvas-white` (#f8fbff): 14.2:1
   - `--muted` (#6a7a90) on `--canvas-white` (#f8fbff): 5.1:1
-  - `--sidebar-text` (#7a8da4) on `--sidebar` (#252c38): 4.8:1 (AA for 14px+)
+  - `--sidebar-text` (#7a8da4) on `--sidebar` (#252c38): 4.8:1 — valid for sidebar nav text at 12px weight 500 (equivalent to bold per WCAG)
   - `--accent` (#40c8a0) on `--sidebar` (#252c38): 5.7:1
 - Focus indicators: 2px mint outline on interactive elements
 - Keyboard navigation: all actions reachable via Tab/Enter/Escape
-- `prefers-reduced-motion`: disable translateY hover, fade transitions
+- `prefers-reduced-motion`: wrap hover transforms and fade transitions:
+  ```css
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+    .card:hover { transform: none; }
+    .add-block-row { opacity: 1; transition: none; }
+  }
+  ```
 - Skip-to-content link already in App.tsx, targets `#main-content`
 
 ## Out of Scope
 
 - Responsive mobile layout (addressed as separate task after desktop is complete)
 - Animation/motion design (can be layered on post-launch)
-- New features (no new pages, no new block types, no new settings)
+- New features (no new block types, no new settings beyond Settings page shell)
 - Backend changes
