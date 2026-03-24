@@ -677,7 +677,7 @@ export default function Editor() {
                   {lessons.length > 1 && (
                     <button
                       onClick={() => setLessonToRemove(selectedLesson.id)}
-                      className="bg-none border-none text-[11px] cursor-pointer p-0 transition-colors rounded"
+                      className="bg-transparent border-0 text-[11px] cursor-pointer p-0 transition-colors rounded"
                       style={{ color: "hsl(var(--destructive) / 0.7)" }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "hsl(var(--destructive))"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "hsl(var(--destructive) / 0.7)"; }}

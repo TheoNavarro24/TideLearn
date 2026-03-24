@@ -204,9 +204,9 @@ export default function Auth() {
           inset: 0,
           pointerEvents: "none",
           background: [
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(64,200,160,0.15) 0%, transparent 60%)",
-            "radial-gradient(ellipse 50% 40% at 80% 100%, rgba(64,200,160,0.08) 0%, transparent 55%)",
-            "linear-gradient(180deg, transparent 0%, rgba(64,200,160,0.03) 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--accent-hex) 15%, transparent) 0%, transparent 60%)",
+            "radial-gradient(ellipse 50% 40% at 80% 100%, color-mix(in srgb, var(--accent-hex) 8%, transparent) 0%, transparent 55%)",
+            "linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--accent-hex) 3%, transparent) 100%)",
           ].join(", "),
         }}
       />

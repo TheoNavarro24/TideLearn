@@ -103,7 +103,7 @@ export function PublishModal({
             <div className="text-[9px] font-extrabold text-[var(--accent-hex)] uppercase tracking-wider mb-1.5">
               Share Link
             </div>
-            <div className="flex border-[1.5px] border-hsl(var(--border)) rounded-lg overflow-hidden">
+            <div className="flex border-[1.5px] border-[hsl(var(--border))] rounded-lg overflow-hidden">
               <input
                 value={publishUrl}
                 readOnly
@@ -121,9 +121,9 @@ export function PublishModal({
 
         {/* Divider */}
         <div className="flex items-center gap-3 px-8 mb-5">
-          <div className="flex-1 h-px bg-hsl(var(--border))" />
+          <div className="flex-1 h-px bg-[hsl(var(--border))]" />
           <span className="text-[11px] text-[var(--text-muted)] whitespace-nowrap">Export for offline &amp; LMS</span>
-          <div className="flex-1 h-px bg-hsl(var(--border))" />
+          <div className="flex-1 h-px bg-[hsl(var(--border))]" />
         </div>
 
         {/* Export grid */}
@@ -156,7 +156,7 @@ export function PublishModal({
           ].map(card => (
             <div
               key={card.label}
-              className="bg-[var(--canvas)] border-[1.5px] border-hsl(var(--border)) rounded-[var(--radius-lg)] p-3 flex flex-col gap-1.5"
+              className="bg-[var(--canvas)] border-[1.5px] border-[hsl(var(--border))] rounded-[var(--radius-lg)] p-3 flex flex-col gap-1.5"
             >
               <div className={`w-8 h-8 ${card.iconBg} rounded-md flex items-center justify-center`}>
                 {card.icon}
@@ -165,7 +165,7 @@ export function PublishModal({
               <div className="text-[10px] text-[var(--text-muted)]">{card.desc}</div>
               <button
                 onClick={card.onClick}
-                className="bg-none border-none text-[11px] text-[var(--accent-hex)] font-semibold cursor-pointer p-0 text-left mt-auto hover:underline focus-visible:outline-none rounded"
+                className="bg-transparent border-0 text-[11px] text-[var(--accent-hex)] font-semibold cursor-pointer p-0 text-left mt-auto hover:underline focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:outline-none rounded"
               >
                 {card.action}
               </button>
@@ -182,7 +182,7 @@ export function PublishModal({
 
         {/* Import section (collapsible) */}
         {showImport && (
-          <div className="border-t border-hsl(var(--border)) px-8 py-4 pb-5">
+          <div className="border-t border-[hsl(var(--border))] px-8 py-4 pb-5">
             <div className="text-[11px] font-bold text-[var(--ink)] mb-2.5">Import course</div>
 
             {/* Import mode */}
@@ -205,7 +205,7 @@ export function PublishModal({
               className={`border-2 border-dashed rounded-lg p-4 text-center mb-2.5 transition-colors ${
                 isDragOver
                   ? "border-[var(--accent-hex)] bg-[var(--canvas-2)]"
-                  : "border-hsl(var(--border)) bg-[var(--canvas)]"
+                  : "border-[hsl(var(--border))] bg-[var(--canvas)]"
               }`}
             >
               <p className="text-xs text-[var(--text-muted)] m-0">Drag &amp; drop a .json or .zip (SCORM) file here</p>
@@ -214,13 +214,13 @@ export function PublishModal({
             <div className="flex gap-2">
               <button
                 onClick={onImportClick}
-                className="bg-none border-[1.5px] border-hsl(var(--border)) rounded-md text-[var(--accent-hex)] text-xs font-semibold px-3 py-1.5 cursor-pointer"
+                className="bg-transparent border-[1.5px] border-[hsl(var(--border))] rounded-md text-[var(--accent-hex)] text-xs font-semibold px-3 py-1.5 cursor-pointer hover:bg-[var(--canvas-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)]"
               >
                 Import JSON
               </button>
               <button
                 onClick={onImportScormClick}
-                className="bg-none border-[1.5px] border-hsl(var(--border)) rounded-md text-[var(--accent-hex)] text-xs font-semibold px-3 py-1.5 cursor-pointer"
+                className="bg-transparent border-[1.5px] border-[hsl(var(--border))] rounded-md text-[var(--accent-hex)] text-xs font-semibold px-3 py-1.5 cursor-pointer hover:bg-[var(--canvas-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)]"
               >
                 Import SCORM .zip
               </button>
@@ -229,16 +229,16 @@ export function PublishModal({
         )}
 
         {/* Footer */}
-        <div className="border-t border-hsl(var(--border)) px-8 py-3 flex items-center justify-between">
+        <div className="border-t border-[hsl(var(--border))] px-8 py-3 flex items-center justify-between">
           <button
             onClick={onToggleImport}
-            className="bg-none border-none text-xs text-[var(--text-muted)] cursor-pointer p-0 hover:text-[var(--accent-hex)] transition-colors"
+            className="bg-transparent border-0 text-xs text-[var(--text-muted)] cursor-pointer p-0 hover:text-[var(--accent-hex)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] rounded"
           >
             {showImport ? "Hide import" : "Import course"}
           </button>
           <button
             onClick={onClose}
-            className="bg-none border-none text-[13px] font-semibold text-[var(--accent-hex)] cursor-pointer px-3.5 py-1.5 rounded-md hover:bg-[var(--canvas-2)] transition-colors"
+            className="bg-transparent border-0 text-[13px] font-semibold text-[var(--accent-hex)] cursor-pointer px-3.5 py-1.5 rounded-md hover:bg-[var(--canvas-2)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)]"
           >
             Done
           </button>

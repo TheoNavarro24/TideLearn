@@ -61,16 +61,12 @@ function DropItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] transition-colors border-none cursor-pointer text-left"
-      style={{ color: danger ? "var(--danger)" : "var(--ink)", background: "transparent" }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = danger
-          ? "var(--danger-bg)"
-          : "hsl(var(--muted))";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-      }}
+      role="menuitem"
+      className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] transition-colors border-0 cursor-pointer text-left bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:ring-inset ${
+        danger
+          ? "text-[var(--danger)] hover:bg-[var(--danger-bg)]"
+          : "text-[var(--ink)] hover:bg-[hsl(var(--muted))]"
+      }`}
     >
       <span className="flex items-center justify-center w-4 flex-shrink-0">{icon}</span>
       {label}

@@ -136,13 +136,12 @@ export default function Settings() {
 
         {/* Danger zone */}
         <div
-          className="rounded-md p-5 border"
-          style={{ borderColor: "rgba(176,64,64,0.3)", background: "rgba(176,64,64,0.03)" }}
+          className="rounded-md p-5 border border-[var(--danger-border)] bg-[var(--danger-bg)]"
         >
-          <div className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: "var(--danger)" }}>
+          <div className="text-[11px] font-bold uppercase tracking-wide mb-1 text-[var(--danger)]">
             Danger zone
           </div>
-          <div className="h-px mb-4" style={{ background: "rgba(176,64,64,0.15)" }} />
+          <div className="h-px mb-4 bg-[var(--danger-divider)]" />
           <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
             Permanently delete your account and all associated data. This cannot be undone.
           </p>

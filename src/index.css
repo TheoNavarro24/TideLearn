@@ -64,6 +64,8 @@ All colors MUST be HSL.
     --sidebar-text-hover: #a0b0c4;
     --danger: #b04040;
     --danger-bg: rgba(176,64,64,0.06);
+    --danger-border: rgba(176,64,64,0.3);
+    --danger-divider: rgba(176,64,64,0.15);
 
     /* Shadows (blue-grey tinted) */
     --shadow-card: 0 1px 3px rgba(0,0,0,0.05), 0 1px 8px rgba(26,44,56,0.04);
@@ -131,8 +133,8 @@ All colors MUST be HSL.
 
   .skip-link {
     @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999]
-           focus:bg-white focus:text-emerald-700 focus:px-4 focus:py-2 focus:rounded-md
-           focus:shadow-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none;
+           focus:bg-[var(--canvas-white)] focus:text-[var(--ink)] focus:px-4 focus:py-2 focus:rounded-md
+           focus:shadow-lg focus:ring-2 focus:ring-[var(--accent-hex)] focus:outline-none;
   }
 }
 

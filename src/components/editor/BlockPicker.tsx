@@ -167,10 +167,10 @@ export function AddBlockRow({
               </div>
 
               {/* Footer close */}
-              <div className="border-t border-hsl(var(--border)) px-3.5 py-2 text-right">
+              <div className="border-t border-[hsl(var(--border))] px-3.5 py-2 text-right">
                 <button
                   onClick={onPickerClose}
-                  className="bg-none border-none text-[11px] text-[var(--text-muted)] cursor-pointer hover:text-[var(--accent-hex)] transition-colors"
+                  className="bg-transparent border-0 text-[11px] text-[var(--text-muted)] cursor-pointer hover:text-[var(--accent-hex)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] rounded"
                 >
                   Close
                 </button>
