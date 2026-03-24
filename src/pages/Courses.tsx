@@ -65,7 +65,7 @@ function DropItem({
       style={{ color: danger ? "var(--danger)" : "var(--ink)", background: "transparent" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = danger
-          ? "rgba(176,64,64,0.06)"
+          ? "var(--danger-bg)"
           : "hsl(var(--muted))";
       }}
       onMouseLeave={(e) => {
@@ -133,6 +133,7 @@ interface CardProps {
   isLoggedIn: boolean;
   openDropdownId: string | null;
   setOpenDropdownId: (id: string | null) => void;
+  animationIndex: number;
 }
 
 function CourseCard({
@@ -149,7 +150,7 @@ function CourseCard({
   openDropdownId,
   setOpenDropdownId,
   animationIndex,
-}: CardProps & { animationIndex: number }) {
+}: CardProps) {
   const isOpen = openDropdownId === course.id;
   const dropRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -388,7 +389,7 @@ function CourseCard({
             style={{
               background:
                 course.isPublic !== false
-                  ? "rgba(64,200,160,0.12)"
+                  ? "var(--accent-bg)"
                   : "rgba(106,122,144,0.1)",
               color:
                 course.isPublic !== false
@@ -757,13 +758,15 @@ export default function Courses() {
           <DialogFooter>
             <button
               onClick={cancelDelete}
-              className="bg-slate-100 border-none rounded-[7px] py-2 px-[18px] font-semibold cursor-pointer text-[13px]"
+              className="border-none rounded-[7px] py-2 px-[18px] font-semibold cursor-pointer text-[13px]"
+              style={{ background: "hsl(var(--muted))", color: "var(--ink)" }}
             >
               Cancel
             </button>
             <button
               onClick={confirmDelete}
-              className="bg-red-500 text-white border-none rounded-[7px] py-2 px-[18px] font-bold cursor-pointer text-[13px]"
+              className="border-none rounded-[7px] py-2 px-[18px] font-bold cursor-pointer text-[13px]"
+              style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}
             >
               Delete
             </button>
