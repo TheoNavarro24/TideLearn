@@ -2,9 +2,15 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "A1 Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/a1-cross-cutting-foundations && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
       "name": "Block Form UX Worktree",
       "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/block-form-ux && node node_modules/.bin/vite --port $PORT"],
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn && node node_modules/.bin/vite --port $PORT"],
       "autoPort": true
     },
     {
@@ -44,10 +50,22 @@
       "autoPort": true
     },
     {
+      "name": "A2 Editor Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/a2-editor-overhaul && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "A3 Viewer Worktree Dev Server",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/a3-viewer-overhaul && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
       "name": "TideLearn Dev Server",
       "runtimeExecutable": "/Users/theonavarro/.nvm/versions/node/v24.14.0/bin/node",
-      "runtimeArgs": ["node_modules/.bin/vite", "--port", "8080"],
-      "port": 8080
+      "runtimeArgs": ["node_modules/.bin/vite"],
+      "autoPort": true
     },
     {
       "name": "TideLearn Preview (built)",
@@ -60,6 +78,18 @@
       "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
       "runtimeArgs": ["-m", "http.server", "52234", "--directory", ".superpowers/brainstorm/48271-1773794868"],
       "port": 52234
+    },
+    {
+      "name": "Gunmetal UI (worktree)",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/theonavarro/TideLearn/.worktrees/gunmetal-ui && node node_modules/.bin/vite --port $PORT"],
+      "autoPort": true
+    },
+    {
+      "name": "Brainstorm 433",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "65349", "--directory", ".superpowers/brainstorm/433-1774311708"],
+      "port": 65349
     }
   ]
 }

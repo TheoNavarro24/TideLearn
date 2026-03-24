@@ -224,7 +224,7 @@ All tokens stay as **bare HSL triplets** for shadcn compatibility (consumed via 
 | `--surface`, `--surface-subtle`, `--surface-tint` | Replaced by `--canvas`, `--canvas-2`, `--canvas-white` |
 | `--border-subtle`, `--border-emphasis`, `--border-mid` | Replaced by single `--border` (#c8d4e0) |
 | `--text-primary`, `--text-body`, `--text-on-dark`, `--text-on-dark-dim` | Replaced by `--ink`, `--muted`, `--sidebar-text` |
-| `--text-muted` | Replaced by `--muted` (#6a7a90) — same value, new name |
+| `--text-muted` | **Kept as `--text-muted`** (#6a7a90) — same value, same name. Referenced 15+ times in component code; renaming would be churn for no benefit. Note: shadcn's `--muted-foreground` maps to the same HSL value, so both are available. |
 
 **Updated (change value):**
 
