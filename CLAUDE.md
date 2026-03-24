@@ -86,7 +86,7 @@ Supabase project: `rljldeobjtgoqttuxhsf`. Google OAuth configured (Cloud project
 - [x] **A.2 — Editor Overhaul** (merged to main)
 - [x] **A.3 — Viewer Overhaul** (merged to main)
 - [x] **A.4 — Landing Page Overhaul** (merged to main)
-- [ ] A.5 — Courses Overhaul
+- [x] **A.5 — Courses Overhaul** (merged to main)
 
 ## Design Context
 
