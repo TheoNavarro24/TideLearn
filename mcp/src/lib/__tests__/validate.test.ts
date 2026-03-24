@@ -45,3 +45,36 @@ describe("validateCourseJson", () => {
     if (!result.ok) expect(result.errors.length).toBeGreaterThan(0);
   });
 });
+
+describe("Tier 1 block schemas", () => {
+  it("accepts a valid button block", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "button", label: "Go", url: "https://example.com", variant: "primary", openInNewTab: false }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects button with invalid variant", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "button", label: "Go", url: "https://example.com", variant: "neon", openInNewTab: false }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+  it("accepts a valid embed block", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "embed", url: "https://example.com", title: "Demo", height: 400 }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects embed with empty url", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "embed", url: "", title: "Demo", height: 400 }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+  it("accepts a valid flashcard", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "flashcard", front: "Q", back: "A" }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("accepts flashcard with hint", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "flashcard", front: "Q", back: "A", hint: "Think about X" }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+});

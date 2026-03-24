@@ -80,6 +80,31 @@ export type DocumentBlock = {
   title?: string;
 };
 
+export type ButtonBlock = {
+  id: string;
+  type: "button";
+  label: string;
+  url: string;
+  variant: "primary" | "secondary" | "outline";
+  openInNewTab: boolean;
+};
+
+export type EmbedBlock = {
+  id: string;
+  type: "embed";
+  url: string;
+  title: string;
+  height: number;
+};
+
+export type FlashcardBlock = {
+  id: string;
+  type: "flashcard";
+  front: string;
+  back: string;
+  hint?: string;
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -119,7 +144,10 @@ export type Block =
   | CalloutBlock
   | VideoBlock
   | AudioBlock
-  | DocumentBlock;
+  | DocumentBlock
+  | ButtonBlock
+  | EmbedBlock
+  | FlashcardBlock;
 
 export type AssessmentQuestion = {
   id: string;
@@ -278,6 +306,31 @@ export const documentBlockSchema = z.object({
   title: z.string().optional(),
 });
 
+export const buttonBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("button"),
+  label: z.string().min(1),
+  url: z.string().min(1),
+  variant: z.union([z.literal("primary"), z.literal("secondary"), z.literal("outline")]),
+  openInNewTab: z.boolean(),
+});
+
+export const embedBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("embed"),
+  url: z.string().min(1),
+  title: z.string().min(1),
+  height: z.number().int().min(100).max(2000),
+});
+
+export const flashcardBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("flashcard"),
+  front: z.string().min(1),
+  back: z.string().min(1),
+  hint: z.string().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -296,6 +349,9 @@ export const blockSchema = z.discriminatedUnion("type", [
   videoBlockSchema,
   audioBlockSchema,
   documentBlockSchema,
+  buttonBlockSchema,
+  embedBlockSchema,
+  flashcardBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -370,6 +426,15 @@ export const factories = {
   truefalse: (): TrueFalseBlock => ({ id: uid(), type: "truefalse", question: "Statement goes here.", correct: true, feedbackCorrect: "Correct!", feedbackIncorrect: "Not quite." }),
   shortanswer: (): ShortAnswerBlock => ({ id: uid(), type: "shortanswer", question: "Your question?", answer: "answer", acceptable: [], caseSensitive: false, trimWhitespace: true }),
   document: (): DocumentBlock => ({ id: uid(), type: "document", src: "", fileType: "pdf", title: "" }),
+  button: (): ButtonBlock => ({
+    id: uid(), type: "button", label: "Learn more", url: "https://", variant: "primary", openInNewTab: false,
+  }),
+  embed: (): EmbedBlock => ({
+    id: uid(), type: "embed", url: "https://", title: "Embedded content", height: 400,
+  }),
+  flashcard: (): FlashcardBlock => ({
+    id: uid(), type: "flashcard", front: "Question or term", back: "Answer or definition",
+  }),
 } as const;
 
 export type BlockType = keyof typeof factories;

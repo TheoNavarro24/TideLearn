@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { CodeView } from "./view/Code";
@@ -34,7 +34,13 @@ import { TocForm } from "./editor/TocForm";
 import { TocView } from "./view/Toc";
 import { DocumentForm } from "./editor/DocumentForm";
 import { DocumentView } from "./view/Document";
-import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon } from "lucide-react";
+import { ButtonForm } from "./editor/ButtonForm";
+import { ButtonView } from "./view/Button";
+import { EmbedForm } from "./editor/EmbedForm";
+import { EmbedView } from "./view/Embed";
+import { FlashcardForm } from "./editor/FlashcardForm";
+import { FlashcardView } from "./view/Flashcard";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -203,6 +209,12 @@ export const registry: BlockSpec[] = [
     View: QuizView as ViewRenderer<QuizBlock>,
     category: "Knowledge",
   },
+  { type: "button", label: "Button / CTA", icon: ExternalLink, create: factories.button,
+    Editor: ButtonForm as EditorRenderer<ButtonBlock>, View: ButtonView as ViewRenderer<ButtonBlock>, category: "Interactive" },
+  { type: "embed", label: "Embed", icon: Code2, create: factories.embed,
+    Editor: EmbedForm as EditorRenderer<EmbedBlock>, View: EmbedView as ViewRenderer<EmbedBlock>, category: "Media" },
+  { type: "flashcard", label: "Flashcard", icon: CreditCard, create: factories.flashcard,
+    Editor: FlashcardForm as EditorRenderer<FlashcardBlock>, View: FlashcardView as ViewRenderer<FlashcardBlock>, category: "Knowledge" },
 ];
 
 export const createBlock = (type: BlockType) => {

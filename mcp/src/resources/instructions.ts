@@ -216,7 +216,16 @@ shortanswer { type: "shortanswer", question: "...",  answer: "...",  acceptable?
 \`\`\`
 These block types are for inline checks inside content lessons. For a standalone adaptive assessment, use add_assessment_lesson and the assessment tools above.
 
-Valid block types (17 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc
+### CTA / Embed / Flashcard
+\`\`\`
+button      { type: "button",    label: "...",  url: "https://...",  variant: "primary" | "secondary" | "outline",  openInNewTab: boolean }
+embed       { type: "embed",     url: "https://...",  title: "...",  height: 400 }
+              ↑ title is required for accessibility. height is integer 100–2000 (px).
+flashcard   { type: "flashcard", front: "...",  back: "...",  hint?: "..." }
+              ↑ front and back accept HTML. hint is shown before the learner flips the card.
+\`\`\`
+
+Valid block types (20 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard
 
 ---
 
