@@ -26,7 +26,6 @@ import {
   duplicateCourseInCloud,
 } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
-import { cn } from "@/lib/utils";
 import {
   Waves,
   BookOpen,
