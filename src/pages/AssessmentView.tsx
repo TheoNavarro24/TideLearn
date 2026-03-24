@@ -147,7 +147,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   };
 
   const btnPrimary: React.CSSProperties = {
-    background: "linear-gradient(135deg,#0d9488,#0891b2)",
+    background: "var(--accent-hex)",
     border: "none",
     borderRadius: 8,
     color: "#fff",
@@ -160,9 +160,9 @@ export function AssessmentView({ lesson, courseId }: Props) {
 
   const btnSecondary: React.CSSProperties = {
     background: "none",
-    border: "1.5px solid #e0fdf4",
+    border: "1.5px solid hsl(var(--border))",
     borderRadius: 8,
-    color: "#0d9488",
+    color: "var(--accent-hex)",
     fontSize: 14,
     fontWeight: 600,
     padding: "9px 20px",
@@ -174,10 +174,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
   if (screen === "home") {
     return (
       <div style={containerStyle}>
-        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#0d9488", marginBottom: 6 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent-hex)", marginBottom: 6 }}>
           Assessment
         </div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0d2926", marginBottom: 4 }}>{lesson.title}</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{lesson.title}</h1>
         <p style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>
           {lesson.questions.length} question{lesson.questions.length !== 1 ? "s" : ""} in bank
           {lastSession && ` · Last score: ${lastSession.score}%`}
@@ -213,7 +213,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
                   <div style={{
                     width: 20,
                     height: Math.max(4, Math.round(s.score * 0.4)),
-                    background: s.score >= passingScore ? "#14b8a6" : "#f87171",
+                    background: s.score >= passingScore ? "var(--accent-hex)" : "#f87171",
                     borderRadius: 3,
                   }} />
                   <span style={{ fontSize: 9, color: "#94a3b8" }}>{s.score}%</span>
@@ -241,8 +241,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </span>
         </div>
 
-        <div style={{ background: "#f8fffe", border: "1px solid #e0fdf4", borderRadius: 12, padding: 24, marginBottom: 16 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: "#0d2926", lineHeight: 1.55, margin: 0 }}>
+        <div style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", borderRadius: 12, padding: 24, marginBottom: 16 }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, margin: 0 }}>
             {currentQ.text}
           </p>
         </div>
@@ -251,9 +251,9 @@ export function AssessmentView({ lesson, courseId }: Props) {
           {currentQ.options.map((opt, i) => {
             const isSelected = selected === i;
             const isCorrect = i === currentQ.correctIndex;
-            let bg = "#fff", border = "1.5px solid #e0fdf4", color = "#334155";
-            if (revealed && isCorrect) { bg = "#f0fdfb"; border = "1.5px solid #14b8a6"; color = "#0d9488"; }
-            else if (isSelected) { bg = "#f8fffe"; border = "1.5px solid #5eead4"; color = "#0d9488"; }
+            let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
+            if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+            else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
             return (
               <li key={i} style={{ marginBottom: 8 }}>
                 <button
@@ -278,7 +278,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
                 <button
                   key={c}
                   onClick={() => setConfidence(c)}
-                  style={{ padding: "5px 14px", border: confidence === c ? "2px solid #0d9488" : "1.5px solid #e0fdf4", borderRadius: 6, background: confidence === c ? "#f0fdfb" : "#fff", color: confidence === c ? "#0d9488" : "#64748b", fontSize: 12, fontWeight: confidence === c ? 700 : 400, cursor: "pointer", fontFamily: "Inter,sans-serif", textTransform: "capitalize" }}
+                  style={{ padding: "5px 14px", border: confidence === c ? "2px solid var(--accent-hex)" : "1.5px solid hsl(var(--border))", borderRadius: 6, background: confidence === c ? "var(--accent-bg)" : "#fff", color: confidence === c ? "var(--accent-hex)" : "#64748b", fontSize: 12, fontWeight: confidence === c ? 700 : 400, cursor: "pointer", fontFamily: "Inter,sans-serif", textTransform: "capitalize" }}
                 >
                   {c}
                 </button>
@@ -288,7 +288,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
         )}
 
         {revealed && currentQ.feedback && (
-          <div style={{ background: "#f0fdfb", border: "1px solid #ccfbf1", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#0d2926" }}>
+          <div style={{ background: "var(--accent-bg)", border: "1px solid hsl(var(--border))", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "var(--ink)" }}>
             {currentQ.feedback}
           </div>
         )}
@@ -308,7 +308,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQ.correctIndex ? "#0d9488" : "#ef4444" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQ.correctIndex ? "var(--accent-hex)" : "#ef4444" }}>
               {selected === currentQ.correctIndex ? "Correct!" : "Incorrect"}
             </span>
           )}
@@ -325,10 +325,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     return (
       <div style={containerStyle}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 56, fontWeight: 800, color: passed ? "#0d9488" : "#ef4444", lineHeight: 1 }}>
+          <div style={{ fontSize: 56, fontWeight: 800, color: passed ? "var(--accent-hex)" : "#ef4444", lineHeight: 1 }}>
             {resultsScore}%
           </div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: passed ? "#0d9488" : "#ef4444", marginTop: 6 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: passed ? "var(--accent-hex)" : "#ef4444", marginTop: 6 }}>
             {passed ? "Passed" : "Not yet"}
           </div>
           <p style={{ fontSize: 14, color: "#64748b", marginTop: 8 }}>
@@ -343,9 +343,9 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </p>
             {Object.entries(bloomBreakdown).map(([level, { total, correct }]) => (
               <div key={level} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={{ width: 32, fontSize: 11, fontWeight: 700, color: "#0d9488" }}>{level}</span>
-                <div style={{ flex: 1, height: 8, background: "#e0fdf4", borderRadius: 4 }}>
-                  <div style={{ width: `${Math.round((correct / total) * 100)}%`, height: "100%", background: "linear-gradient(90deg,#0d9488,#0891b2)", borderRadius: 4 }} />
+                <span style={{ width: 32, fontSize: 11, fontWeight: 700, color: "var(--accent-hex)" }}>{level}</span>
+                <div style={{ flex: 1, height: 8, background: "hsl(var(--border))", borderRadius: 4 }}>
+                  <div style={{ width: `${Math.round((correct / total) * 100)}%`, height: "100%", background: "var(--accent-hex)", borderRadius: 4 }} />
                 </div>
                 <span style={{ fontSize: 12, color: "#64748b", width: 50, textAlign: "right" }}>{correct}/{total}</span>
               </div>
@@ -378,13 +378,13 @@ export function AssessmentView({ lesson, courseId }: Props) {
         <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#64748b", fontSize: 13, cursor: "pointer", fontFamily: "Inter,sans-serif", marginBottom: 20, display: "block" }}>
           ← Back
         </button>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0d2926", marginBottom: 4 }}>Mistake Notebook</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>Mistake Notebook</h2>
         <p style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>
           {missed.length} question{missed.length !== 1 ? "s" : ""} with at least one incorrect answer
         </p>
 
         {missed.length === 0 && (
-          <p style={{ color: "#0d9488", fontSize: 14 }}>No mistakes yet — keep it up!</p>
+          <p style={{ color: "var(--accent-hex)", fontSize: 14 }}>No mistakes yet — keep it up!</p>
         )}
 
         {(["high", "med", "low", "unknown"] as const).map((conf) => {
@@ -398,8 +398,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
               </p>
               {qs.map((q) => (
                 <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#0d2926", margin: "0 0 6px" }}>{q.text}</p>
-                  <p style={{ fontSize: 12, color: "#0d9488", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
+                  <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
                   {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
                 </div>
               ))}

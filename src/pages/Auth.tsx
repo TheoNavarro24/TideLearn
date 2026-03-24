@@ -150,7 +150,7 @@ export default function Auth() {
       <div
         style={{
           minHeight: "100vh",
-          background: "var(--ocean-deepest, #071612)",
+          background: "var(--sidebar-3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -162,8 +162,8 @@ export default function Auth() {
             height: 32,
             borderRadius: "50%",
             border: "2px solid transparent",
-            borderTopColor: "#14b8a6",
-            borderRightColor: "#06b6d4",
+            borderTopColor: "var(--accent-hex)",
+            borderRightColor: "var(--accent-hex)",
             animation: "spin 0.8s linear infinite",
           }}
         />
@@ -189,7 +189,7 @@ export default function Auth() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--ocean-deepest, #071612)",
+        background: "var(--sidebar-3)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -204,9 +204,9 @@ export default function Auth() {
           inset: 0,
           pointerEvents: "none",
           background: [
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(13,148,136,0.18) 0%, transparent 60%)",
-            "radial-gradient(ellipse 50% 40% at 80% 100%, rgba(6,182,212,0.1) 0%, transparent 55%)",
-            "linear-gradient(180deg, transparent 0%, rgba(20,184,166,0.04) 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(64,200,160,0.15) 0%, transparent 60%)",
+            "radial-gradient(ellipse 50% 40% at 80% 100%, rgba(64,200,160,0.08) 0%, transparent 55%)",
+            "linear-gradient(180deg, transparent 0%, rgba(64,200,160,0.03) 100%)",
           ].join(", "),
         }}
       />
@@ -224,15 +224,15 @@ export default function Auth() {
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 16,
           boxShadow:
-            "0 32px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(20,184,166,0.06) inset",
+            "0 32px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(64,200,160,0.06) inset",
           overflow: "hidden",
         }}
       >
-        {/* Teal stripe */}
+        {/* Accent stripe */}
         <div
           style={{
             height: 3,
-            background: "linear-gradient(90deg, #14b8a6, #06b6d4, #0891b2)",
+            background: "var(--accent-hex)",
           }}
         />
 
@@ -252,14 +252,16 @@ export default function Auth() {
                 width: 28,
                 height: 28,
                 borderRadius: 6,
-                background: "linear-gradient(135deg, #14b8a6, #06b6d4)",
+                background: "var(--accent-hex)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 16,
+                fontSize: 15,
+                fontWeight: 800,
+                color: "#fff",
               }}
             >
-              🌊
+              T
             </div>
             <span
               style={{
@@ -393,7 +395,7 @@ export default function Auth() {
               required
               style={inputStyle}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "rgba(20,184,166,0.5)";
+                e.currentTarget.style.borderColor = "rgba(64,200,160,0.5)";
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
@@ -407,7 +409,7 @@ export default function Auth() {
               required
               style={inputStyle}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "rgba(20,184,166,0.5)";
+                e.currentTarget.style.borderColor = "rgba(64,200,160,0.5)";
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
@@ -422,7 +424,7 @@ export default function Auth() {
                 required
                 style={inputStyle}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(20,184,166,0.5)";
+                  e.currentTarget.style.borderColor = "rgba(64,200,160,0.5)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
@@ -435,7 +437,7 @@ export default function Auth() {
               style={{
                 width: "100%",
                 padding: "11px 14px",
-                background: "linear-gradient(135deg, #0d9488, #0891b2)",
+                background: "var(--accent-hex)",
                 border: "none",
                 borderRadius: 8,
                 color: "#fff",
@@ -470,7 +472,7 @@ export default function Auth() {
             style={{
               background: "none",
               border: "none",
-              color: "#5eead4",
+              color: "var(--accent-hex)",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
