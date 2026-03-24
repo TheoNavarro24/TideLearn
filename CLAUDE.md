@@ -23,7 +23,7 @@ mcp/           → MCP server (Node, stdio transport, strict TS)
 supabase/      → Migrations & config
 ```
 
-- **19 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
+- **28 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
 - **Discriminated union lessons**: `kind: "content"` (has blocks) or `kind: "assessment"` (has questions)
 - **Dual storage**: localStorage (fast) + Supabase (sync via Google OAuth)
 - **SCORM 1.2 export** via jszip
@@ -42,6 +42,7 @@ supabase/      → Migrations & config
 
 ## Critical Rules
 
+- When adding a new block type, update **both** `courseSchema` AND `courseSchemaPermissive` in `src/types/course.ts` — stale permissive schema causes viewer to silently show "Course not found"
 - `"schemaVersion": 1` is **required** in all course JSON
 - Never include `id` fields in blocks/lessons — auto-generated
 - Always `get_course` before editing — never guess IDs
@@ -68,10 +69,11 @@ Keep MCP tools dumb and structural (CRUD/persistence). Instructional design logi
 
 ## Environment
 
-Supabase project: `rljldeobjtgoqttuxhsf`. Google OAuth configured (Cloud project: `tidelearn`). Media uploads go to `course_media` bucket.
+Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integrations/supabase/client.ts`); **MCP** uses `rljldeobjtgoqttuxhsf` (env var). Google OAuth configured (Cloud project: `tidelearn`). Media uploads go to `course_media` bucket.
 
 ## Design System (Rockpool)
 
+- **Brand accent token**: `var(--accent-hex)` (#40c8a0) — use for accent colour. `--color-teal-*` no longer exists (removed in Gunmetal overhaul).
 - **Body font**: DM Sans (swapped from Inter — H-6 audit fix)
 - **Display font**: Lora (serif)
 - **Muted text**: `--text-muted: #6a7a90` (5.1:1 contrast, WCAG AA)
@@ -88,6 +90,7 @@ Supabase project: `rljldeobjtgoqttuxhsf`. Google OAuth configured (Cloud project
 - [x] **A.4 — Landing Page Overhaul** (merged to main)
 - [x] **A.5 — Courses Overhaul** (merged to main)
 - [x] **Gunmetal UI Overhaul** (merged to main) — full dark-theme Gunmetal design system: AppShell, Auth, Settings, token migration, a11y hardening
+- [x] **Phase 2A — New Block Types** (merged to main) — Button/CTA, Embed, Flashcard, Timeline, Process, Chart, Sorting, Hotspot, Branching
 
 ## Design Context
 
