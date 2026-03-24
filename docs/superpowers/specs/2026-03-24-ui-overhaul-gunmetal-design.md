@@ -265,19 +265,114 @@ Lucide is already installed. Change is stroke-width only — add a global CSS ru
   - `--accent` (#40c8a0) on `--sidebar` (#252c38): 5.7:1
 - Focus indicators: 2px mint outline on interactive elements
 - Keyboard navigation: all actions reachable via Tab/Enter/Escape
-- `prefers-reduced-motion`: wrap hover transforms and fade transitions:
-  ```css
-  @media (prefers-reduced-motion: reduce) {
-    .card { transition: none; }
-    .card:hover { transform: none; }
-    .add-block-row { opacity: 1; transition: none; }
-  }
-  ```
+- `prefers-reduced-motion`: global kill switch disables all animations and transitions (see Motion Design section)
 - Skip-to-content link already in App.tsx, targets `#main-content`
+
+## Motion Design
+
+All motion uses CSS transitions/animations. No JS animation libraries. Every motion must respect `prefers-reduced-motion` (see Accessibility section).
+
+**Easing:** `cubic-bezier(0.16, 1, 0.3, 1)` (expo ease-out) for all transitions. Stored as `--ease-out: cubic-bezier(0.16, 1, 0.3, 1)`.
+
+### Card hover (My Courses)
+
+```css
+.card {
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+```
+
+### Staggered card entrance (My Courses)
+
+Cards fade in with translateY(12px→0) on page load, staggered by 40ms per card. CSS only via `animation-delay` on nth-child.
+
+```css
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card {
+  animation: card-in 350ms var(--ease-out) both;
+}
+.card:nth-child(1) { animation-delay: 0ms; }
+.card:nth-child(2) { animation-delay: 40ms; }
+.card:nth-child(3) { animation-delay: 80ms; }
+/* etc — cap at 200ms total stagger */
+```
+
+### Dropdowns and popovers
+
+Open: scale(0.95)→scale(1) + opacity 0→1 over 120ms. Origin: top-right for ··· menu.
+Close: opacity 1→0 over 80ms (no scale on close — feels snappier).
+
+```css
+.dropdown[data-state="open"] {
+  animation: dropdown-in 120ms var(--ease-out);
+}
+@keyframes dropdown-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+```
+
+### Block add/remove (Editor)
+
+**Add:** New block fades in with height expansion using `grid-template-rows: 0fr → 1fr` transition (avoids animating `height` directly). Duration: 200ms.
+
+**Remove:** Block fades out (opacity 100→0, 120ms), then collapses height (grid-template-rows 1fr→0fr, 150ms). Total: 270ms.
+
+**Block toolbar:** Appears with opacity 0→1 + translateY(4px→0) over 100ms when block is selected.
+
+### Lesson switching (Editor)
+
+Canvas content crossfades on lesson change. Outgoing lesson: opacity 1→0 (80ms). Incoming lesson: opacity 0→1 (150ms). No translateX/Y — just a soft cut.
+
+```css
+.canvas-content-enter { animation: fade-in 150ms var(--ease-out); }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+```
+
+### Save state indicator
+
+"✓ Saved" text fades in with opacity 0→1 over 200ms after autosave completes. No exit animation (stays visible).
+
+### Page transitions (My Courses ↔ Editor)
+
+Use View Transitions API where supported (`document.startViewTransition`). Fallback: simple opacity crossfade via React transition.
+
+```css
+@supports (view-transition-name: card) {
+  .card { view-transition-name: course-card; }
+}
+::view-transition-old(course-card),
+::view-transition-new(course-card) {
+  animation-duration: 250ms;
+  animation-timing-function: var(--ease-out);
+}
+```
+
+Progressive enhancement — browsers without View Transitions get instant navigation (current behavior). No polyfill.
+
+### Reduced motion
+
+All of the above is disabled under `prefers-reduced-motion: reduce`:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
 
 ## Out of Scope
 
 - Responsive mobile layout (addressed as separate task after desktop is complete)
-- Animation/motion design (can be layered on post-launch)
 - New features (no new block types, no new settings beyond Settings page shell)
 - Backend changes
