@@ -126,6 +126,29 @@ export type ChartBlock = {
   datasets: { label: string; values: number[] }[];
 };
 
+export type SortingBlock = {
+  id: string;
+  type: "sorting";
+  prompt: string;
+  items: { id: string; text: string; correctPosition: number }[];
+  showFeedback: boolean;
+};
+
+export type HotspotBlock = {
+  id: string;
+  type: "hotspot";
+  src: string;
+  alt: string;
+  hotspots: { id: string; x: number; y: number; label: string; description?: string }[];
+};
+
+export type BranchingBlock = {
+  id: string;
+  type: "branching";
+  prompt: string;
+  choices: { id: string; label: string; content: string }[];
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -171,7 +194,10 @@ export type Block =
   | FlashcardBlock
   | TimelineBlock
   | ProcessBlock
-  | ChartBlock;
+  | ChartBlock
+  | SortingBlock
+  | HotspotBlock
+  | BranchingBlock;
 
 export type AssessmentQuestion = {
   id: string;
@@ -382,6 +408,36 @@ export const chartBlockSchema = z.object({
   })).min(1),
 });
 
+export const sortingBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("sorting"),
+  prompt: z.string().min(1),
+  items: z.array(z.object({
+    id: z.string(), text: z.string().min(1), correctPosition: z.number().int().min(0),
+  })).min(2),
+  showFeedback: z.boolean(),
+});
+
+export const hotspotBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("hotspot"),
+  src: z.string().min(1),
+  alt: z.string().min(1),
+  hotspots: z.array(z.object({
+    id: z.string(), x: z.number().min(0).max(100), y: z.number().min(0).max(100),
+    label: z.string().min(1), description: z.string().optional(),
+  })),
+});
+
+export const branchingBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("branching"),
+  prompt: z.string().min(1),
+  choices: z.array(z.object({
+    id: z.string(), label: z.string().min(1), content: z.string(),
+  })).min(2),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -406,6 +462,9 @@ export const blockSchema = z.discriminatedUnion("type", [
   timelineBlockSchema,
   processBlockSchema,
   chartBlockSchema,
+  sortingBlockSchema,
+  hotspotBlockSchema,
+  branchingBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -508,6 +567,27 @@ export const factories = {
     id: uid(), type: "chart", chartType: "bar", title: "Chart title",
     labels: ["Category A", "Category B", "Category C"],
     datasets: [{ label: "Series 1", values: [40, 65, 30] }],
+  }),
+  sorting: (): SortingBlock => ({
+    id: uid(), type: "sorting",
+    prompt: "Arrange these items in the correct order.",
+    items: [
+      { id: uid(), text: "First item", correctPosition: 0 },
+      { id: uid(), text: "Second item", correctPosition: 1 },
+      { id: uid(), text: "Third item", correctPosition: 2 },
+    ],
+    showFeedback: true,
+  }),
+  hotspot: (): HotspotBlock => ({
+    id: uid(), type: "hotspot", src: "", alt: "", hotspots: [],
+  }),
+  branching: (): BranchingBlock => ({
+    id: uid(), type: "branching",
+    prompt: "What would you do in this situation?",
+    choices: [
+      { id: uid(), label: "Option A", content: "<p>Content for Option A.</p>" },
+      { id: uid(), label: "Option B", content: "<p>Content for Option B.</p>" },
+    ],
   }),
 } as const;
 

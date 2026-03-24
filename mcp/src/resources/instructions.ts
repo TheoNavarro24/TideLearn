@@ -237,7 +237,23 @@ chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "..
               ↑ pie chart only uses the first dataset.
 \`\`\`
 
-Valid block types (23 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart
+### Interactive Scenarios (Sorting / Hotspot / Branching)
+\`\`\`
+sorting     { type: "sorting",   prompt: "...",  showFeedback: true | false,
+              items: [{ text: "...", correctPosition: 0 }, ...] }
+              ↑ items need id fields (auto-generated); minimum 2 items. correctPosition is 0-based.
+              ↑ Author sets items in correct order; viewer shuffles them for the learner.
+hotspot     { type: "hotspot",   src: "https://...",  alt: "...",
+              hotspots: [{ x: 25.5, y: 40.2, label: "...", description?: "..." }] }
+              ↑ hotspots need id fields (auto-generated); empty array is valid.
+              ↑ x and y are percentages (0–100) relative to image dimensions.
+branching   { type: "branching", prompt: "...",
+              choices: [{ label: "...", content: "<p>HTML shown on selection</p>" }] }
+              ↑ choices need id fields (auto-generated); minimum 2 choices. content accepts HTML.
+              ↑ Learner clicks a choice button to reveal the corresponding content panel.
+\`\`\`
+
+Valid block types (26 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart, sorting, hotspot, branching
 
 ---
 

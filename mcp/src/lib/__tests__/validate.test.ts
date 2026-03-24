@@ -114,3 +114,45 @@ describe("Tier 2 block schemas", () => {
     expect(validateCourseJson(course).ok).toBe(false);
   });
 });
+
+describe("Tier 3 block schemas", () => {
+  it("accepts a valid sorting block", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "sorting", prompt: "Order these.", showFeedback: true, items: [
+        { id: "i1", text: "First", correctPosition: 0 }, { id: "i2", text: "Second", correctPosition: 1 },
+        { id: "i3", text: "Third", correctPosition: 2 },
+      ]}] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects sorting with only 1 item", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "sorting", prompt: "Order.", showFeedback: false,
+        items: [{ id: "i1", text: "Only", correctPosition: 0 }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+  it("accepts hotspot with no pins", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "hotspot", src: "https://example.com/img.jpg", alt: "Diagram", hotspots: [] }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("accepts hotspot with pins", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "hotspot", src: "https://example.com/img.jpg", alt: "Diagram",
+        hotspots: [{ id: "h1", x: 25.5, y: 40.2, label: "Part A", description: "This is Part A." }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("accepts valid branching", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "branching", prompt: "What do you do?", choices: [
+        { id: "c1", label: "Option A", content: "<p>A</p>" }, { id: "c2", label: "Option B", content: "<p>B</p>" },
+      ]}] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects branching with only 1 choice", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "branching", prompt: "What?", choices: [
+        { id: "c1", label: "Only", content: "" },
+      ]}] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+});

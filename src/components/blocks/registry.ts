@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock, TimelineBlock, ProcessBlock, ChartBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock, TimelineBlock, ProcessBlock, ChartBlock, SortingBlock, HotspotBlock, BranchingBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { CodeView } from "./view/Code";
@@ -46,7 +46,13 @@ import { ProcessForm } from "./editor/ProcessForm";
 import { ProcessView } from "./view/Process";
 import { ChartForm } from "./editor/ChartForm";
 import { ChartView } from "./view/Chart";
-import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard, ListOrdered, Workflow, BarChart2 } from "lucide-react";
+import { SortingForm } from "./editor/SortingForm";
+import { SortingView } from "./view/Sorting";
+import { HotspotForm } from "./editor/HotspotForm";
+import { HotspotView } from "./view/Hotspot";
+import { BranchingForm } from "./editor/BranchingForm";
+import { BranchingView } from "./view/Branching";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard, ListOrdered, Workflow, BarChart2, GripVertical, MapPin, GitBranch } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -227,6 +233,12 @@ export const registry: BlockSpec[] = [
     Editor: ProcessForm as EditorRenderer<ProcessBlock>, View: ProcessView as ViewRenderer<ProcessBlock>, category: "Interactive" },
   { type: "chart", label: "Chart", icon: BarChart2, create: factories.chart,
     Editor: ChartForm as EditorRenderer<ChartBlock>, View: ChartView as ViewRenderer<ChartBlock>, category: "Media" },
+  { type: "sorting", label: "Drag to Sort", icon: GripVertical, create: factories.sorting,
+    Editor: SortingForm as EditorRenderer<SortingBlock>, View: SortingView as ViewRenderer<SortingBlock>, category: "Knowledge" },
+  { type: "hotspot", label: "Hotspot Image", icon: MapPin, create: factories.hotspot,
+    Editor: HotspotForm as EditorRenderer<HotspotBlock>, View: HotspotView as ViewRenderer<HotspotBlock>, category: "Interactive" },
+  { type: "branching", label: "Branching Scenario", icon: GitBranch, create: factories.branching,
+    Editor: BranchingForm as EditorRenderer<BranchingBlock>, View: BranchingView as ViewRenderer<BranchingBlock>, category: "Interactive" },
 ];
 
 export const createBlock = (type: BlockType) => {
