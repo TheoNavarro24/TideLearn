@@ -25,12 +25,14 @@ Custom properties used directly in component code:
 | `--ink` | `#1a2030` | Primary text |
 | `--muted` | `#6a7a90` | Secondary text (5.1:1 on canvas-white) |
 | `--border` | `#c8d4e0` | Borders, dividers |
-| `--accent` | `#40c8a0` | Primary accent (mint) |
+| `--accent` | `#40c8a0` | Primary accent (mint) — **documentation only; in CSS this is the shadcn HSL token** |
 | `--accent-bg` | `rgba(64,200,160,.1)` | Accent background tint |
 | `--sidebar-text` | `#7a8da4` | Sidebar inactive text |
 | `--danger` | `#b04040` | Destructive actions |
 
 **Key principle:** Neutrals are tinted blue-grey, never pure black or pure white. The accent is mint (#40c8a0), not teal — distinct from the old Rockpool palette.
+
+**Note on token names:** The palette table above is for **design reference**. In CSS, shadcn semantic tokens (`--accent`, `--border`, `--muted`, etc.) use bare HSL triplets — see the "shadcn Semantic Tokens" section. Custom properties that do NOT collide with shadcn names (`--sidebar`, `--canvas`, `--ink`, `--accent-bg`, `--sidebar-text`, `--danger`) are written as hex values directly.
 
 ### shadcn Semantic Tokens (HSL triplets)
 
@@ -74,7 +76,7 @@ shadcn/ui requires bare HSL triplets consumed via `hsl(var(--token))`. All exist
   --sidebar-primary-foreground:  164 75% 8%;
   --sidebar-accent:              218 18% 22%;   /* #2d3545 */
   --sidebar-accent-foreground:   160 52% 52%;
-  --sidebar-border:              160 52% 52% / 0.1;
+  --sidebar-border:              218 18% 20%;   /* solid approx of 10% mint on sidebar */
   --sidebar-ring:                160 52% 52%;
 }
 ```
@@ -122,8 +124,8 @@ Implementation: set `strokeWidth={1.5}` as the Lucide default, then override to 
 
 **Card grid:**
 - 3 columns, 16px gap
-- Each card: white surface (`--canvas-white`), `--radius-lg` (10px), 1px border (`--border`)
-- Hover: translateY(-2px) + shadow (`--shadow-hover`)
+- Each card: white surface (`--canvas-white`), `--radius-lg` (10px), 1px border (`--border`), no default box-shadow
+- Hover: translateY(-2px) + `--shadow-hover` (shadow appears only on hover)
 
 **Card anatomy (top to bottom):**
 1. **Cover strip** — 82px fixed height, dark gradient background, emoji icon in bottom-left. Not a hero image — just a visual identifier. "Change cover" hint appears on hover.
