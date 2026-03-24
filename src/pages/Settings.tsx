@@ -1,11 +1,13 @@
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const displayName = user?.email?.split("@")[0] ?? "";
+  const [nameValue, setNameValue] = useState(displayName);
 
   return (
     <AppShell
@@ -21,26 +23,35 @@ export default function Settings() {
         <Section label="Profile">
           {/* Avatar */}
           <div className="flex items-center gap-4 mb-5">
-            <div
-              className="w-13 h-13 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
-              style={{
-                width: 52,
-                height: 52,
-                background: "var(--accent-bg)",
-                color: "var(--accent-hex)",
-              }}
-            >
-              {user?.email?.slice(0, 2).toUpperCase() ?? "??"}
+            <div className="relative w-[52px] h-[52px] flex-shrink-0 group">
+              <div
+                className="w-full h-full rounded-full flex items-center justify-center text-lg font-bold"
+                style={{
+                  background: "var(--accent-bg)",
+                  color: "var(--accent-hex)",
+                }}
+              >
+                {user?.email?.slice(0, 2).toUpperCase() ?? "??"}
+              </div>
+              <div
+                className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-medium text-white"
+                style={{ background: "rgba(0,0,0,0.35)" }}
+                title="Edit avatar"
+              >
+                ✏
+              </div>
             </div>
           </div>
 
           {/* Display name */}
           <div className="mb-4">
-            <label className="block text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--text-muted)" }}>
+            <label htmlFor="settings-display-name" className="block text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--text-muted)" }}>
               Display name
             </label>
             <input
-              defaultValue={displayName}
+              id="settings-display-name"
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
               className="w-full rounded-md px-3 py-2 text-sm border outline-none transition-colors"
               style={{
                 background: "var(--canvas-white)",
@@ -52,10 +63,11 @@ export default function Settings() {
 
           {/* Email */}
           <div className="mb-5">
-            <label className="block text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--text-muted)" }}>
+            <label htmlFor="settings-email" className="block text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--text-muted)" }}>
               Email
             </label>
             <input
+              id="settings-email"
               value={user?.email ?? ""}
               readOnly
               className="w-full rounded-md px-3 py-2 text-sm border outline-none"
@@ -70,6 +82,7 @@ export default function Settings() {
           </div>
 
           <button
+            onClick={() => toast({ title: "Saved" })}
             className="text-sm font-bold px-4 py-2 rounded-md border-none cursor-pointer"
             style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
           >
@@ -110,14 +123,12 @@ export default function Settings() {
           </p>
           <button
             onClick={signOut}
-            className="text-sm font-medium px-4 py-2 rounded-md cursor-pointer border transition-colors"
+            className="text-sm font-medium px-4 py-2 rounded-md cursor-pointer border transition-colors hover:bg-[hsl(var(--muted))]"
             style={{
               background: "transparent",
               borderColor: "hsl(var(--border))",
               color: "var(--ink)",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "hsl(var(--muted))"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >
             Sign out
           </button>
@@ -138,14 +149,12 @@ export default function Settings() {
           {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="text-sm font-medium px-4 py-2 rounded-md cursor-pointer border transition-colors"
+              className="text-sm font-medium px-4 py-2 rounded-md cursor-pointer border transition-colors hover:bg-[var(--danger-bg)]"
               style={{
                 background: "transparent",
                 borderColor: "var(--danger)",
                 color: "var(--danger)",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--danger-bg)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
               Delete account
             </button>
@@ -160,6 +169,7 @@ export default function Settings() {
                 Cancel
               </button>
               <button
+                onClick={() => setShowDeleteConfirm(false)}
                 className="text-sm font-bold px-3 py-1.5 rounded-md cursor-pointer border-none"
                 style={{ background: "var(--danger)", color: "white" }}
               >
