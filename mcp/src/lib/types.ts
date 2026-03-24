@@ -105,6 +105,27 @@ export type FlashcardBlock = {
   hint?: string;
 };
 
+export type TimelineBlock = {
+  id: string;
+  type: "timeline";
+  items: { id: string; date: string; title: string; description?: string }[];
+};
+
+export type ProcessBlock = {
+  id: string;
+  type: "process";
+  steps: { id: string; title: string; description?: string }[];
+};
+
+export type ChartBlock = {
+  id: string;
+  type: "chart";
+  chartType: "bar" | "line" | "pie";
+  title?: string;
+  labels: string[];
+  datasets: { label: string; values: number[] }[];
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -147,7 +168,10 @@ export type Block =
   | DocumentBlock
   | ButtonBlock
   | EmbedBlock
-  | FlashcardBlock;
+  | FlashcardBlock
+  | TimelineBlock
+  | ProcessBlock
+  | ChartBlock;
 
 export type AssessmentQuestion = {
   id: string;
@@ -331,6 +355,33 @@ export const flashcardBlockSchema = z.object({
   hint: z.string().optional(),
 });
 
+export const timelineBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("timeline"),
+  items: z.array(z.object({
+    id: z.string(), date: z.string().min(1), title: z.string().min(1), description: z.string().optional(),
+  })).min(1),
+});
+
+export const processBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("process"),
+  steps: z.array(z.object({
+    id: z.string(), title: z.string().min(1), description: z.string().optional(),
+  })).min(1),
+});
+
+export const chartBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("chart"),
+  chartType: z.union([z.literal("bar"), z.literal("line"), z.literal("pie")]),
+  title: z.string().optional(),
+  labels: z.array(z.string().min(1)).min(1),
+  datasets: z.array(z.object({
+    label: z.string().min(1), values: z.array(z.number()).min(1),
+  })).min(1),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -352,6 +403,9 @@ export const blockSchema = z.discriminatedUnion("type", [
   buttonBlockSchema,
   embedBlockSchema,
   flashcardBlockSchema,
+  timelineBlockSchema,
+  processBlockSchema,
+  chartBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -434,6 +488,26 @@ export const factories = {
   }),
   flashcard: (): FlashcardBlock => ({
     id: uid(), type: "flashcard", front: "Question or term", back: "Answer or definition",
+  }),
+  timeline: (): TimelineBlock => ({
+    id: uid(), type: "timeline",
+    items: [
+      { id: uid(), date: "2024", title: "First milestone", description: "Something important happened." },
+      { id: uid(), date: "2025", title: "Second milestone", description: "Then this happened." },
+    ],
+  }),
+  process: (): ProcessBlock => ({
+    id: uid(), type: "process",
+    steps: [
+      { id: uid(), title: "Step 1", description: "Describe the first step." },
+      { id: uid(), title: "Step 2", description: "Describe the second step." },
+      { id: uid(), title: "Step 3", description: "Describe the final step." },
+    ],
+  }),
+  chart: (): ChartBlock => ({
+    id: uid(), type: "chart", chartType: "bar", title: "Chart title",
+    labels: ["Category A", "Category B", "Category C"],
+    datasets: [{ label: "Series 1", values: [40, 65, 30] }],
   }),
 } as const;
 

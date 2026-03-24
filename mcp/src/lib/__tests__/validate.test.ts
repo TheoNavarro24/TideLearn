@@ -78,3 +78,39 @@ describe("Tier 1 block schemas", () => {
     expect(validateCourseJson(course).ok).toBe(true);
   });
 });
+
+describe("Tier 2 block schemas", () => {
+  it("accepts a valid timeline", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "timeline", items: [
+        { id: "i1", date: "2024", title: "Launch" }, { id: "i2", date: "2025", title: "Growth" }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects timeline with no items", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "timeline", items: [] }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+  it("accepts a valid process", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "process", steps: [{ id: "s1", title: "Plan" }, { id: "s2", title: "Execute" }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects process with no steps", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "process", steps: [] }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+  it("accepts a valid bar chart", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "chart", chartType: "bar", labels: ["A", "B"],
+        datasets: [{ label: "S1", values: [10, 20] }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(true);
+  });
+  it("rejects chart with empty labels", () => {
+    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "chart", chartType: "bar", labels: [],
+        datasets: [{ label: "S1", values: [] }] }] }] };
+    expect(validateCourseJson(course).ok).toBe(false);
+  });
+});

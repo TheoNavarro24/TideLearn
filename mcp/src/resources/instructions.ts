@@ -225,7 +225,19 @@ flashcard   { type: "flashcard", front: "...",  back: "...",  hint?: "..." }
               ↑ front and back accept HTML. hint is shown before the learner flips the card.
 \`\`\`
 
-Valid block types (20 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard
+### Timeline / Process / Chart
+\`\`\`
+timeline    { type: "timeline",  items: [{ date: "2024", title: "...", description?: "..." }] }
+              ↑ items need id fields (auto-generated); minimum 1 item.
+process     { type: "process",   steps: [{ title: "...", description?: "..." }] }
+              ↑ steps need id fields (auto-generated); minimum 1 step.
+chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "...",
+              labels: ["A", "B", "C"],  datasets: [{ label: "Series 1", values: [10, 20, 30] }] }
+              ↑ labels and datasets must be non-empty. values length must match labels length.
+              ↑ pie chart only uses the first dataset.
+\`\`\`
+
+Valid block types (23 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart
 
 ---
 

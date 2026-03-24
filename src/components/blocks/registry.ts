@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock, TimelineBlock, ProcessBlock, ChartBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { CodeView } from "./view/Code";
@@ -40,7 +40,13 @@ import { EmbedForm } from "./editor/EmbedForm";
 import { EmbedView } from "./view/Embed";
 import { FlashcardForm } from "./editor/FlashcardForm";
 import { FlashcardView } from "./view/Flashcard";
-import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard } from "lucide-react";
+import { TimelineForm } from "./editor/TimelineForm";
+import { TimelineView } from "./view/Timeline";
+import { ProcessForm } from "./editor/ProcessForm";
+import { ProcessView } from "./view/Process";
+import { ChartForm } from "./editor/ChartForm";
+import { ChartView } from "./view/Chart";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard, ListOrdered, Workflow, BarChart2 } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -215,6 +221,12 @@ export const registry: BlockSpec[] = [
     Editor: EmbedForm as EditorRenderer<EmbedBlock>, View: EmbedView as ViewRenderer<EmbedBlock>, category: "Media" },
   { type: "flashcard", label: "Flashcard", icon: CreditCard, create: factories.flashcard,
     Editor: FlashcardForm as EditorRenderer<FlashcardBlock>, View: FlashcardView as ViewRenderer<FlashcardBlock>, category: "Knowledge" },
+  { type: "timeline", label: "Timeline", icon: ListOrdered, create: factories.timeline,
+    Editor: TimelineForm as EditorRenderer<TimelineBlock>, View: TimelineView as ViewRenderer<TimelineBlock>, category: "Interactive" },
+  { type: "process", label: "Process Steps", icon: Workflow, create: factories.process,
+    Editor: ProcessForm as EditorRenderer<ProcessBlock>, View: ProcessView as ViewRenderer<ProcessBlock>, category: "Interactive" },
+  { type: "chart", label: "Chart", icon: BarChart2, create: factories.chart,
+    Editor: ChartForm as EditorRenderer<ChartBlock>, View: ChartView as ViewRenderer<ChartBlock>, category: "Media" },
 ];
 
 export const createBlock = (type: BlockType) => {
