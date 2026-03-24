@@ -240,9 +240,10 @@ chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "..
 ### Interactive Scenarios (Sorting / Hotspot / Branching)
 \`\`\`
 sorting     { type: "sorting",   prompt: "...",  showFeedback: true | false,
-              items: [{ text: "...", correctPosition: 0 }, ...] }
-              ↑ items need id fields (auto-generated); minimum 2 items. correctPosition is 0-based.
-              ↑ Author sets items in correct order; viewer shuffles them for the learner.
+              buckets: [{ label: "Category A" }, { label: "Category B" }],
+              items: [{ text: "...", bucketId: "<bucket-id>" }, ...] }
+              ↑ buckets and items need id fields (auto-generated); minimum 2 buckets, 2 items.
+              ↑ Each item has a bucketId pointing to its correct bucket. Learner drags items into buckets.
 hotspot     { type: "hotspot",   src: "https://...",  alt: "...",
               hotspots: [{ x: 25.5, y: 40.2, label: "...", description?: "..." }] }
               ↑ hotspots need id fields (auto-generated); empty array is valid.

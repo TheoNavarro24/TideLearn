@@ -131,7 +131,8 @@ export type SortingBlock = {
   id: string;
   type: "sorting";
   prompt: string;
-  items: { id: string; text: string; correctPosition: number }[];
+  buckets: { id: string; label: string }[];
+  items: { id: string; text: string; bucketId: string }[];
   showFeedback: boolean;
 };
 
@@ -560,7 +561,8 @@ const chartBlockSchemaPermissive = z.object({
 const sortingBlockSchemaPermissive = z.object({
   id: z.string(), type: z.literal("sorting"),
   prompt: z.string(),
-  items: z.array(z.object({ id: z.string(), text: z.string(), correctPosition: z.number() })),
+  buckets: z.array(z.object({ id: z.string(), label: z.string() })),
+  items: z.array(z.object({ id: z.string(), text: z.string(), bucketId: z.string() })),
   showFeedback: z.boolean(),
 });
 
@@ -691,16 +693,25 @@ export const factories = {
     labels: ["Category A", "Category B", "Category C"],
     datasets: [{ label: "Series 1", values: [40, 65, 30] }],
   }),
-  sorting: (): SortingBlock => ({
-    id: uid(), type: "sorting",
-    prompt: "Arrange these items in the correct order.",
-    items: [
-      { id: uid(), text: "First item", correctPosition: 0 },
-      { id: uid(), text: "Second item", correctPosition: 1 },
-      { id: uid(), text: "Third item", correctPosition: 2 },
-    ],
-    showFeedback: true,
-  }),
+  sorting: (): SortingBlock => {
+    const bucketA = uid();
+    const bucketB = uid();
+    return {
+      id: uid(), type: "sorting",
+      prompt: "Sort each item into the correct category.",
+      buckets: [
+        { id: bucketA, label: "Category A" },
+        { id: bucketB, label: "Category B" },
+      ],
+      items: [
+        { id: uid(), text: "Item 1", bucketId: bucketA },
+        { id: uid(), text: "Item 2", bucketId: bucketA },
+        { id: uid(), text: "Item 3", bucketId: bucketB },
+        { id: uid(), text: "Item 4", bucketId: bucketB },
+      ],
+      showFeedback: true,
+    };
+  },
   hotspot: (): HotspotBlock => ({
     id: uid(), type: "hotspot", src: "", alt: "", hotspots: [],
   }),

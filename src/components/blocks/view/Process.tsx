@@ -6,7 +6,7 @@ export function ProcessView({ block }: { block: ProcessBlock }) {
       {block.steps.map((step, i) => (
         <div key={step.id} className="flex gap-4 items-start">
           <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-[--color-teal-500] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">{i + 1}</div>
+            <div className="w-8 h-8 rounded-full bg-[var(--accent-hex)] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">{i + 1}</div>
             {i < block.steps.length - 1 && <div className="w-0.5 flex-1 bg-border min-h-[24px]" />}
           </div>
           <div className="pb-6">

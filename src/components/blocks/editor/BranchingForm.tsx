@@ -34,7 +34,7 @@ export function BranchingForm({ block, onChange }: Props) {
             rows={3} className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm resize-none" />
         </div>
       ))}
-      <button onClick={addChoice} className="text-sm text-[--color-teal-500]">+ Add choice</button>
+      <button onClick={addChoice} className="text-sm text-[var(--accent-hex)]">+ Add choice</button>
     </div>
   );
 }

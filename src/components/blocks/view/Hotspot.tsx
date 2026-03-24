@@ -16,7 +16,7 @@ export function HotspotView({ block }: { block: HotspotBlock }) {
           return (
             <div key={h.id} style={{ position: "absolute", left: `${h.x}%`, top: `${h.y}%` }}>
               <button onClick={() => toggle(h.id)} aria-label={h.label} aria-expanded={isOpen}
-                className="w-7 h-7 rounded-full bg-[--color-teal-500] border-2 border-white text-white text-xs font-bold flex items-center justify-center shadow-md hover:bg-[--color-teal-600] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-110">
+                className="w-7 h-7 rounded-full bg-[var(--accent-hex)] border-2 border-white text-white text-xs font-bold flex items-center justify-center shadow-md hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-110">
                 {i + 1}
               </button>
               {isOpen && (

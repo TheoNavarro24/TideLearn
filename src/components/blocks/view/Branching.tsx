@@ -15,8 +15,8 @@ export function BranchingView({ block }: { block: BranchingBlock }) {
             aria-pressed={selected === c.id}
             className={`rounded-md px-4 py-2 text-sm font-medium border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               selected === c.id
-                ? "bg-[--color-teal-500] text-white border-[--color-teal-500]"
-                : "bg-background border-border hover:border-[--color-teal-400]"
+                ? "bg-[var(--accent-hex)] text-white border-[var(--accent-hex)]"
+                : "bg-background border-border hover:border-[var(--accent-hex)]"
             }`}>
             {c.label}
           </button>

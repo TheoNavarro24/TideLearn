@@ -79,7 +79,7 @@ export function ChartForm({ block, onChange }: Props) {
             </tbody>
           </table>
         </div>
-        <button onClick={addLabel} className="text-sm text-[--color-teal-500] mt-2">+ Add row</button>
+        <button onClick={addLabel} className="text-sm text-[var(--accent-hex)] mt-2">+ Add row</button>
       </div>
     </div>
   );

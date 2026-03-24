@@ -1,4 +1,4 @@
-import { useState, type RefObject } from "react";
+import { useState, useRef, useLayoutEffect, type RefObject } from "react";
 import { Search } from "lucide-react";
 import type { BlockType } from "@/types/course";
 import type { registry } from "@/components/blocks/registry";
@@ -40,6 +40,19 @@ export function AddBlockRow({
   const isOpen = pickerState?.rowIndex === rowIndex;
   const ref = pickerRef(rowIndex);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [maxPickerHeight, setMaxPickerHeight] = useState<number | undefined>(undefined);
+  const pillRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!isOpen || !pillRef.current) return;
+    const rect = pillRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const shouldOpenUpward = spaceBelow < 360 && spaceAbove > spaceBelow;
+    setOpenUpward(shouldOpenUpward);
+    setMaxPickerHeight(shouldOpenUpward ? spaceAbove : spaceBelow);
+  }, [isOpen]);
 
   // Flatten filtered tiles for keyboard navigation
   const allTiles = filteredRegistry.map(spec => spec.type);
@@ -84,7 +97,7 @@ export function AddBlockRow({
         <div className="flex-1 h-px bg-[rgba(64,200,160,0.15)]" />
 
         {/* Pill button */}
-        <div className="relative shrink-0">
+        <div ref={pillRef} className="relative shrink-0">
           <button
             className="abr-pill bg-[var(--canvas-white)] border-[1.5px] border-hsl(var(--border)) rounded-full text-[var(--accent-hex)] text-[11px] font-bold py-[5px] px-[13px] cursor-pointer mx-2.5 transition-colors hover:bg-[var(--canvas-2)] hover:border-[var(--accent-hex)] focus-visible:outline-none"
             onClick={onOpen}
@@ -96,7 +109,8 @@ export function AddBlockRow({
           {isOpen && (
             <div
               ref={ref}
-              className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 w-[420px] max-w-[calc(100vw-2rem)] bg-[var(--canvas-white)] border border-hsl(var(--border)) rounded-xl shadow-[var(--shadow-popup)] z-[100] overflow-hidden"
+              className={`absolute left-1/2 -translate-x-1/2 w-[420px] max-w-[calc(100vw-2rem)] bg-[var(--canvas-white)] border border-hsl(var(--border)) rounded-xl shadow-[var(--shadow-popup)] z-[100] overflow-hidden flex flex-col ${openUpward ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"}`}
+              style={maxPickerHeight ? { maxHeight: `${maxPickerHeight}px` } : undefined}
               onKeyDown={handleKeyDown}
             >
               {/* Search */}
@@ -116,7 +130,7 @@ export function AddBlockRow({
               </div>
 
               {/* Categories */}
-              <div role="listbox" id="block-picker-list" className="max-h-80 overflow-y-auto py-2">
+              <div role="listbox" id="block-picker-list" className="flex-1 min-h-0 overflow-y-auto py-2">
                 {(() => {
                   let globalIdx = 0;
                   return CATEGORIES.map(cat => {

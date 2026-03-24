@@ -31,7 +31,7 @@ export function TimelineForm({ block, onChange }: Props) {
             className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm resize-none" />
         </div>
       ))}
-      <button onClick={addItem} className="text-sm text-[--color-teal-500] hover:text-[--color-teal-600]">+ Add event</button>
+      <button onClick={addItem} className="text-sm text-[var(--accent-hex)]">+ Add event</button>
     </div>
   );
 }

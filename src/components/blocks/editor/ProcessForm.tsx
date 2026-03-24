@@ -17,7 +17,7 @@ export function ProcessForm({ block, onChange }: Props) {
     <div className="space-y-3">
       {block.steps.map((step, i) => (
         <div key={step.id} className="flex gap-2 items-start">
-          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[--color-teal-500] text-white text-xs flex items-center justify-center font-bold mt-1">{i + 1}</span>
+          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--accent-hex)] text-white text-xs flex items-center justify-center font-bold mt-1">{i + 1}</span>
           <div className="flex-1 space-y-1.5">
             <input type="text" value={step.title} onChange={(e) => updateStep(i, "title", e.target.value)}
               placeholder="Step title" className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm" />
@@ -30,7 +30,7 @@ export function ProcessForm({ block, onChange }: Props) {
           )}
         </div>
       ))}
-      <button onClick={addStep} className="text-sm text-[--color-teal-500] hover:text-[--color-teal-600]">+ Add step</button>
+      <button onClick={addStep} className="text-sm text-[var(--accent-hex)] hover:text-[var(--accent-hex)]">+ Add step</button>
     </div>
   );
 }

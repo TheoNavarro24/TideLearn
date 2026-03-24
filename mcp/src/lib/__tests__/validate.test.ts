@@ -118,16 +118,19 @@ describe("Tier 2 block schemas", () => {
 describe("Tier 3 block schemas", () => {
   it("accepts a valid sorting block", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
-      blocks: [{ id: "b1", type: "sorting", prompt: "Order these.", showFeedback: true, items: [
-        { id: "i1", text: "First", correctPosition: 0 }, { id: "i2", text: "Second", correctPosition: 1 },
-        { id: "i3", text: "Third", correctPosition: 2 },
-      ]}] }] };
+      blocks: [{ id: "b1", type: "sorting", prompt: "Sort these.", showFeedback: true,
+        buckets: [{ id: "bk1", label: "Category A" }, { id: "bk2", label: "Category B" }],
+        items: [
+          { id: "i1", text: "First", bucketId: "bk1" }, { id: "i2", text: "Second", bucketId: "bk1" },
+          { id: "i3", text: "Third", bucketId: "bk2" },
+        ]}] }] };
     expect(validateCourseJson(course).ok).toBe(true);
   });
   it("rejects sorting with only 1 item", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
-      blocks: [{ id: "b1", type: "sorting", prompt: "Order.", showFeedback: false,
-        items: [{ id: "i1", text: "Only", correctPosition: 0 }] }] }] };
+      blocks: [{ id: "b1", type: "sorting", prompt: "Sort.", showFeedback: false,
+        buckets: [{ id: "bk1", label: "A" }, { id: "bk2", label: "B" }],
+        items: [{ id: "i1", text: "Only", bucketId: "bk1" }] }] }] };
     expect(validateCourseJson(course).ok).toBe(false);
   });
   it("accepts hotspot with no pins", () => {

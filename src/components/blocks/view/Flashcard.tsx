@@ -13,7 +13,7 @@ export function FlashcardView({ block }: { block: FlashcardBlock }) {
       <button
         onClick={() => setFlipped((f) => !f)}
         aria-label={flipped ? "Show front of card" : "Flip card to see answer"}
-        className="w-full min-h-[160px] rounded-xl border-2 border-border bg-card p-6 text-center transition-all hover:border-[--color-teal-400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+        className="w-full min-h-[160px] rounded-xl border-2 border-border bg-card p-6 text-center transition-all hover:border-[var(--accent-hex)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         style={{ perspective: "1000px" }}
       >
         <div style={{ transition: "transform 0.4s", transformStyle: "preserve-3d",
@@ -25,7 +25,7 @@ export function FlashcardView({ block }: { block: FlashcardBlock }) {
           </div>
           <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", inset: 0 }}
             className="flex flex-col items-center justify-center gap-2">
-            <span className="text-xs font-medium text-[--color-teal-500] uppercase tracking-wide">Answer</span>
+            <span className="text-xs font-medium text-[var(--accent-hex)] uppercase tracking-wide">Answer</span>
             <RichTextRenderer html={block.back} className="text-base" />
           </div>
         </div>
