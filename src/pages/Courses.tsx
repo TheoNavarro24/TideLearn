@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import {
   getCoursesIndex,
   createNewCourse,
@@ -27,10 +26,6 @@ import {
 } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
 import {
-  Waves,
-  BookOpen,
-  Zap,
-  Upload,
   Copy,
   Download,
   Package,
@@ -38,8 +33,8 @@ import {
   Trash2,
   Globe,
   Lock,
-  LogOut,
 } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 /* ─── Types ────────────────────────────────────────────────── */
 interface CourseIndex {
@@ -51,8 +46,76 @@ interface CourseIndex {
   coverImageUrl?: string | null;
 }
 
+/* ─── DropItem ───────────────────────────────────────────────── */
+function DropItem({
+  icon,
+  label,
+  danger,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  danger?: boolean;
+  onClick: (e?: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      role="menuitem"
+      className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] transition-colors border-0 cursor-pointer text-left bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:ring-inset ${
+        danger
+          ? "text-[var(--danger)] hover:bg-[var(--danger-bg)]"
+          : "text-[var(--ink)] hover:bg-[hsl(var(--muted))]"
+      }`}
+    >
+      <span className="flex items-center justify-center w-4 flex-shrink-0">{icon}</span>
+      {label}
+    </button>
+  );
+}
 
-/* ─── Course Card ────────────────────────────────────────────── */
+/* ─── EmptyState ─────────────────────────────────────────────── */
+function EmptyState({
+  onCreateClick,
+  onImportClick,
+}: {
+  onCreateClick: () => void;
+  onImportClick: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+      <div className="text-4xl">📚</div>
+      <div className="font-display text-xl font-semibold" style={{ color: "var(--ink)" }}>
+        No courses yet
+      </div>
+      <div className="text-sm" style={{ color: "var(--text-muted)" }}>
+        Create your first course to get started.
+      </div>
+      <div className="flex gap-2">
+        <button
+          className="text-sm font-bold rounded-md px-4 py-2 border-none cursor-pointer"
+          style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
+          onClick={onCreateClick}
+        >
+          + Create a course
+        </button>
+        <button
+          className="text-sm font-medium rounded-md px-4 py-2 cursor-pointer"
+          style={{
+            background: "transparent",
+            color: "var(--text-muted)",
+            border: "1px solid hsl(var(--border))",
+          }}
+          onClick={onImportClick}
+        >
+          Import JSON
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── CourseCard ─────────────────────────────────────────────── */
 interface CardProps {
   course: CourseIndex;
   onOpen: (id: string) => void;
@@ -66,6 +129,7 @@ interface CardProps {
   isLoggedIn: boolean;
   openDropdownId: string | null;
   setOpenDropdownId: (id: string | null) => void;
+  animationIndex: number;
 }
 
 function CourseCard({
@@ -81,13 +145,13 @@ function CourseCard({
   isLoggedIn,
   openDropdownId,
   setOpenDropdownId,
+  animationIndex,
 }: CardProps) {
   const isOpen = openDropdownId === course.id;
   const dropRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
 
-  const lessonCount = Array.isArray(course.lessons)
-    ? course.lessons.length
-    : 0;
+  const lessonCount = Array.isArray(course.lessons) ? course.lessons.length : 0;
 
   const updatedLabel = (() => {
     try {
@@ -97,7 +161,7 @@ function CourseCard({
     }
   })();
 
-  /* close on outside click */
+  /* close dropdown on outside click */
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
@@ -109,218 +173,256 @@ function CourseCard({
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen, setOpenDropdownId]);
 
+  const animDelay = Math.min(animationIndex * 40, 200);
+
+  // Generate a cover gradient based on title initial
+  const coverColors = [
+    ["#2d3a4a", "#3a4d60"],
+    ["#1e3245", "#2d4a65"],
+    ["#2a3545", "#3d5068"],
+  ];
+  const colorPair = coverColors[course.title.charCodeAt(0) % coverColors.length];
+
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-teal-300 hover:shadow-md transition-all cursor-pointer flex flex-col"
+      className="course-card rounded-[var(--radius-lg)] overflow-hidden flex flex-col cursor-pointer group"
+      style={{
+        background: "var(--canvas-white)",
+        border: "1px solid hsl(var(--border))",
+        transition: "transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out)",
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: hovered ? "var(--shadow-hover)" : "none",
+        animation: `card-in 350ms var(--ease-out) both`,
+        animationDelay: `${animDelay}ms`,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => onOpen(course.id)}
     >
-      {/* Cover image area */}
+      {/* Cover strip — 82px */}
       <div
-        className={cn(
-          "aspect-video overflow-hidden relative flex items-center justify-center",
-          isLoggedIn ? "cursor-pointer" : "cursor-default"
-        )}
-        onClick={() => {
-          if (!isLoggedIn) return;
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/jpeg,image/png,image/webp,image/gif";
-          input.onchange = (e) => {
-            const file = (e.target as HTMLInputElement).files?.[0];
-            if (file) onCoverUpload(course.id, file);
-          };
-          input.click();
+        className="relative flex-shrink-0 flex items-end"
+        style={{
+          height: 82,
+          background: course.coverImageUrl
+            ? undefined
+            : `linear-gradient(135deg, ${colorPair[0]}, ${colorPair[1]})`,
         }}
-        title={isLoggedIn ? "Click to upload cover image" : undefined}
       >
-        {course.coverImageUrl ? (
+        {course.coverImageUrl && (
           <img
             src={course.coverImageUrl}
             alt=""
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-teal-600 to-cyan-600 flex items-center justify-center">
-            <span className="text-[28px] opacity-50 text-white">
-              {course.title.charAt(0).toUpperCase()}
-            </span>
-          </div>
         )}
+        {/* Emoji / letter identifier */}
+        <span className="relative z-10 px-3 pb-2 text-2xl leading-none text-white/70">
+          {course.title.charAt(0).toUpperCase()}
+        </span>
+        {/* ··· button — always visible at 35% opacity */}
+        <div ref={dropRef} className="absolute top-2 right-2 z-20" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => setOpenDropdownId(isOpen ? null : course.id)}
+            className="w-7 h-7 rounded flex items-center justify-center text-white text-base transition-opacity"
+            style={{
+              background: "rgba(0,0,0,0.25)",
+              opacity: isOpen ? 1 : 0.35,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={(e) => {
+              if (!isOpen) e.currentTarget.style.opacity = "0.35";
+            }}
+            title="More options"
+          >
+            ···
+          </button>
+          {isOpen && (
+            <div
+              role="menu"
+              className="absolute top-full right-0 mt-1 z-[100] min-w-[172px] py-1 rounded-[var(--radius-md)]"
+              style={{
+                background: "var(--canvas-white)",
+                border: "1px solid hsl(var(--border))",
+                boxShadow: "var(--shadow-popup)",
+                animation: "dropdown-in 120ms var(--ease-out)",
+                transformOrigin: "top right",
+              }}
+            >
+              <DropItem
+                icon={<Copy className="w-3.5 h-3.5" />}
+                label="Duplicate"
+                onClick={() => {
+                  setOpenDropdownId(null);
+                  onDuplicate(course.id);
+                }}
+              />
+              <DropItem
+                icon={<Download className="w-3.5 h-3.5" />}
+                label="Export JSON"
+                onClick={() => {
+                  setOpenDropdownId(null);
+                  onExport(course.id);
+                }}
+              />
+              <DropItem
+                icon={<Package className="w-3.5 h-3.5" />}
+                label="Export SCORM"
+                onClick={() => {
+                  setOpenDropdownId(null);
+                  onExportScorm(course.id);
+                }}
+              />
+              <DropItem
+                icon={<Link className="w-3.5 h-3.5" />}
+                label={
+                  course.isPublic !== false
+                    ? "Copy share link"
+                    : "Copy share link (private)"
+                }
+                onClick={() => {
+                  if (course.isPublic === false) return;
+                  setOpenDropdownId(null);
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/view?id=${course.id}`
+                  );
+                }}
+              />
+              {isLoggedIn && (
+                <DropItem
+                  icon={
+                    course.isPublic !== false ? (
+                      <Globe className="w-3.5 h-3.5" />
+                    ) : (
+                      <Lock className="w-3.5 h-3.5" />
+                    )
+                  }
+                  label={
+                    course.isPublic !== false ? "Make private" : "Make public"
+                  }
+                  onClick={(e) => {
+                    setOpenDropdownId(null);
+                    onToggleVisibility(course.id, course.isPublic ?? true);
+                  }}
+                />
+              )}
+              <div className="h-px my-1" style={{ background: "hsl(var(--border))" }} />
+              <DropItem
+                icon={<Trash2 className="w-3.5 h-3.5" />}
+                label="Delete"
+                danger
+                onClick={() => {
+                  setOpenDropdownId(null);
+                  onDelete(course.id);
+                }}
+              />
+            </div>
+          )}
+        </div>
         {uploadingCoverId === course.id && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs">
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs z-10">
             Uploading…
           </div>
         )}
-        {/* Lesson count bottom-left */}
-        <div className="absolute bottom-2.5 left-3.5 text-xs font-semibold text-white/90">
-          {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
-        </div>
+        {isLoggedIn && (
+          <div
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: "rgba(0,0,0,0.15)" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/jpeg,image/png,image/webp,image/gif";
+              input.onchange = (ev) => {
+                const file = (ev.target as HTMLInputElement).files?.[0];
+                if (file) onCoverUpload(course.id, file);
+              };
+              input.click();
+            }}
+          >
+            <span className="text-white text-xs font-medium">Change cover</span>
+          </div>
+        )}
       </div>
 
       {/* Card body */}
-      <div className="p-4 flex flex-col flex-1 gap-1">
-        <div className="font-sans text-[15px] font-bold text-[var(--text-primary)] tracking-tight leading-snug">
+      <div className="flex flex-col flex-1 p-3.5 gap-2.5">
+        {/* Title */}
+        <div
+          className="font-sans text-[13px] font-semibold leading-snug"
+          style={{ color: "var(--ink)" }}
+        >
           {course.title}
         </div>
-        <div className="text-xs font-medium text-slate-400 mb-2.5">
-          {updatedLabel}
+
+        {/* Stats */}
+        <div className="flex gap-4">
+          <div className="flex flex-col">
+            <span
+              className="text-[15px] font-bold leading-none"
+              style={{ color: "var(--ink)" }}
+            >
+              {lessonCount}
+            </span>
+            <span
+              className="text-[9.5px] uppercase tracking-wide mt-0.5"
+              style={{ color: "var(--text-muted)" }}
+            >
+              LESSON{lessonCount !== 1 ? "S" : ""}
+            </span>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-1.5 mt-auto">
-          <button
-            onClick={() => onOpen(course.id)}
-            className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-md py-1.5 border-none cursor-pointer"
+        <div
+          className="flex items-center mt-auto pt-2"
+          style={{ borderTop: "1px solid hsl(var(--border))" }}
+        >
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            {updatedLabel}
+          </span>
+          <span
+            className="ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded"
+            style={{
+              background:
+                course.isPublic !== false
+                  ? "var(--accent-bg)"
+                  : "rgba(106,122,144,0.1)",
+              color:
+                course.isPublic !== false
+                  ? "var(--accent-hex)"
+                  : "var(--text-muted)",
+            }}
           >
-            Open →
+            {course.isPublic !== false ? "Published" : "Draft"}
+          </span>
+          <button
+            className="ml-auto text-[11px] font-medium px-2.5 py-1 rounded transition-opacity"
+            style={{
+              background: "var(--accent-bg)",
+              color: "var(--accent-hex)",
+              opacity: hovered ? 1 : 0,
+              transition: "opacity 150ms",
+              border: "none",
+              cursor: "pointer",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(course.id);
+            }}
+          >
+            Edit →
           </button>
-
-          {/* Visibility toggle */}
-          {isLoggedIn && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleVisibility(course.id, course.isPublic ?? true); }}
-              title={course.isPublic !== false ? "Public — click to make private" : "Private — click to make public"}
-              className={cn(
-                "bg-transparent border border-emerald-100 rounded-md cursor-pointer px-1.5 py-1 text-sm w-8 flex items-center justify-center",
-                course.isPublic !== false ? "text-teal-600" : "text-slate-400"
-              )}
-            >
-              {course.isPublic !== false ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-            </button>
-          )}
-
-          {/* Overflow button */}
-          <div ref={dropRef} className="relative">
-            <button
-              onClick={() => setOpenDropdownId(isOpen ? null : course.id)}
-              className={cn(
-                "w-8 h-8 border border-emerald-100 rounded-md cursor-pointer text-base flex items-center justify-center text-slate-400",
-                isOpen ? "bg-emerald-50" : "bg-[#f8fffe]"
-              )}
-              title="More options"
-            >
-              ···
-            </button>
-
-            {isOpen && (
-              <div className="absolute bottom-full right-0 mb-1.5 z-[100] bg-white border border-gray-200 rounded-lg shadow-lg min-w-[172px] py-1">
-                <DropItem
-                  icon={<Copy className="w-3.5 h-3.5" />}
-                  label="Duplicate"
-                  onClick={() => {
-                    setOpenDropdownId(null);
-                    onDuplicate(course.id);
-                  }}
-                />
-                <DropItem
-                  icon={<Download className="w-3.5 h-3.5" />}
-                  label="Export JSON"
-                  onClick={() => {
-                    setOpenDropdownId(null);
-                    onExport(course.id);
-                  }}
-                />
-                <DropItem
-                  icon={<Package className="w-3.5 h-3.5" />}
-                  label="Export SCORM"
-                  onClick={() => {
-                    setOpenDropdownId(null);
-                    onExportScorm(course.id);
-                  }}
-                />
-                <DropItem
-                  icon={<Link className="w-3.5 h-3.5" />}
-                  label={course.isPublic !== false ? "Copy share link" : "Copy share link (private)"}
-                  onClick={() => {
-                    if (course.isPublic === false) return;
-                    setOpenDropdownId(null);
-                    navigator.clipboard.writeText(
-                      `${window.location.origin}/view?id=${course.id}`
-                    );
-                  }}
-                />
-                <div className="h-px bg-emerald-100 my-1" />
-                <DropItem
-                  icon={<Trash2 className="w-3.5 h-3.5" />}
-                  label="Delete"
-                  danger
-                  onClick={() => {
-                    setOpenDropdownId(null);
-                    onDelete(course.id);
-                  }}
-                />
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function DropItem({
-  icon,
-  label,
-  danger,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  danger?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "w-full flex items-center gap-2 px-3 py-2 text-sm rounded transition-colors border-none cursor-pointer text-left",
-        danger ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-50"
-      )}
-    >
-      <span className="flex items-center justify-center w-4">{icon}</span>
-      {label}
-    </button>
-  );
-}
-
-/* ─── Nav Item ───────────────────────────────────────────────── */
-function NavItem({
-  icon,
-  label,
-  active,
-  badge,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  badge?: number;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      className={cn(
-        "w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors border-none cursor-pointer text-left",
-        active
-          ? "bg-white/15 text-white font-medium"
-          : "text-white/70 hover:bg-white/10 hover:text-white"
-      )}
-      onClick={onClick}
-    >
-      <span className="flex items-center">{icon}</span>
-      <span>{label}</span>
-      {badge !== undefined && (
-        <span className="ml-auto bg-teal-500/25 text-teal-300 text-[11px] font-bold rounded-full px-1.5 py-px">
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
 /* ─── Main Page ──────────────────────────────────────────────── */
 export default function Courses() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [courses, setCourses] = useState<CourseIndex[]>(getCoursesIndex());
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -350,8 +452,8 @@ export default function Courses() {
     try {
       const url = await uploadCourseCover(user.id, courseId, file);
       await setCourseCoverImage(courseId, url);
-      setCourses(prev =>
-        prev.map(c => c.id === courseId ? { ...c, coverImageUrl: url } : c)
+      setCourses((prev) =>
+        prev.map((c) => (c.id === courseId ? { ...c, coverImageUrl: url } : c))
       );
     } catch (e) {
       console.error("Cover upload failed", e);
@@ -365,8 +467,8 @@ export default function Courses() {
     const next = !current;
     try {
       await setCourseVisibility(courseId, next);
-      setCourses(prev =>
-        prev.map(c => c.id === courseId ? { ...c, isPublic: next } : c)
+      setCourses((prev) =>
+        prev.map((c) => (c.id === courseId ? { ...c, isPublic: next } : c))
       );
     } catch (e) {
       console.error("Visibility toggle failed", e);
@@ -416,7 +518,14 @@ export default function Courses() {
     navigate(`/editor?courseId=${id}`);
   };
 
-  const onOpen = (id: string) => navigate(`/editor?courseId=${id}`);
+  const handleOpenCourse = (id: string) => {
+    if (document.startViewTransition) {
+      document.startViewTransition(() => navigate(`/editor?courseId=${id}`));
+    } else {
+      navigate(`/editor?courseId=${id}`);
+    }
+  };
+
   const onDelete = (id: string) => setDeleteId(id);
   const confirmDelete = async () => {
     if (deleteId) {
@@ -499,109 +608,75 @@ export default function Courses() {
     }
   };
 
-  const initial = user?.email?.[0]?.toUpperCase() ?? "T";
-  const displayName = user?.email?.split("@")[0] ?? "Theo";
-
   return (
-    <div className="grid md:grid-cols-[var(--sidebar-w-editor)_1fr] grid-cols-1 h-screen overflow-hidden">
-      {/* ── Mobile header ── */}
-      <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
-        <Waves className="w-5 h-5 text-teal-600" />
-        <span className="font-display text-lg font-semibold text-[var(--ocean-mid)]">TideLearn</span>
-      </div>
-
-      {/* ── Sidebar ── */}
-      <aside className="w-[var(--sidebar-w-editor)] bg-[var(--ocean-mid)] text-white flex flex-col h-screen shrink-0 hidden md:flex">
-        {/* Logo */}
-        <div className="px-3.5 py-4 pb-4 border-b border-teal-500/[0.18] flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0">
-            <Waves className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-sans font-extrabold text-[15px] text-white tracking-tight">TideLearn</span>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-2.5 py-3.5 overflow-y-auto flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold text-teal-300/50 uppercase tracking-widest px-2.5 pt-2 pb-1">Library</span>
-          <NavItem icon={<BookOpen className="w-4 h-4" />} label="My Courses" active badge={courses.length} />
-          <NavItem
-            icon={<Zap className="w-4 h-4" />}
-            label="Quick Draft"
-            onClick={() => navigate("/editor")}
-          />
-          <span className="text-[10px] font-bold text-teal-300/50 uppercase tracking-widest px-2.5 pt-4 pb-1">Tools</span>
-          <NavItem
-            icon={<Upload className="w-4 h-4" />}
-            label="Import JSON"
-            onClick={() => importRef.current?.click()}
-          />
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t border-teal-500/[0.18] p-3.5 flex items-center gap-2.5">
-          {user ? (
-            <>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-[13px] font-bold text-white shrink-0">
-                {initial}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-emerald-200 truncate">{displayName}</div>
-                <div className="text-[10px] text-teal-300/50 truncate">{user.email}</div>
-              </div>
-              <button
-                className="bg-transparent border-none text-teal-300/50 text-sm cursor-pointer p-0.5 rounded shrink-0 leading-none hover:text-teal-200 transition-colors"
-                onClick={signOut}
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </>
-          ) : (
-            <a
-              href="/auth"
-              className="text-teal-300 text-[13px] no-underline font-semibold hover:text-teal-200 transition-colors"
+    <>
+      <AppShell
+        topBar={
+          <div className="flex items-center w-full gap-3">
+            <span
+              className="font-display text-[15px] font-semibold flex-1"
+              style={{ color: "var(--ink)" }}
             >
-              Sign in →
-            </a>
-          )}
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <main id="main-content" className="flex-1 overflow-y-auto bg-gray-50">
-        <div className="px-6 md:px-10 py-8 max-w-7xl mx-auto">
-          {/* Topbar */}
-          <div className="bg-white border-b border-teal-100 h-[54px] flex items-center px-7 gap-3 shrink-0 rounded-t-lg">
-            <span className="font-display text-lg font-bold text-[var(--text-primary)] flex-1">My Courses</span>
+              My Courses
+            </span>
+            {/* Search */}
+            <input
+              className="border rounded-md px-3 py-1.5 text-xs bg-transparent outline-none"
+              style={{
+                borderColor: "hsl(var(--border))",
+                color: "var(--ink)",
+                width: 200,
+              }}
+              placeholder="Search courses…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <button
-              className="bg-transparent border-[1.5px] border-teal-200 text-[var(--teal-primary)] font-semibold text-[13px] rounded-[7px] px-3.5 py-1.5 cursor-pointer hover:bg-teal-50 transition-colors"
+              className="border bg-transparent text-xs font-medium rounded-md px-3 py-1.5 transition-colors"
+              style={{
+                borderColor: "hsl(var(--border))",
+                color: "var(--text-muted)",
+              }}
               onClick={() => importRef.current?.click()}
             >
-              Import
+              Import JSON
             </button>
             <button
-              className="bg-[image:var(--gradient-primary)] text-white font-bold text-[13px] rounded-[7px] px-4 py-1.5 border-none cursor-pointer hover:opacity-90 transition-opacity"
+              className="text-xs font-bold rounded-md px-3.5 py-1.5 border-none cursor-pointer"
+              style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
               onClick={onCreate}
               disabled={creating}
             >
               + New Course
             </button>
           </div>
-
-          {/* New course prompt */}
-          <div className="mt-5 bg-white border-[1.5px] border-emerald-100 rounded-lg flex items-center overflow-hidden flex-shrink-0">
+        }
+      >
+        <div className="px-8 py-7">
+          {/* New course name input */}
+          <div
+            className="mb-6 flex items-center gap-2"
+            style={{
+              borderRadius: "var(--radius-md)",
+              background: "var(--canvas-white)",
+              border: "1px solid hsl(var(--border))",
+              overflow: "hidden",
+            }}
+          >
             <input
               ref={newCourseInputRef}
-              className="flex-1 border-none bg-transparent text-sm px-3.5 py-2.5 outline-none text-[var(--text-primary)]"
+              className="flex-1 border-none bg-transparent text-sm px-3.5 py-2.5 outline-none"
+              style={{ color: "var(--ink)" }}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") onCreate();
               }}
-              placeholder="Name your new course — e.g. Fire Safety Induction 2026…"
+              placeholder="Name your new course and press Enter…"
             />
             <button
-              className="bg-[var(--gradient-primary)] bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-none py-2.5 px-[18px] border-none cursor-pointer flex-shrink-0"
+              className="text-xs font-bold py-2.5 px-4 border-none cursor-pointer flex-shrink-0"
+              style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
               onClick={onCreate}
               disabled={creating}
             >
@@ -609,76 +684,49 @@ export default function Courses() {
             </button>
           </div>
 
-          {/* Search bar */}
-          <div className="py-3.5 bg-white border-b border-green-50 flex items-center gap-3 mt-3.5 flex-shrink-0">
-            <input
-              className="w-[260px] bg-[#f5fffe] border-[1.5px] border-[#d1faf4] rounded-[7px] py-[7px] px-3 text-[13px] outline-none text-[var(--text-primary)]"
-              placeholder="Search courses…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <span className="ml-auto text-[13px] text-slate-400">
-              <strong>{filteredCourses.length}</strong> courses
-            </span>
+          {/* Course count */}
+          <div className="mb-4 text-xs" style={{ color: "var(--text-muted)" }}>
+            {filteredCourses.length}{" "}
+            {filteredCourses.length === 1 ? "course" : "courses"}
           </div>
 
-          {/* Grid area */}
-          <div className="pt-5 pb-12">
-            {courses.length === 0 ? (
-              /* Empty state */
-              <div className="flex flex-col items-center justify-center py-20 px-10 gap-4 text-center">
-                <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center">
-                  <Waves className="w-10 h-10 text-teal-500" />
-                </div>
-                <div className="font-display text-[22px] font-bold text-[var(--text-primary)]">
-                  Your ocean is empty
-                </div>
-                <div className="text-sm text-[var(--text-muted)]">
-                  Create your first course to get started with TideLearn.
-                </div>
-                <button
-                  className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-sm rounded-lg py-2.5 px-6 border-none cursor-pointer"
-                  onClick={() => {
-                    newCourseInputRef.current?.focus();
-                  }}
-                >
-                  + Create a course
-                </button>
-                <button
-                  className="text-[13px] text-[var(--teal-primary)] cursor-pointer underline bg-transparent border-none"
-                  onClick={() => importRef.current?.click()}
-                >
-                  or import an existing JSON file
-                </button>
-              </div>
-            ) : filteredCourses.length === 0 ? (
-              <div className="py-10 text-center text-slate-400 text-sm">
-                No courses match your search.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredCourses.map((c) => (
-                  <CourseCard
-                    key={c.id}
-                    course={c}
-                    onOpen={onOpen}
-                    onDelete={onDelete}
-                    onDuplicate={onDuplicate}
-                    onExport={onExport}
-                    onExportScorm={onExportScorm}
-                    onCoverUpload={handleCoverUpload}
-                    onToggleVisibility={handleToggleVisibility}
-                    uploadingCoverId={uploadingCoverId}
-                    isLoggedIn={!!user}
-                    openDropdownId={openDropdownId}
-                    setOpenDropdownId={setOpenDropdownId}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Grid */}
+          {courses.length === 0 ? (
+            <EmptyState
+              onCreateClick={() => newCourseInputRef.current?.focus()}
+              onImportClick={() => importRef.current?.click()}
+            />
+          ) : filteredCourses.length === 0 ? (
+            <div
+              className="py-10 text-center text-sm"
+              style={{ color: "var(--text-muted)" }}
+            >
+              No courses match your search.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCourses.map((c, i) => (
+                <CourseCard
+                  key={c.id}
+                  course={c}
+                  onOpen={handleOpenCourse}
+                  onDelete={onDelete}
+                  onDuplicate={onDuplicate}
+                  onExport={onExport}
+                  onExportScorm={onExportScorm}
+                  onCoverUpload={handleCoverUpload}
+                  onToggleVisibility={handleToggleVisibility}
+                  uploadingCoverId={uploadingCoverId}
+                  isLoggedIn={!!user}
+                  openDropdownId={openDropdownId}
+                  setOpenDropdownId={setOpenDropdownId}
+                  animationIndex={i}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </main>
+      </AppShell>
 
       {/* Hidden import input */}
       <input
@@ -692,7 +740,7 @@ export default function Courses() {
         }}
       />
 
-      {/* Delete confirmation dialog */}
+      {/* Delete dialog */}
       <Dialog
         open={!!deleteId}
         onOpenChange={(o) => {
@@ -707,19 +755,21 @@ export default function Courses() {
           <DialogFooter>
             <button
               onClick={cancelDelete}
-              className="bg-slate-100 border-none rounded-[7px] py-2 px-[18px] font-semibold cursor-pointer text-[13px]"
+              className="border-none rounded-[7px] py-2 px-[18px] font-semibold cursor-pointer text-[13px]"
+              style={{ background: "hsl(var(--muted))", color: "var(--ink)" }}
             >
               Cancel
             </button>
             <button
               onClick={confirmDelete}
-              className="bg-red-500 text-white border-none rounded-[7px] py-2 px-[18px] font-bold cursor-pointer text-[13px]"
+              className="border-none rounded-[7px] py-2 px-[18px] font-bold cursor-pointer text-[13px]"
+              style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}
             >
               Delete
             </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -74,7 +74,7 @@ Supabase project: `rljldeobjtgoqttuxhsf`. Google OAuth configured (Cloud project
 
 - **Body font**: DM Sans (swapped from Inter — H-6 audit fix)
 - **Display font**: Lora (serif)
-- **Muted text**: `--text-muted: #64748b` (5.1:1 contrast, WCAG AA)
+- **Muted text**: `--text-muted: #6a7a90` (5.1:1 contrast, WCAG AA)
 - **Layout CSS vars**: `--sidebar-w-editor`, `--sidebar-w-viewer`, `--topbar-h`, `--canvas-max-w`, `--reading-max-w`, `--content-px` — defined in `:root`, use these instead of magic numbers
 - **Skip-to-content link**: in `App.tsx`, targets `#main-content` (target IDs added per-page in A.2–A.5)
 - **No dark mode**: `darkMode` config removed; `dark:` utilities in shadcn `ui/` are inert and left alone

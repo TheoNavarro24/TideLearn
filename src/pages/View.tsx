@@ -374,16 +374,16 @@ export default function View() {
 
   const getDotStyle = (lessonId: string, isCurrent: boolean): React.CSSProperties => {
     if (completed.has(lessonId)) {
-      return { width: 8, height: 8, borderRadius: "50%", background: "#14b8a6", flexShrink: 0 };
+      return { width: 8, height: 8, borderRadius: "50%", background: "var(--accent-hex)", flexShrink: 0 };
     }
     if (isCurrent) {
       return {
-        width: 8, height: 8, borderRadius: "50%", background: "#14b8a6", flexShrink: 0,
-        boxShadow: "0 0 0 3px rgba(20,184,166,0.25)",
+        width: 8, height: 8, borderRadius: "50%", background: "var(--accent-hex)", flexShrink: 0,
+        boxShadow: "0 0 0 3px rgba(64,200,160,0.25)",
         animation: "pulse-ring 1.8s ease-in-out infinite",
       };
     }
-    return { width: 8, height: 8, borderRadius: "50%", border: "1.5px solid #b2d8d0", background: "transparent", flexShrink: 0 };
+    return { width: 8, height: 8, borderRadius: "50%", border: "1.5px solid var(--text-muted)", background: "transparent", flexShrink: 0 };
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -398,16 +398,16 @@ export default function View() {
         aria-valuenow={Math.round(courseProgress)}
         aria-valuemin={0}
         aria-valuemax={100}
-        className="h-[3px] w-full bg-[var(--border-subtle)] shrink-0"
+        className="h-[3px] w-full bg-[hsl(var(--border))] shrink-0"
       >
         <div
-          className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 transition-all duration-300"
+          className="h-full bg-[var(--accent-hex)] transition-all duration-300"
           style={{ width: `${courseProgress}%` }}
         />
       </div>
 
       {/* Topbar */}
-      <header className="h-[var(--topbar-h)] bg-[var(--ocean-surface)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
+      <header className="h-[var(--topbar-h)] bg-[var(--sidebar)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
         {/* Left: hamburger (mobile) + logo */}
         <div className="flex items-center gap-2">
           <button
@@ -418,7 +418,7 @@ export default function View() {
             <Menu className="w-5 h-5" />
           </button>
           <a href="/courses" aria-label="TideLearn home" className="flex items-center gap-2 no-underline">
-            <span aria-hidden="true" className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-sm leading-none shrink-0">🌊</span>
+            <span aria-hidden="true" className="w-7 h-7 rounded-[7px] bg-[var(--accent-hex)] flex items-center justify-center text-sm font-extrabold text-white leading-none shrink-0">T</span>
             <span className="text-white font-extrabold text-sm tracking-tight">TideLearn</span>
           </a>
         </div>
@@ -434,7 +434,7 @@ export default function View() {
           <div role="group" aria-label="View mode" className="flex items-center gap-2">
             {canResume && (
               <button
-                className="bg-transparent border-none text-slate-400 text-xs cursor-pointer px-2 py-0.5 rounded font-sans hover:text-teal-400 transition-colors"
+                className="bg-transparent border-none text-slate-400 text-xs cursor-pointer px-2 py-0.5 rounded font-sans hover:text-[var(--accent-hex)] transition-colors"
                 onClick={() => {
                   if (!lastLessonId) return;
                   setIsPaged(true);
@@ -450,7 +450,7 @@ export default function View() {
             )}
             <button
               aria-pressed={isPaged}
-              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${isPaged ? "text-teal-400 font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
+              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
               onClick={() => {
                 if (isPaged) return;
                 setIsPaged(true);
@@ -465,7 +465,7 @@ export default function View() {
             </button>
             <button
               aria-pressed={!isPaged}
-              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${!isPaged ? "text-teal-400 font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
+              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${!isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
               onClick={() => {
                 if (!isPaged) return;
                 setIsPaged(false);
@@ -481,7 +481,7 @@ export default function View() {
 
           <a
             href="/courses"
-            className="text-teal-400 text-[13px] font-medium px-2.5 py-1 rounded-[var(--radius-sm)] no-underline font-sans hover:text-teal-300 transition-colors"
+            className="text-[var(--accent-hex)] text-[13px] font-medium px-2.5 py-1 rounded-[var(--radius-sm)] no-underline font-sans hover:text-[var(--accent-hex)]/80 transition-colors"
           >
             Exit
           </a>
@@ -505,12 +505,12 @@ export default function View() {
           className={cn(
             "fixed md:relative z-30 md:z-auto",
             "w-[var(--sidebar-w-viewer)] h-full",
-            "bg-[var(--surface-subtle)] border-r border-[var(--border-subtle)] flex flex-col shrink-0 overflow-y-auto py-5",
+            "bg-[var(--canvas)] border-r border-[hsl(var(--border))] flex flex-col shrink-0 overflow-y-auto py-5",
             "transition-transform md:transition-none",
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}
         >
-          <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[var(--teal-bright)] px-4 pb-2.5">
+          <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[var(--accent-hex)] px-4 pb-2.5">
             Lessons
           </div>
 
@@ -536,8 +536,8 @@ export default function View() {
                 className={cn(
                   "w-full text-left flex items-start gap-2.5 py-2 px-4 pl-3 border-l-[3px] transition-colors",
                   isActive
-                    ? "border-l-[var(--teal-bright)] bg-[var(--surface-tint)]"
-                    : "border-l-transparent hover:bg-[var(--surface-tint)]"
+                    ? "border-l-[var(--accent-hex)] bg-[var(--canvas-2)]"
+                    : "border-l-transparent hover:bg-[var(--canvas-2)]"
                 )}
               >
                 {/* Dot */}
@@ -545,11 +545,11 @@ export default function View() {
                   <div style={getDotStyle(l.id, isCurrent)} />
                 </div>
                 {/* Number */}
-                <span className={cn("text-[9px] font-semibold shrink-0 pt-px", isActive ? "text-[var(--teal-primary)]" : "text-slate-400")}>
+                <span className={cn("text-[9px] font-semibold shrink-0 pt-px", isActive ? "text-[var(--accent-hex)]" : "text-slate-400")}>
                   {i + 1}
                 </span>
                 {/* Title */}
-                <span className={cn("text-xs leading-[1.45]", isActive ? "text-[var(--teal-primary)] font-semibold" : "text-slate-600")}>
+                <span className={cn("text-xs leading-[1.45]", isActive ? "text-[var(--accent-hex)] font-semibold" : "text-slate-600")}>
                   {l.title}
                 </span>
               </button>
@@ -565,13 +565,13 @@ export default function View() {
               currentLesson ? (
                 <section key={currentLesson.id} ref={lessonRef as React.RefObject<HTMLElement>}>
                   {/* Lesson breadcrumb */}
-                  <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--teal-primary)] mb-3">
+                  <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">
                     Lesson {idx + 1}
                   </div>
 
                   {/* Lesson title — hidden for assessment lessons (AssessmentView renders its own) */}
                   {currentLesson.kind !== "assessment" && (
-                    <h1 className="font-display text-[28px] font-bold text-[var(--text-primary)] leading-[1.3] mb-8 tracking-tight">
+                    <h1 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">
                       {currentLesson.title}
                     </h1>
                   )}
@@ -600,8 +600,8 @@ export default function View() {
                         className={cn(
                           "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
                           completed.has(currentLesson.id)
-                            ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white border-none"
-                            : "bg-transparent border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-teal-300 hover:text-[var(--teal-primary)]"
+                            ? "bg-[var(--accent-hex)] text-white border-none"
+                            : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]"
                         )}
                       >
                         {completed.has(currentLesson.id) ? (
@@ -631,20 +631,20 @@ export default function View() {
                   return (
                     <section key={l.id} id={l.id} className="mb-16 scroll-mt-24">
                       {/* Lesson breadcrumb */}
-                      <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--teal-primary)] mb-3">
+                      <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">
                         Lesson {lessonIdx + 1}
                       </div>
 
                       {/* Lesson title */}
-                      <h2 className="font-display text-[28px] font-bold text-[var(--text-primary)] leading-[1.3] mb-8 tracking-tight">
+                      <h2 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">
                         {l.title}
                       </h2>
 
                       {gateEnabled && !isUnlocked ? (
-                        <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] p-6 text-center bg-[var(--surface-subtle)]">
+                        <div className="rounded-[var(--radius-md)] border border-[hsl(var(--border))] p-6 text-center bg-[var(--canvas)]">
                           <p className="text-[var(--text-muted)] text-sm">This section is locked. Continue the previous section to unlock.</p>
                           <button
-                            className="text-[var(--teal-primary)] hover:underline text-sm mt-1"
+                            className="text-[var(--accent-hex)] hover:underline text-sm mt-1"
                             onClick={() => { const prev = course.lessons.findLast((_l, i) => i < lessonIdx && unlocked.has(_l.id)); if (prev) { setCurrentLessonId(prev.id); setIsPaged(true); } }}
                           >
                             Go to previous section
@@ -666,7 +666,7 @@ export default function View() {
                               <div className="italic text-[var(--text-muted)] text-sm py-4">
                                 Assessment: {(l as any).questions?.length ?? 0} questions —{" "}
                                 <button
-                                  className="text-[var(--teal-primary)] hover:underline font-medium not-italic"
+                                  className="text-[var(--accent-hex)] hover:underline font-medium not-italic"
                                   onClick={() => { setIsPaged(true); setCurrentLessonId(l.id); }}
                                 >
                                   Take assessment
@@ -684,8 +684,8 @@ export default function View() {
                               className={cn(
                                 "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
                                 completed.has(l.id)
-                                  ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white border-none"
-                                  : "bg-transparent border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-teal-300 hover:text-[var(--teal-primary)]"
+                                  ? "bg-[var(--accent-hex)] text-white border-none"
+                                  : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]"
                               )}
                             >
                               {completed.has(l.id) ? (
@@ -708,7 +708,7 @@ export default function View() {
                                   disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
                                   onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })}
                                   className={cn(
-                                    "bg-gradient-to-br from-teal-500 to-cyan-600 border-none text-white text-[13px] font-semibold px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
+                                    "bg-[var(--accent-hex)] border-none text-white text-[13px] font-semibold px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
                                     (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-90"
                                   )}
                                 >
@@ -733,7 +733,7 @@ export default function View() {
       {isPaged && (
         <nav
           aria-label="Lesson pagination"
-          className="fixed bottom-0 inset-x-0 h-14 flex items-center justify-between px-4 md:px-8 bg-white border-t border-[var(--border-subtle)] z-10 pb-[env(safe-area-inset-bottom)]"
+          className="fixed bottom-0 inset-x-0 h-14 flex items-center justify-between px-4 md:px-8 bg-white border-t border-[hsl(var(--border))] z-10 pb-[env(safe-area-inset-bottom)]"
         >
           {/* Previous */}
           <button
@@ -742,7 +742,7 @@ export default function View() {
             onClick={() => go("prev")}
             className={cn(
               "bg-transparent border-none text-[13px] font-medium flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
-              prevLesson ? "text-[var(--text-muted)] cursor-pointer hover:bg-[var(--surface-tint)] hover:text-[var(--teal-primary)]" : "text-slate-300 cursor-not-allowed"
+              prevLesson ? "text-[var(--text-muted)] cursor-pointer hover:bg-[var(--canvas-2)] hover:text-[var(--accent-hex)]" : "text-slate-300 cursor-not-allowed"
             )}
           >
             <span aria-hidden="true">&larr; </span>Previous lesson
@@ -759,7 +759,7 @@ export default function View() {
           {isCourseCompleted && !nextLesson ? (
             <button
               disabled
-              className="bg-gradient-to-br from-teal-500 to-cyan-600 border-none text-[13px] font-semibold text-white cursor-not-allowed flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans opacity-75"
+              className="bg-[var(--accent-hex)] border-none text-[13px] font-semibold text-white cursor-not-allowed flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans opacity-75"
             >
               Completed &#10003;
             </button>
@@ -771,7 +771,7 @@ export default function View() {
               className={cn(
                 "border-none text-[13px] font-semibold flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
                 nextLesson
-                  ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white cursor-pointer hover:opacity-90"
+                  ? "bg-[var(--accent-hex)] text-white cursor-pointer hover:opacity-90"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed"
               )}
             >

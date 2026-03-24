@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { toast } from "@/hooks/use-toast";
 import { useDeepLinkIntents } from "@/hooks/useDeepLinkIntents";
-import { ArrowLeft, Menu, Settings, Package } from "lucide-react";
+import { Undo2, Redo2 } from "lucide-react";
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 import { loadCourse, saveCourse, saveCourseToCloud, loadCourseFromCloud } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -23,6 +24,9 @@ import { ConfirmModal } from "@/components/editor/ConfirmModal";
 import { PublishModal } from "@/components/editor/PublishModal";
 import { AddBlockRow } from "@/components/editor/BlockPicker";
 
+// AppShell
+import { AppShell } from "@/components/AppShell";
+
 const defaultLesson: ContentLesson = {
   kind: "content",
   id: uid(),
@@ -35,6 +39,7 @@ const defaultLesson: ContentLesson = {
 };
 
 export default function Editor() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     current: editorState,
@@ -56,7 +61,6 @@ export default function Editor() {
   const [publishWarnings, setPublishWarnings] = useState<BlockWarning[]>([]);
   const [showImportSection, setShowImportSection] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [lessonToRemove, setLessonToRemove] = useState<string | null>(null);
 
@@ -482,306 +486,280 @@ export default function Editor() {
 
   const blocks = selectedLesson?.kind === "content" ? selectedLesson.blocks : [];
 
+  // ── Lesson sidebar ──────────────────────────────────────────────
+  const lessonSidebar = (
+    <div className="lesson-list flex flex-col h-full overflow-hidden">
+      {/* Header: back link + course title */}
+      <div className="px-4 pt-4 pb-3" style={{ borderBottom: "1px solid var(--accent-bg)" }}>
+        <button
+          onClick={() => navigate("/courses")}
+          className="flex items-center gap-1 text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0 mb-2"
+          style={{ color: "var(--sidebar-text)" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
+        >
+          ← All courses
+        </button>
+        <div className="font-display text-sm font-semibold leading-tight" style={{ color: "hsl(var(--sidebar-foreground))" }}>
+          {courseTitle}
+        </div>
+        <div className="text-[10px] mt-0.5" style={{ color: "var(--sidebar-text)" }}>
+          {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
+          {(() => {
+            const quizCount = lessons.filter(l => l.kind === "assessment").length;
+            return quizCount > 0 ? ` · ${quizCount} quiz${quizCount !== 1 ? "zes" : ""}` : "";
+          })()}
+        </div>
+      </div>
+
+      {/* Lesson list */}
+      <div className="flex-1 overflow-y-auto px-2 py-2">
+        {lessons.map((l, idx) => {
+          const isActive = l.id === selectedLessonId;
+          return (
+            <button
+              key={l.id}
+              onClick={() => setSelectedLessonId(l.id)}
+              className="flex items-center gap-2 w-full text-left border-none rounded-md py-[6px] px-2.5 cursor-pointer mb-0.5 transition-colors text-xs font-medium"
+              style={{
+                background: isActive ? "var(--accent-bg)" : "transparent",
+                color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)",
+              }}
+              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text-hover)"; }}
+              onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
+            >
+              <span className="text-[10px] font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)", opacity: isActive ? 1 : 0.6 }}>
+                {String(idx + 1).padStart(2, "0")}
+              </span>
+              <span className="flex-1 truncate">{l.title}</span>
+              <span className="text-[9px] opacity-50" aria-label={l.kind === "assessment" ? "Assessment lesson" : undefined}>{l.kind === "content" ? "doc" : "quiz"}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Add lesson buttons */}
+      <div className="px-2 py-2" style={{ borderTop: "1px solid var(--accent-bg)" }}>
+        <div className="flex gap-1 mb-1">
+          <button
+            onClick={() => addLesson("content")}
+            className="flex-1 border rounded-md text-[11px] font-medium py-1.5 cursor-pointer transition-colors"
+            style={{ borderColor: "var(--accent-bg)", color: "var(--sidebar-text)", background: "transparent", borderStyle: "dashed" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
+          >
+            + Lesson
+          </button>
+          <button
+            onClick={() => addLesson("assessment")}
+            className="flex-1 border rounded-md text-[11px] font-medium py-1.5 cursor-pointer transition-colors"
+            style={{ borderColor: "var(--accent-bg)", color: "var(--sidebar-text)", background: "transparent", borderStyle: "dashed" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
+          >
+            + Assessment
+          </button>
+        </div>
+        {/* Footer: Export SCORM only (no Publish here per spec) */}
+        <button
+          onClick={exportSCORM12}
+          className="w-full text-left text-[11px] font-medium py-1.5 px-2 rounded-md cursor-pointer transition-colors border-none"
+          style={{ color: "var(--sidebar-text)", background: "transparent" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--accent-bg)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >
+          ↓ Export SCORM
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── Editor top bar ──────────────────────────────────────────────
+  const editorTopBar = (
+    <div className="flex items-center w-full gap-3 h-full">
+      {/* Left: two-line breadcrumb + lesson title */}
+      <div className="flex flex-col justify-center flex-1 min-w-0">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => navigate("/courses")}
+            className="text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0"
+            style={{ color: "var(--text-muted)" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+          >
+            ← {courseTitle || "My Courses"}
+          </button>
+        </div>
+        {/* Editable lesson title */}
+        <input
+          value={selectedLesson?.title ?? ""}
+          onChange={(e) => selectedLesson && updateLessonTitle(selectedLesson.id, e.target.value)}
+          aria-label="Lesson title"
+          className="bg-transparent border-none outline-none w-full truncate"
+          style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--ink)" }}
+        />
+      </div>
+
+      {/* Right: controls */}
+      <div className="flex items-center gap-2 flex-shrink-0 toolbar">
+        {/* Undo/Redo */}
+        <button
+          onClick={undoHistory}
+          disabled={!canUndo}
+          aria-label="Undo"
+          title="Undo (Ctrl+Z)"
+          className="hidden md:flex items-center justify-center w-7 h-7 rounded border-none cursor-pointer transition-colors"
+          style={{ background: "transparent", color: canUndo ? "var(--ink)" : "var(--text-muted)", opacity: canUndo ? 1 : 0.4 }}
+        >
+          <Undo2 className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={redoHistory}
+          disabled={!canRedo}
+          aria-label="Redo"
+          title="Redo (Ctrl+Shift+Z)"
+          className="hidden md:flex items-center justify-center w-7 h-7 rounded border-none cursor-pointer transition-colors"
+          style={{ background: "transparent", color: canRedo ? "var(--ink)" : "var(--text-muted)", opacity: canRedo ? 1 : 0.4 }}
+        >
+          <Redo2 className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Preview button */}
+        <button
+          onClick={() => window.open(publishUrl, "_blank")}
+          className="hidden md:block text-xs font-medium px-3 py-1.5 rounded-md cursor-pointer border transition-colors"
+          style={{ background: "transparent", color: "var(--text-muted)", borderColor: "hsl(var(--border))" }}
+        >
+          Preview
+        </button>
+
+        {/* Autosave indicator */}
+        <span
+          className="hidden md:flex items-center gap-1 text-[11px] font-medium"
+          style={{
+            color: isSaving ? "var(--text-muted)" : "var(--accent-hex)",
+            animation: !isSaving ? "fade-in 200ms var(--ease-out)" : undefined,
+          }}
+        >
+          {isSaving ? "Saving…" : "✓ Saved"}
+        </span>
+
+        {/* Publish button */}
+        <button
+          onClick={openPublish}
+          className="text-xs font-bold py-1.5 px-3.5 rounded-md border-none cursor-pointer"
+          style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
+        >
+          Publish
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[var(--sidebar-w-editor)_1fr] grid-rows-[var(--topbar-h)_1fr] h-screen overflow-hidden">
+    <>
       {/* Hidden file inputs */}
       <input ref={importInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
       <input ref={scormImportInputRef} type="file" accept=".zip,application/zip" className="hidden" onChange={handleImportScormFile} />
 
-      {/* ── Topbar ── */}
-      <div className="col-span-1 md:col-span-2 flex items-center px-4 gap-0 z-10 bg-[var(--ocean-surface)] border-b border-[rgba(20,184,166,0.15)] h-[var(--topbar-h)]">
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 text-[var(--teal-light)]"
-          aria-label="Toggle sidebar"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
-        {/* Back button */}
-        <a
-          href="/courses"
-          className="flex items-center gap-1 text-xs font-semibold text-[rgba(94,234,212,0.5)] no-underline px-2 whitespace-nowrap hover:text-[var(--teal-bright)] transition-colors"
-        >
-          <ArrowLeft size={13} className="opacity-70" />
-          My Courses
-        </a>
-
-        {/* Divider */}
-        <div className="w-px h-5 bg-[rgba(20,184,166,0.15)] mx-3" />
-
-        {/* Course title input */}
-        <input
-          value={courseTitle}
-          onChange={e => pushHistory({ courseTitle: e.target.value, lessons: syncWelcomeHeading(e.target.value, lessons) })}
-          aria-label="Course title"
-          placeholder="Course title"
-          className="bg-transparent border-none outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded text-[13px] font-semibold text-white font-sans flex-1 min-w-0"
-        />
-
-        {/* Right side */}
-        <div className="flex items-center gap-2 md:gap-3 ml-auto">
-          {/* Undo/Redo — hidden on mobile (keyboard shortcuts still work) */}
-          <button
-            onClick={() => undoHistory()}
-            disabled={!canUndo}
-            aria-label="Undo"
-            title="Undo (Ctrl+Z)"
-            className={cn(
-              "hidden md:flex bg-none border-none py-1.5 px-2 rounded-md text-[var(--teal-light)] text-[13px] font-semibold items-center gap-1",
-              "focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none",
-              canUndo ? "cursor-pointer opacity-100" : "cursor-not-allowed opacity-35"
+      <AppShell sidebar={lessonSidebar} topBar={editorTopBar}>
+        {/* Canvas */}
+        <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--canvas)" }}>
+          <div key={selectedLessonId} style={{ animation: "fade-in 150ms var(--ease-out)" }}>
+            {/* Lesson header area */}
+            {selectedLesson && (
+              <div className="px-6 py-4 border-b" style={{ background: "var(--canvas-white)", borderColor: "hsl(var(--border))" }}>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                    {blocks.length} block{blocks.length !== 1 ? "s" : ""}
+                  </span>
+                  {lessons.length > 1 && (
+                    <button
+                      onClick={() => setLessonToRemove(selectedLesson.id)}
+                      className="bg-transparent border-0 text-[11px] cursor-pointer p-0 transition-colors rounded text-destructive/70 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                    >
+                      Remove lesson
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
-          >
-            ↩ Undo
-          </button>
-          <button
-            onClick={() => redoHistory()}
-            disabled={!canRedo}
-            aria-label="Redo"
-            title="Redo (Ctrl+Shift+Z)"
-            className={cn(
-              "hidden md:flex bg-none border-none py-1.5 px-2 rounded-md text-[var(--teal-light)] text-[13px] font-semibold items-center gap-1",
-              "focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none",
-              canRedo ? "cursor-pointer opacity-100" : "cursor-not-allowed opacity-35"
-            )}
-          >
-            ↪ Redo
-          </button>
 
-          {/* Saved indicator — hidden on mobile */}
-          <div className="hidden md:flex items-center gap-1.5">
-            <div className={cn(
-              "w-[5px] h-[5px] rounded-full transition-colors",
-              isSaving ? "bg-[rgba(94,234,212,0.4)]" : "bg-[var(--teal-bright)]"
-            )} />
-            <span className="text-[11px] text-[rgba(94,234,212,0.4)] font-medium">
-              {isSaving ? "Saving…" : "Saved"}
-            </span>
-          </div>
-
-          {/* Preview button — hidden on mobile */}
-          <button
-            onClick={() => window.open(publishUrl, "_blank")}
-            className="hidden md:block bg-none border-[1.5px] border-[rgba(20,184,166,0.35)] rounded-md text-[var(--teal-bright)] text-xs font-semibold py-[5px] px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none"
-          >
-            Preview
-          </button>
-
-          {/* Save button */}
-          <button
-            onClick={saveNow}
-            className="bg-none border-[1.5px] border-[rgba(20,184,166,0.35)] rounded-md text-[var(--teal-bright)] text-xs font-semibold py-[5px] px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none"
-          >
-            Save
-          </button>
-
-          {/* Publish button */}
-          <button
-            onClick={openPublish}
-            className="bg-[var(--gradient-primary)] border-none rounded-md text-white text-xs font-bold py-[5px] px-3.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none"
-          >
-            Publish
-          </button>
-        </div>
-      </div>
-
-      {/* ── Mobile sidebar overlay ── */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-20 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* ── Sidebar ── */}
-      <aside className={cn(
-        "fixed md:relative z-30 md:z-auto",
-        "w-[var(--sidebar-w-editor)] h-full",
-        "bg-[var(--ocean-mid)] text-white flex flex-col",
-        "border-r border-[rgba(20,184,166,0.18)]",
-        "transition-transform md:transition-none",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      )}>
-        {/* Sidebar header */}
-        <div className="px-4 pt-3.5 pb-2">
-          <span className="text-[9.5px] font-bold text-[rgba(94,234,212,0.45)] uppercase tracking-widest">
-            Lessons
-          </span>
-        </div>
-
-        {/* Lesson list */}
-        <div className="flex-1 overflow-y-auto px-2">
-          {lessons.map((l, idx) => {
-            const isActive = l.id === selectedLessonId;
-            return (
-              <button
-                key={l.id}
-                onClick={() => { setSelectedLessonId(l.id); setSidebarOpen(false); }}
-                className={cn(
-                  "flex items-center gap-2 w-full text-left border-none rounded-md py-[7px] px-2.5 cursor-pointer mb-0.5 transition-colors",
-                  "focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none",
-                  isActive
-                    ? "bg-[rgba(20,184,166,0.18)] text-[var(--text-on-dark)]"
-                    : "bg-transparent text-[var(--text-on-dark-dim)] hover:bg-[rgba(20,184,166,0.1)]"
-                )}
-              >
-                <span className={cn(
-                  "text-[10px] font-bold min-w-[16px] font-mono",
-                  isActive ? "text-[var(--teal-bright)]" : "text-[rgba(94,234,212,0.4)]"
-                )}>
-                  {String(idx + 1).padStart(2, "0")}
-                </span>
-                <span className="text-xs font-medium flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                  {l.title}
-                </span>
-                <span className="text-[10px] text-[rgba(94,234,212,0.35)] whitespace-nowrap">
-                  {l.kind === "content" ? `${l.blocks.length}b` : "quiz"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Add lesson buttons */}
-        <div className="px-2 py-2">
-          <div className="flex gap-1">
-            <button
-              onClick={() => addLesson("content")}
-              className="flex-1 bg-none border-[1.5px] border-dashed border-[rgba(20,184,166,0.25)] rounded-md text-[rgba(94,234,212,0.45)] text-[11px] font-semibold py-[7px] cursor-pointer flex items-center justify-center gap-1 hover:border-[var(--teal-bright)] hover:text-[var(--teal-light)] transition-colors"
-            >
-              + Lesson
-            </button>
-            <button
-              onClick={() => addLesson("assessment")}
-              title="Add an adaptive assessment lesson"
-              className="flex-1 bg-none border-[1.5px] border-dashed border-[rgba(20,184,166,0.25)] rounded-md text-[rgba(94,234,212,0.45)] text-[11px] font-semibold py-[7px] cursor-pointer flex items-center justify-center gap-1 hover:border-[var(--teal-bright)] hover:text-[var(--teal-light)] transition-colors"
-            >
-              + Assessment
-            </button>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-[rgba(20,184,166,0.12)] p-2">
-          <button
-            onClick={openPublish}
-            className="w-full bg-none border-none rounded-md text-[rgba(94,234,212,0.45)] text-[11px] font-medium py-1.5 px-2.5 cursor-pointer text-left flex items-center gap-2 hover:bg-[rgba(20,184,166,0.08)] transition-colors"
-          >
-            <Settings className="w-4 h-4" /> Publish & Export
-          </button>
-          <button
-            onClick={exportSCORM12}
-            className="w-full bg-none border-none rounded-md text-[rgba(94,234,212,0.45)] text-[11px] font-medium py-1.5 px-2.5 cursor-pointer text-left flex items-center gap-2 hover:bg-[rgba(20,184,166,0.08)] transition-colors"
-          >
-            <Package className="w-4 h-4" /> Export SCORM
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Canvas ── */}
-      <main
-        id="main-content"
-        className="bg-[var(--surface-subtle)] overflow-y-auto flex flex-col"
-      >
-        {/* Lesson header */}
-        {selectedLesson && (
-          <div className="bg-white border-b border-[var(--border-subtle)] px-4 md:px-8 py-4 flex flex-col gap-1">
-            <input
-              value={selectedLesson.title}
-              onChange={e => updateLessonTitle(selectedLesson.id, e.target.value)}
-              aria-label="Lesson title"
-              className="bg-transparent border-none outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded font-display text-[19px] font-bold text-[var(--text-primary)] w-full"
-            />
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] text-[var(--text-muted)]">
-                {blocks.length} block{blocks.length !== 1 ? "s" : ""}
-              </span>
-              {lessons.length > 1 && (
-                <button
-                  onClick={() => setLessonToRemove(selectedLesson.id)}
-                  className="bg-none border-none text-[11px] text-destructive/70 cursor-pointer p-0 hover:text-destructive transition-colors focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none rounded"
-                >
-                  Remove lesson
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Canvas body */}
-        <div className="flex-1 px-4 md:px-16 py-5 pb-20">
-          <div className="max-w-[var(--canvas-max-w)] mx-auto">
-            {selectedLesson?.kind === "assessment" ? (
-              <AssessmentEditor
-                lesson={selectedLesson}
-                onChange={(updated) => {
-                  pushHistory({ courseTitle, lessons: lessons.map(l => l.id === updated.id ? updated : l) });
-                }}
-              />
-            ) : (
-            <div className="max-w-[700px] mx-auto flex flex-col">
-              {/* Add-block row before first block */}
-              <AddBlockRow
-                rowIndex={0}
-                pickerState={pickerState}
-                onOpen={() => { setPickerState({ rowIndex: 0 }); setPickerSearch(""); }}
-                pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
-                pickerSearch={pickerSearch}
-                setPickerSearch={setPickerSearch}
-                filteredRegistry={filteredRegistry}
-                pickerSearchRef={pickerSearchRef}
-                onPickerSelect={(type) => { insertBlockAt(0, type); setPickerState(null); }}
-                onPickerClose={() => setPickerState(null)}
-              />
-
-              {blocks.map((b, idx) => {
-                const spec = getSpec(b.type as BlockType);
-                const EditorComp = spec.Editor as any;
-                const isPickerBelowThis = pickerState !== null && pickerState.rowIndex <= idx;
-                return (
-                  <div key={b.id} className={cn("transition-opacity", isPickerBelowThis && "opacity-25")}>
-                    <BlockItem
-                      block={b}
-                      idx={idx}
-                      total={blocks.length}
-                      spec={spec}
-                      EditorComp={EditorComp}
-                      onMove={moveBlock}
-                      onDuplicate={duplicateBlock}
-                      onRemove={removeBlock}
-                      onUpdate={updateBlock}
-                    />
-
+            {/* Canvas body */}
+            <div className="flex-1 px-4 md:px-12 py-6 pb-20">
+              <div className="max-w-[var(--canvas-max-w)] mx-auto">
+                {selectedLesson?.kind === "assessment" ? (
+                  <AssessmentEditor
+                    lesson={selectedLesson}
+                    onChange={(updated) => {
+                      pushHistory({ courseTitle, lessons: lessons.map(l => l.id === updated.id ? updated : l) });
+                    }}
+                  />
+                ) : (
+                  <div className="max-w-[var(--reading-max-w)] mx-auto flex flex-col">
+                    {/* Add-block row before first block */}
                     <AddBlockRow
-                      rowIndex={idx + 1}
+                      rowIndex={0}
                       pickerState={pickerState}
-                      onOpen={() => { setPickerState({ rowIndex: idx + 1 }); setPickerSearch(""); }}
+                      onOpen={() => { setPickerState({ rowIndex: 0 }); setPickerSearch(""); }}
                       pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
                       pickerSearch={pickerSearch}
                       setPickerSearch={setPickerSearch}
                       filteredRegistry={filteredRegistry}
                       pickerSearchRef={pickerSearchRef}
-                      onPickerSelect={(type) => { insertBlockAt(idx + 1, type); setPickerState(null); }}
+                      onPickerSelect={(type) => { insertBlockAt(0, type); setPickerState(null); }}
                       onPickerClose={() => setPickerState(null)}
                     />
-                  </div>
-                );
-              })}
 
-              {blocks.length === 0 && (
-                <p className="text-[var(--text-muted)] text-[13px] text-center py-8">
-                  No blocks yet. Use the + button or press / to add your first block.
-                </p>
-              )}
+                    {blocks.map((b, idx) => {
+                      const spec = getSpec(b.type as BlockType);
+                      const EditorComp = spec.Editor as any;
+                      const isPickerBelowThis = pickerState !== null && pickerState.rowIndex <= idx;
+                      return (
+                        <div key={b.id} className={cn("transition-opacity", isPickerBelowThis && "opacity-25")}>
+                          <BlockItem
+                            block={b}
+                            idx={idx}
+                            total={blocks.length}
+                            spec={spec}
+                            EditorComp={EditorComp}
+                            onMove={moveBlock}
+                            onDuplicate={duplicateBlock}
+                            onRemove={removeBlock}
+                            onUpdate={updateBlock}
+                          />
+
+                          <AddBlockRow
+                            rowIndex={idx + 1}
+                            pickerState={pickerState}
+                            onOpen={() => { setPickerState({ rowIndex: idx + 1 }); setPickerSearch(""); }}
+                            pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
+                            pickerSearch={pickerSearch}
+                            setPickerSearch={setPickerSearch}
+                            filteredRegistry={filteredRegistry}
+                            pickerSearchRef={pickerSearchRef}
+                            onPickerSelect={(type) => { insertBlockAt(idx + 1, type); setPickerState(null); }}
+                            onPickerClose={() => setPickerState(null)}
+                          />
+                        </div>
+                      );
+                    })}
+
+                    {blocks.length === 0 && (
+                      <p className="text-[11px] text-center py-8" style={{ color: "var(--text-muted)" }}>
+                        No blocks yet. Use the + button or press / to add your first block.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            )}
           </div>
         </div>
-      </main>
+      </AppShell>
 
-      {/* ── Publish Modal ── */}
+      {/* Publish Modal */}
       {publishOpen && (
         <PublishModal
           publishUrl={publishUrl}
@@ -808,7 +786,7 @@ export default function Editor() {
         />
       )}
 
-      {/* ── Confirm Modals ── */}
+      {/* Confirm Modals */}
       <ConfirmModal
         open={confirmAction !== null}
         title="Replace course?"
@@ -825,7 +803,7 @@ export default function Editor() {
         onConfirm={() => { if (lessonToRemove) removeLesson(lessonToRemove); setLessonToRemove(null); }}
         onCancel={() => setLessonToRemove(null)}
       />
-    </div>
+    </>
   );
 }
 
@@ -847,9 +825,9 @@ function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, o
   return (
     <div className="block-item relative mb-0">
       {/* Block card */}
-      <div className="block-card bg-white border-[1.5px] border-transparent rounded-lg p-4 px-5 transition-colors hover:border-[var(--border-subtle)]">
+      <div className="block-card border-[1.5px] border-transparent rounded-lg p-4 px-5 transition-colors hover:border-[hsl(var(--border))]" style={{ background: "var(--canvas-white)" }}>
         {/* Block type chip */}
-        <div className="text-xs font-extrabold text-[var(--teal-bright)] uppercase tracking-wide mb-1.5">
+        <div className="text-xs font-extrabold uppercase tracking-wide mb-1.5" style={{ color: "var(--accent-hex)" }}>
           {spec.label}
         </div>
 
@@ -873,11 +851,18 @@ function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, o
             disabled={btn.disabled}
             aria-label={btn.ariaLabel}
             className={cn(
-              "bctrl-btn w-[26px] h-[26px] bg-white border border-[var(--border-subtle)] rounded-[5px] text-[10px] flex items-center justify-center transition-colors text-[var(--text-body)]",
-              "focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none",
+              "bctrl-btn relative w-[26px] h-[26px] border rounded-[5px] text-[10px] flex items-center justify-center transition-colors",
+              "focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:outline-none",
+              /* Pseudo-element expands touch target to ~44×44px without changing visual size */
+              "after:content-[''] after:absolute after:inset-[-9px]",
               btn.disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer opacity-100",
-              btn.cls === "del" ? "hover:bg-red-100 hover:border-red-300 hover:text-red-500" : "hover:bg-slate-50 hover:border-[var(--border-emphasis)]"
+              btn.cls === "del" ? "hover:bg-red-100 hover:border-red-300 hover:text-red-500" : "hover:border-[var(--accent-hex)]"
             )}
+            style={{
+              background: "var(--canvas-white)",
+              borderColor: "hsl(var(--border))",
+              color: "var(--ink)",
+            }}
           >
             {btn.label}
           </button>

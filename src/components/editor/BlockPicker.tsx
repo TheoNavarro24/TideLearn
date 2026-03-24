@@ -81,12 +81,12 @@ export function AddBlockRow({
     <div className="abr-container relative my-1">
       <div className={`abr flex items-center w-full${isOpen ? " open" : ""}`}>
         {/* Left line */}
-        <div className="flex-1 h-px bg-[rgba(20,184,166,0.15)]" />
+        <div className="flex-1 h-px bg-[rgba(64,200,160,0.15)]" />
 
         {/* Pill button */}
         <div className="relative shrink-0">
           <button
-            className="abr-pill bg-white border-[1.5px] border-[var(--border-emphasis)] rounded-full text-[var(--teal-primary)] text-[11px] font-bold py-[5px] px-[13px] cursor-pointer mx-2.5 transition-colors hover:bg-[var(--surface-tint)] hover:border-[var(--teal-light)] focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none"
+            className="abr-pill bg-[var(--canvas-white)] border-[1.5px] border-hsl(var(--border)) rounded-full text-[var(--accent-hex)] text-[11px] font-bold py-[5px] px-[13px] cursor-pointer mx-2.5 transition-colors hover:bg-[var(--canvas-2)] hover:border-[var(--accent-hex)] focus-visible:outline-none"
             onClick={onOpen}
           >
             + Add block
@@ -96,11 +96,11 @@ export function AddBlockRow({
           {isOpen && (
             <div
               ref={ref}
-              className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 w-[420px] max-w-[calc(100vw-2rem)] bg-white border border-[var(--border-emphasis)] rounded-xl shadow-[var(--shadow-popup)] z-[100] overflow-hidden"
+              className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 w-[420px] max-w-[calc(100vw-2rem)] bg-[var(--canvas-white)] border border-hsl(var(--border)) rounded-xl shadow-[var(--shadow-popup)] z-[100] overflow-hidden"
               onKeyDown={handleKeyDown}
             >
               {/* Search */}
-              <div className="px-3.5 py-2.5 border-b border-[var(--surface-tint)] flex items-center gap-2">
+              <div className="px-3.5 py-2.5 border-b border-hsl(var(--border)) flex items-center gap-2">
                 <Search className="w-4 h-4 text-[var(--text-muted)]" />
                 <input
                   ref={pickerSearchRef}
@@ -111,7 +111,7 @@ export function AddBlockRow({
                   aria-expanded={true}
                   aria-controls="block-picker-list"
                   aria-activedescendant={activeOptionId}
-                  className="border-none outline-none text-[13px] text-[var(--text-primary)] w-full bg-transparent"
+                  className="border-none outline-none text-[13px] text-[var(--ink)] w-full bg-transparent"
                 />
               </div>
 
@@ -139,16 +139,16 @@ export function AddBlockRow({
                                 id={`block-option-${tileIdx}`}
                                 aria-selected={isActive}
                                 onClick={() => onPickerSelect(spec.type)}
-                                className={`picker-tile flex flex-col items-center gap-[5px] bg-white border-[1.5px] rounded-lg p-2 cursor-pointer transition-colors ${
+                                className={`picker-tile flex flex-col items-center gap-[5px] bg-[var(--canvas-white)] border-[1.5px] rounded-lg p-2 cursor-pointer transition-colors ${
                                   isActive
-                                    ? "border-[var(--border-emphasis)] bg-[var(--surface-tint)]"
-                                    : "border-[var(--border-subtle)] hover:bg-[var(--surface-tint)] hover:border-[var(--border-emphasis)]"
+                                    ? "border-hsl(var(--border)) bg-[var(--canvas-2)]"
+                                    : "border-hsl(var(--border)) hover:bg-[var(--canvas-2)] hover:border-hsl(var(--border))"
                                 }`}
                               >
                                 <div className={`w-[34px] h-[34px] ${meta.iconBg} rounded-md flex items-center justify-center`}>
-                                  <spec.icon size={16} className="text-[var(--teal-primary)]" />
+                                  <spec.icon size={16} className="text-[var(--accent-hex)]" />
                                 </div>
-                                <span className="text-[10px] text-[var(--text-body)] font-semibold text-center leading-tight">
+                                <span className="text-[10px] text-[var(--ink)] font-semibold text-center leading-tight">
                                   {spec.label}
                                 </span>
                               </button>
@@ -167,10 +167,10 @@ export function AddBlockRow({
               </div>
 
               {/* Footer close */}
-              <div className="border-t border-[var(--surface-tint)] px-3.5 py-2 text-right">
+              <div className="border-t border-[hsl(var(--border))] px-3.5 py-2 text-right">
                 <button
                   onClick={onPickerClose}
-                  className="bg-none border-none text-[11px] text-[var(--text-muted)] cursor-pointer hover:text-[var(--teal-primary)] transition-colors"
+                  className="bg-transparent border-0 text-[11px] text-[var(--text-muted)] cursor-pointer hover:text-[var(--accent-hex)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] rounded"
                 >
                   Close
                 </button>
@@ -180,7 +180,7 @@ export function AddBlockRow({
         </div>
 
         {/* Right line */}
-        <div className="flex-1 h-px bg-[rgba(20,184,166,0.15)]" />
+        <div className="flex-1 h-px bg-[rgba(64,200,160,0.15)]" />
       </div>
     </div>
   );

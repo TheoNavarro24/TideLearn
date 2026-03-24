@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { Link } from "react-router-dom";
-import { Waves, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 /* ─── Nav ─────────────────────────────────────────────── */
@@ -20,16 +20,16 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
   }, [mobileNavOpen, closeNav]);
 
   const navLinkClasses =
-    "text-[var(--teal-bright)] text-sm font-medium no-underline hover:text-teal-300 transition-colors";
+    "text-[var(--accent-hex)] text-sm font-medium no-underline hover:text-[var(--accent-hex)]/80 transition-colors";
   const authBtnClasses =
-    "border-[1.5px] border-[var(--teal-bright)] rounded-lg bg-transparent text-[var(--teal-bright)] text-sm font-medium cursor-pointer hover:bg-[var(--teal-bright)] hover:text-white transition-colors";
+    "border-[1.5px] border-[var(--accent-hex)] rounded-lg bg-transparent text-[var(--accent-hex)] text-sm font-medium cursor-pointer hover:bg-[var(--accent-hex)] hover:text-white transition-colors";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-14 py-4 bg-gradient-to-b from-[rgba(10,31,28,0.95)] to-transparent backdrop-blur-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-14 py-4 bg-gradient-to-b from-[var(--sidebar-3)]/95 to-transparent backdrop-blur-sm">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 no-underline">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shrink-0">
-          <Waves className="w-5 h-5 text-white" />
+        <div className="w-8 h-8 rounded-lg bg-[var(--accent-hex)] flex items-center justify-center shrink-0">
+          <span className="text-white font-extrabold text-base leading-none">T</span>
         </div>
         <span className="font-sans font-extrabold text-lg text-white tracking-tight">
           TideLearn
@@ -67,7 +67,7 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
 
       {/* Mobile overlay */}
       {mobileNavOpen && (
-        <div className="md:hidden fixed inset-0 top-16 z-40 bg-[#0a1f1c]/95 backdrop-blur-sm flex flex-col items-center gap-6 pt-12">
+        <div className="md:hidden fixed inset-0 top-16 z-40 bg-[var(--sidebar-3)]/95 backdrop-blur-sm flex flex-col items-center gap-6 pt-12">
           <Link to="/courses" className={`${navLinkClasses} text-lg`} onClick={closeNav}>
             My Courses
           </Link>
@@ -99,9 +99,9 @@ function Nav({ user, signOut }: { user: User | null; signOut: () => Promise<void
 /* ─── Editor preview card (decorative) ───────────────────── */
 function EditorCard() {
   return (
-    <div className="max-w-[1000px] w-full mx-auto mt-16 rounded-2xl overflow-hidden border border-teal-500/[0.18] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(20,184,166,0.08)] bg-[#0d1f1d] relative z-[2]">
+    <div className="max-w-[1000px] w-full mx-auto mt-16 rounded-2xl overflow-hidden border border-[var(--accent-hex)]/[0.18] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(64,200,160,0.08)] bg-[var(--sidebar-3)] relative z-[2]">
       {/* Browser chrome */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-[#0a1a18] border-b border-white/[0.06]">
+      <div className="flex items-center gap-2 px-4 py-3 bg-[var(--sidebar)] border-b border-white/[0.06]">
         <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <div className="w-3 h-3 rounded-full bg-[#28c840]" />
@@ -113,7 +113,7 @@ function EditorCard() {
       {/* Two-column body — sidebar hidden on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] min-h-[320px]">
         {/* Sidebar — lesson list */}
-        <div className="hidden md:block bg-[#0c1c1a] border-r border-white/[0.06] py-5">
+        <div className="hidden md:block bg-[var(--sidebar-2)] border-r border-white/[0.06] py-5">
           <div className="px-4 pb-3 text-[11px] font-bold uppercase tracking-widest text-[#475569]">
             Course outline
           </div>
@@ -128,7 +128,7 @@ function EditorCard() {
               key={lesson.num}
               className={`flex items-center gap-2.5 px-4 py-2 border-l-[3px] cursor-default ${
                 lesson.active
-                  ? "bg-teal-500/[0.12] border-l-teal-500"
+                  ? "bg-[var(--accent-bg)] border-l-[var(--accent-hex)]"
                   : "bg-transparent border-l-transparent"
               }`}
             >
@@ -148,7 +148,7 @@ function EditorCard() {
 
         {/* Main content area */}
         <div className="p-7 md:px-8 flex flex-col gap-4">
-          <div className="text-[11px] font-bold text-[var(--teal-bright)] uppercase tracking-widest">
+          <div className="text-[11px] font-bold text-[var(--accent-hex)] uppercase tracking-widest">
             Lesson 02
           </div>
           <div className="text-xl md:text-[22px] font-extrabold text-[#e0fdf4] font-serif leading-snug">
@@ -159,8 +159,8 @@ function EditorCard() {
           </div>
 
           {/* Quiz block */}
-          <div className="mt-2 bg-teal-500/[0.07] border border-teal-500/20 rounded-[10px] px-5 py-4">
-            <div className="text-[11px] font-bold text-[var(--teal-bright)] uppercase tracking-wider mb-2.5">
+          <div className="mt-2 bg-[var(--accent-bg)] border border-[var(--accent-hex)]/20 rounded-[10px] px-5 py-4">
+            <div className="text-[11px] font-bold text-[var(--accent-hex)] uppercase tracking-wider mb-2.5">
               Knowledge check
             </div>
             <div className="text-sm text-[#e2e8f0] font-semibold mb-3">
@@ -171,13 +171,13 @@ function EditorCard() {
                 key={opt}
                 className={`flex items-center gap-2.5 px-3 py-1.5 mb-1.5 rounded-md cursor-default ${
                   i === 1
-                    ? "bg-teal-500/[0.15] border border-teal-500/[0.35]"
+                    ? "bg-[var(--accent-bg)] border border-[var(--accent-hex)]/[0.35]"
                     : "bg-white/[0.04] border border-white/[0.07]"
                 }`}
               >
                 <div
                   className={`w-3.5 h-3.5 rounded-full shrink-0 ${
-                    i === 1 ? "border-4 border-teal-500" : "border-2 border-[#475569]"
+                    i === 1 ? "border-4 border-[var(--accent-hex)]" : "border-2 border-[#475569]"
                   }`}
                 />
                 <span className={`text-[13px] ${i === 1 ? "text-[#e0fdf4]" : "text-[#cbd5e1]"}`}>
@@ -195,7 +195,7 @@ function EditorCard() {
 /* ─── Wave divider SVG ─────────────────────────────────── */
 function WaveDivider() {
   return (
-    <div className="leading-none bg-[var(--ocean-deep)] -mt-px">
+    <div className="leading-none bg-[var(--sidebar-3)] -mt-px">
       <svg
         viewBox="0 0 1440 80"
         xmlns="http://www.w3.org/2000/svg"
@@ -265,13 +265,13 @@ function FeatureRow({
       }`}
     >
       {/* Number */}
-      <div className="font-serif text-5xl font-black text-[var(--teal-bright)] leading-none pt-1">
+      <div className="font-serif text-5xl font-black text-[var(--accent-hex)] leading-none pt-1">
         {num}
       </div>
 
       {/* Title + desc */}
       <div>
-        <div className="font-sans text-xl font-extrabold text-[var(--text-primary)] mb-2">
+        <div className="font-sans text-xl font-extrabold text-[var(--ink)] mb-2">
           {title}
         </div>
         <div className="text-[15px] text-[#475569] leading-relaxed">
@@ -280,7 +280,7 @@ function FeatureRow({
       </div>
 
       {/* Visual chip */}
-      <div className="font-sans text-sm font-medium bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg border border-teal-200 w-fit">
+      <div className="font-sans text-sm font-medium bg-[var(--canvas-2)] text-[var(--ink)] px-3 py-1.5 rounded-lg border border-[hsl(var(--border))] w-fit">
         {visual}
       </div>
     </div>
@@ -296,7 +296,7 @@ const Index = () => {
       <Nav user={user} signOut={signOut} />
 
       {/* ── Hero ────────────────────────────────────────── */}
-      <section className="min-h-screen overflow-hidden relative bg-gradient-to-b from-[#0a1f1c] via-[#0d2d2a] to-[#0a2525]">
+      <section className="min-h-screen overflow-hidden relative bg-gradient-to-b from-[var(--sidebar-3)] via-[var(--sidebar)] to-[var(--sidebar-3)]">
         {/* Subtle horizontal line texture overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -309,9 +309,9 @@ const Index = () => {
         {/* Content */}
         <main id="main-content" className="relative z-[1] flex flex-col items-center text-center pt-32 md:pt-40 pb-0 px-6 md:px-14">
           {/* Eyebrow pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/[0.12] border border-teal-500/30 mb-7">
-            <span className="w-[7px] h-[7px] rounded-full bg-teal-500 shrink-0" />
-            <span className="text-[11px] text-teal-300 font-medium tracking-widest uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent-bg)] border border-[var(--accent-hex)]/30 mb-7">
+            <span className="w-[7px] h-[7px] rounded-full bg-[var(--accent-hex)] shrink-0" />
+            <span className="text-[11px] text-[var(--accent-hex)] font-medium tracking-widest uppercase">
               Personal e-learning authoring tool
             </span>
           </div>
@@ -319,7 +319,7 @@ const Index = () => {
           {/* Headline */}
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] max-w-[820px] mb-6">
             Build courses the tide{" "}
-            <em className="text-teal-400 not-italic font-semibold">
+            <em className="text-[var(--accent-hex)] not-italic font-semibold">
               brings in.
             </em>
           </h1>
@@ -335,13 +335,13 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link
               to="/courses"
-              className="inline-block px-7 py-3 rounded-[10px] bg-[var(--gradient-primary)] bg-gradient-to-br from-teal-500 to-cyan-600 text-white font-bold text-[15px] no-underline shadow-lg hover:shadow-xl transition-shadow"
+              className="inline-block px-7 py-3 rounded-[10px] bg-[var(--accent-hex)] text-white font-bold text-[15px] no-underline shadow-lg hover:shadow-xl transition-shadow"
             >
               Start authoring <span aria-hidden="true">&rarr;</span>
             </Link>
             <a
               href="#features"
-              className="inline-block px-7 py-3 rounded-[10px] border-[1.5px] border-teal-500/40 text-teal-300 font-semibold text-[15px] no-underline bg-transparent hover:bg-teal-500/10 transition-colors"
+              className="inline-block px-7 py-3 rounded-[10px] border-[1.5px] border-[var(--accent-hex)]/40 text-[var(--accent-hex)] font-semibold text-[15px] no-underline bg-transparent hover:bg-[var(--accent-bg)] transition-colors"
             >
               See what it does <span aria-hidden="true">&darr;</span>
             </a>
@@ -360,12 +360,12 @@ const Index = () => {
         id="features"
         className="bg-white px-6 md:px-14 py-16 md:py-24 relative"
       >
-        {/* 4px teal top stripe */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-cyan-600" />
+        {/* 4px accent top stripe */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-hex)]" />
 
         <div className="max-w-[1000px] mx-auto">
           {/* Section title */}
-          <h2 className="font-serif text-3xl md:text-[44px] font-bold text-[var(--text-primary)] tracking-tight leading-snug mb-14">
+          <h2 className="font-serif text-3xl md:text-[44px] font-bold text-[var(--ink)] tracking-tight leading-snug mb-14">
             Everything you need.{" "}
             <span className="text-[#64748b] font-normal">
               Nothing you don't.
@@ -384,10 +384,10 @@ const Index = () => {
       </section>
 
       {/* ── Footer ───────────────────────────────────── */}
-      <footer className="bg-[var(--ocean-deep)] px-6 md:px-14 py-8 flex items-center justify-between flex-wrap gap-3">
+      <footer className="bg-[var(--sidebar-3)] px-6 md:px-14 py-8 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-            <Waves className="w-4 h-4 text-white" />
+          <div className="w-7 h-7 rounded-[7px] bg-[var(--accent-hex)] flex items-center justify-center">
+            <span className="text-white font-extrabold text-sm leading-none">T</span>
           </div>
           <span className="font-bold text-[15px] text-white">
             TideLearn
