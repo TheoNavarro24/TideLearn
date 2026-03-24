@@ -243,6 +243,7 @@ function CourseCard({
           </button>
           {isOpen && (
             <div
+              role="menu"
               className="absolute top-full right-0 mt-1 z-[100] min-w-[172px] py-1 rounded-[var(--radius-md)]"
               style={{
                 background: "var(--canvas-white)",

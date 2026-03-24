@@ -109,6 +109,17 @@ All colors MUST be HSL.
   .block-item:hover .bctrl,
   .block-item:focus-within .bctrl { @apply opacity-100; }
   .bctrl { @apply opacity-0 transition-opacity duration-150; }
+
+  /* Interactive icons: stroke 2.0 */
+  .sidebar-nav svg,
+  .toolbar svg,
+  .lesson-list svg,
+  .btn-icon svg { stroke-width: 2; }
+
+  /* Decorative icons: stroke 1.5 in dropdown menus and inline contexts */
+  [role="menu"] svg,
+  [data-radix-popper-content-wrapper] svg,
+  .dropdown-menu svg { stroke-width: 1.5; }
 }
 
 @layer utilities {
