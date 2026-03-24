@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthContext";
-import { BookOpen, Settings, HelpCircle } from "lucide-react";
+import { BookOpen, Settings, HelpCircle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -14,7 +14,7 @@ interface AppShellProps {
 export function AppShell({ children, sidebar, topBar }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -78,9 +78,17 @@ export function AppShell({ children, sidebar, topBar }: AppShellProps) {
             >
               {user.email?.slice(0, 2).toUpperCase()}
             </div>
-            <span className="text-xs truncate" style={{ color: "var(--sidebar-text)" }}>
+            <span className="text-xs truncate flex-1" style={{ color: "var(--sidebar-text)" }}>
               {user.email}
             </span>
+            <button
+              onClick={signOut}
+              className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: "var(--sidebar-text)" }}
+              title="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5 [stroke-width:2]" />
+            </button>
           </div>
         )}
       </aside>
