@@ -80,7 +80,7 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
   server.tool(
     "add_block",
     `Add a block to a lesson. Omit the 'id' field — it is generated automatically.
-Sub-item ids (in accordion, tabs, timeline, process, sorting, hotspot, branching) are also auto-generated — omit them.
+Sub-item ids (in accordion, tabs, timeline, process, sorting, hotspot, branching, fillinblank, matching) are also auto-generated — omit them.
 
 BLOCK TYPES — pass exactly these fields in the 'block' object:
 
@@ -99,6 +99,8 @@ BLOCK TYPES — pass exactly these fields in the 'block' object:
   truefalse       { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
   shortanswer     { type:"shortanswer", question:"...", answer:"...", acceptable?:["alt1"], caseSensitive?:false, trimWhitespace?:true }
   multipleresponse { type:"multipleresponse", question:"...", options:["A","B","C","D"], correctIndices:[0,2], showFeedback?:boolean, feedbackMessage?:"..." }
+  fillinblank     { type:"fillinblank", template:"...", blanks:[{ acceptable:["..."], caseSensitive?:false }] }
+  matching        { type:"matching", prompt:"...", left:[{ label:"..." }], right:[{ label:"..." }], pairs:[{ leftIndex:0, rightIndex:0 }] }
   document        { type:"document", src:"https://...", fileType:"pdf"|"docx"|"xlsx"|"pptx", title?:"..." }
   divider         { type:"divider" }
   toc             { type:"toc" }
