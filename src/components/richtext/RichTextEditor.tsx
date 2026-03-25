@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -12,6 +12,8 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Bold,
@@ -68,6 +70,9 @@ export function RichTextEditor({
     },
   });
 
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+
   useEffect(() => {
     if (!editor) return;
     const current = editor.getHTML();
@@ -83,13 +88,25 @@ export function RichTextEditor({
 
   const setLink = () => {
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Enter URL", prev || "https://");
-    if (url === null) return;
-    if (url === "") {
+    setLinkUrl(prev || "https://");
+    setLinkDialogOpen(true);
+  };
+
+  const handleInsertLink = () => {
+    if (linkUrl === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
+    } else {
+      editor.chain().focus().extendMarkRange("link").setLink({ href: linkUrl }).run();
     }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    setLinkDialogOpen(false);
+    setLinkUrl("");
+  };
+
+  const handleLinkDialogKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleInsertLink();
+    }
   };
 
   const clearFormatting = () => {
@@ -140,6 +157,33 @@ export function RichTextEditor({
       </div>
       <Separator />
       <EditorContent editor={editor} />
+
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert link</DialogTitle>
+            <DialogDescription>Enter the URL for the link</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              autoFocus
+              type="url"
+              placeholder="https://..."
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              onKeyDown={handleLinkDialogKeyDown}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setLinkDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleInsertLink}>
+              Insert
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
