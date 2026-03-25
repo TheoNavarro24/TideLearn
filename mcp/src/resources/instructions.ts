@@ -237,7 +237,7 @@ chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "..
               ↑ pie chart only uses the first dataset.
 \`\`\`
 
-### Interactive Scenarios (Sorting / Hotspot / Branching)
+### Interactive Scenarios (Sorting / Hotspot / Branching / Fill-in-the-Blank / Matching)
 \`\`\`
 sorting     { type: "sorting",   prompt: "...",  showFeedback: true | false,
               buckets: [{ label: "Category A" }, { label: "Category B" }],
@@ -252,9 +252,62 @@ branching   { type: "branching", prompt: "...",
               choices: [{ label: "...", content: "<p>HTML shown on selection</p>" }] }
               ↑ choice id fields are injected automatically — do not provide them. Minimum 2 choices. content accepts HTML.
               ↑ Learner clicks a choice button to reveal the corresponding content panel.
+fillinblank { type: "fillinblank", text: "The capital of France is {{1}} and {{2}} is in Germany.",
+              blanks: [{ acceptable: ["Paris"], caseSensitive?: false }, { acceptable: ["Berlin"], caseSensitive?: false }] }
+              ↑ {{1}}, {{2}}, etc. mark gap positions. blanks array order matches gap numbers.
+              ↑ Each blank has acceptable: [] of valid answers and optional caseSensitive flag.
+              ↑ item id fields are injected automatically — do not provide them.
+matching    { type: "matching",  prompt: "Match the terms to their definitions:",
+              left: [{ label: "Mitochondria" }, { label: "Chloroplast" }],
+              right: [{ label: "Energy production in cells" }, { label: "Photosynthesis location" }],
+              pairs: [{ leftIndex: 0, rightIndex: 0 }, { leftIndex: 1, rightIndex: 1 }] }
+              ↑ left and right item id fields are injected automatically — do not provide them. Minimum 2 pairs.
+              ↑ leftIndex and rightIndex are 0-based positions into left[] and right[] arrays.
+              ↑ pairs array defines correct pairings; learner drags to match.
 \`\`\`
 
-Valid block types (26 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart, sorting, hotspot, branching
+Valid block types (28 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart, sorting, hotspot, branching, fillinblank, matching
+
+---
+
+## Assessment Question Types
+
+Assessment lessons contain a question bank (via add_question, import_questions, or in save_course) with the following question types:
+
+### Standard Question Types
+\`\`\`
+quiz        { text: "What is the capital of France?",  options: ["Paris", "London", "Berlin", "Rome"],  correctIndex: 0,
+              feedback?: "Correct! Paris is the capital.",  bloomLevel?: "K",  source?: "Geography" }
+              ↑ Learner selects one of exactly 4 options. correctIndex is 0-based.
+
+truefalse   { text: "The Earth is flat.",  correct: false,
+              feedbackCorrect?: "...",  feedbackIncorrect?: "...",  bloomLevel?: "K",  source?: "Science" }
+              ↑ Learner selects true or false.
+
+shortanswer { text: "What year did the Renaissance begin?",  answer: "1300s",
+              acceptable?: ["1300-1399", "13th-14th century"],  caseSensitive?: false,  trimWhitespace?: true,
+              feedback?: "...",  bloomLevel?: "UN",  source?: "History" }
+              ↑ Learner types an answer. acceptable[] lists equivalent correct answers.
+              ↑ caseSensitive and trimWhitespace control matching logic (default: both false).
+
+fillinblank { text: "The chemical formula for water is {{1}} and table salt is {{2}}.",
+              blanks: [{ acceptable: ["H2O"], caseSensitive?: false }, { acceptable: ["NaCl"], caseSensitive?: false }],
+              feedback?: "...",  bloomLevel?: "K",  source?: "Chemistry" }
+              ↑ Learner fills in gaps marked by {{1}}, {{2}}, etc. blanks[] order matches gap numbers.
+              ↑ Each blank has acceptable[] of valid answers and optional caseSensitive flag (default: false).
+              ↑ Do not provide id fields — they are injected automatically.
+
+matching    { text: "Match each term to its definition:",
+              left: [{ label: "Osmosis" }, { label: "Diffusion" }],
+              right: [{ label: "Movement of water across a membrane" }, { label: "Movement of particles down concentration gradient" }],
+              pairs: [{ leftIndex: 0, rightIndex: 0 }, { leftIndex: 1, rightIndex: 1 }],
+              feedback?: "...",  bloomLevel?: "UN",  source?: "Biology" }
+              ↑ Learner drags left items to match right items. leftIndex and rightIndex are 0-based positions.
+              ↑ left[], right[], and pairs[] item id fields are injected automatically — do not provide them.
+              ↑ pairs[] defines correct pairings for grading.
+\`\`\`
+
+All question types accept optional \`bloomLevel\` ("K", "C", "UN", "AP", "AN", "EV") and \`source\` (topic tag) for analytics and balanced exam generation. See Bloom's Taxonomy and Assessment \`source\` Field sections above for details.
 
 ---
 
