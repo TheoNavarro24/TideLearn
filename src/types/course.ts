@@ -183,6 +183,28 @@ export type MultipleResponseBlock = {
   feedbackMessage?: string;
 };
 
+export type FillInBlankBlock = {
+  type: "fillinblank";
+  id: string;
+  template: string;
+  blanks: Array<{
+    id: string;
+    acceptable: string[];
+    caseSensitive?: boolean;
+  }>;
+  showFeedback?: boolean;
+};
+
+export type MatchingBlock = {
+  type: "matching";
+  id: string;
+  prompt: string;
+  left: Array<{ id: string; label: string }>;
+  right: Array<{ id: string; label: string }>;
+  pairs: Array<{ leftId: string; rightId: string }>;
+  showFeedback?: boolean;
+};
+
 export type Block =
   | HeadingBlock
   | TextBlock
@@ -210,7 +232,9 @@ export type Block =
   | SortingBlock
   | HotspotBlock
   | BranchingBlock
-  | MultipleResponseBlock;
+  | MultipleResponseBlock
+  | FillInBlankBlock
+  | MatchingBlock;
 
 export type MCQQuestion = {
   kind: "mcq";
@@ -501,6 +525,28 @@ export const multipleResponseBlockSchema = z.object({
   feedbackMessage: z.string().optional(),
 });
 
+export const fillInBlankBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("fillinblank"),
+  template: z.string().min(1),
+  blanks: z.array(z.object({
+    id: z.string(),
+    acceptable: z.array(z.string().min(1)).min(1),
+    caseSensitive: z.boolean().optional(),
+  })).min(1),
+  showFeedback: z.boolean().optional(),
+});
+
+export const matchingBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("matching"),
+  prompt: z.string().min(1),
+  left: z.array(z.object({ id: z.string(), label: z.string().min(1) })).min(2),
+  right: z.array(z.object({ id: z.string(), label: z.string().min(1) })).min(2),
+  pairs: z.array(z.object({ leftId: z.string(), rightId: z.string() })).min(2),
+  showFeedback: z.boolean().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -528,6 +574,8 @@ export const blockSchema = z.discriminatedUnion("type", [
   hotspotBlockSchema,
   branchingBlockSchema,
   multipleResponseBlockSchema,
+  fillInBlankBlockSchema,
+  matchingBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -721,6 +769,24 @@ const multipleResponseBlockSchemaPermissive = z.object({
   feedbackMessage: z.string().optional(),
 });
 
+const fillInBlankBlockSchemaPermissive = z.object({
+  id: z.string(), type: z.literal("fillinblank"),
+  template: z.string(),
+  blanks: z.array(z.object({
+    id: z.string(), acceptable: z.array(z.string()), caseSensitive: z.boolean().optional(),
+  })),
+  showFeedback: z.boolean().optional(),
+});
+
+const matchingBlockSchemaPermissive = z.object({
+  id: z.string(), type: z.literal("matching"),
+  prompt: z.string(),
+  left: z.array(z.object({ id: z.string(), label: z.string() })),
+  right: z.array(z.object({ id: z.string(), label: z.string() })),
+  pairs: z.array(z.object({ leftId: z.string(), rightId: z.string() })),
+  showFeedback: z.boolean().optional(),
+});
+
 export const blockSchemaPermissive = z.discriminatedUnion("type", [
   headingBlockSchemaPermissive, textBlockSchemaPermissive, imageBlockSchemaPermissive,
   quizBlockSchemaPermissive, codeBlockSchemaPermissive, trueFalseBlockSchemaPermissive,
@@ -731,6 +797,7 @@ export const blockSchemaPermissive = z.discriminatedUnion("type", [
   flashcardBlockSchemaPermissive, timelineBlockSchemaPermissive, processBlockSchemaPermissive,
   chartBlockSchemaPermissive, sortingBlockSchemaPermissive, hotspotBlockSchemaPermissive,
   branchingBlockSchemaPermissive, multipleResponseBlockSchemaPermissive,
+  fillInBlankBlockSchemaPermissive, matchingBlockSchemaPermissive,
 ]);
 
 const contentLessonSchemaPermissive = z.object({
@@ -870,6 +937,31 @@ export const factories = {
     question: "Select all that apply.",
     options: ["Option A", "Option B", "Option C"],
     correctIndices: [-1, -1],
+    showFeedback: true,
+  }),
+  fillinblank: (): FillInBlankBlock => ({
+    id: uid(),
+    type: "fillinblank",
+    template: "The capital of {{1}} is {{2}}.",
+    blanks: [
+      { id: uid(), acceptable: ["France"], caseSensitive: false },
+      { id: uid(), acceptable: ["Paris"], caseSensitive: false },
+    ],
+    showFeedback: true,
+  }),
+  matching: (): MatchingBlock => ({
+    id: uid(),
+    type: "matching",
+    prompt: "Match each item to its pair.",
+    left: [
+      { id: uid(), label: "Item A" },
+      { id: uid(), label: "Item B" },
+    ],
+    right: [
+      { id: uid(), label: "Match 1" },
+      { id: uid(), label: "Match 2" },
+    ],
+    pairs: [],
     showFeedback: true,
   }),
 } as const;
