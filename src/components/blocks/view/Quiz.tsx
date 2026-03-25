@@ -111,18 +111,20 @@ export function QuizView({ block }: { block: QuizBlock }) {
             No correct answer has been set for this question.
           </span>
         )}
-        {revealed && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
-              {isCorrect ? "Correct!" : "Try again."}
-            </span>
-            {block.showFeedback && block.feedbackMessage && (
-              <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
-                {block.feedbackMessage}
+        <div aria-live="polite" aria-atomic="true" role="status">
+          {revealed && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+                {isCorrect ? "Correct!" : "Try again."}
               </span>
-            )}
-          </div>
-        )}
+              {block.showFeedback && block.feedbackMessage && (
+                <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+                  {block.feedbackMessage}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

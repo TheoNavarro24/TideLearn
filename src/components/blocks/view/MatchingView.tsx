@@ -72,11 +72,13 @@ export function MatchingView({ block }: Props) {
           Check matches
         </button>
       )}
-      {submitted && (
-        <p className={`text-sm font-semibold ${allCorrect ? "text-[var(--accent-hex)]" : "text-destructive"}`}>
-          {allCorrect ? "All correct!" : "Some matches are wrong — correct matches shown"}
-        </p>
-      )}
+      <div aria-live="polite" aria-atomic="true" role="status">
+        {submitted && (
+          <p className={`text-sm font-semibold ${allCorrect ? "text-[var(--accent-hex)]" : "text-destructive"}`}>
+            {allCorrect ? "All correct!" : "Some matches are wrong — correct matches shown"}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

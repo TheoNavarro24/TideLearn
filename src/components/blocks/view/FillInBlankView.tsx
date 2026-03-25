@@ -58,11 +58,13 @@ export function FillInBlankView({ block }: Props) {
           Check answers
         </button>
       )}
-      {submitted && (
-        <p className={`text-sm font-semibold ${allCorrect ? "text-[var(--accent-hex)]" : "text-destructive"}`}>
-          {allCorrect ? "All correct!" : "Some answers are incorrect — correct answers highlighted above"}
-        </p>
-      )}
+      <div aria-live="polite" aria-atomic="true" role="status">
+        {submitted && (
+          <p className={`text-sm font-semibold ${allCorrect ? "text-[var(--accent-hex)]" : "text-destructive"}`}>
+            {allCorrect ? "All correct!" : "Some answers are incorrect — correct answers highlighted above"}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -95,11 +95,13 @@ export function TrueFalseView({ block }: { block: TrueFalseBlock }) {
         >
           Reset
         </button>
-        {block.showFeedback && revealed && (
-          <span style={{ fontSize: 13, color: wasCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
-            {wasCorrect ? (block.feedbackCorrect || "Correct!") : (block.feedbackIncorrect || "Incorrect.")}
-          </span>
-        )}
+        <div aria-live="polite" aria-atomic="true" role="status">
+          {block.showFeedback && revealed && (
+            <span style={{ fontSize: 13, color: wasCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+              {wasCorrect ? (block.feedbackCorrect || "Correct!") : (block.feedbackIncorrect || "Incorrect.")}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

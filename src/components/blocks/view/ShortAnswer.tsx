@@ -81,11 +81,13 @@ export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
           >
             Reset
           </button>
-          {revealed && (
-            <span style={{ fontSize: 13, color: correct ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
-              {correct ? "Correct!" : "Try again."}
-            </span>
-          )}
+          <div aria-live="polite" aria-atomic="true" role="status">
+            {revealed && (
+              <span style={{ fontSize: 13, color: correct ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+                {correct ? "Correct!" : "Try again."}
+              </span>
+            )}
+          </div>
         </div>
         {block.showFeedback && block.feedbackMessage && revealed && (
           <span style={{ fontSize: 13, color: "#475569" }}>
