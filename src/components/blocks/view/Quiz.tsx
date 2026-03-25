@@ -12,7 +12,7 @@ export function QuizView({ block }: { block: QuizBlock }) {
   const optBg = (i: number) => {
     if (revealed && i === block.correctIndex) return "var(--quiz-correct-bg)";
     if (selected === i) return "var(--quiz-selected-bg)";
-    return "#fff";
+    return "white";
   };
   const optBorder = (i: number) => {
     if (revealed && i === block.correctIndex) return "1.5px solid var(--quiz-correct-border)";

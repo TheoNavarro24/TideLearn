@@ -11,7 +11,7 @@ export function TrueFalseView({ block }: { block: TrueFalseBlock }) {
   const choiceBg = (val: boolean) => {
     if (revealed && val === block.correct) return "var(--quiz-correct-bg)";
     if (choice === val) return "var(--quiz-selected-bg)";
-    return "#fff";
+    return "white";
   };
   const choiceBorder = (val: boolean) => {
     if (revealed && val === block.correct) return "1.5px solid var(--quiz-correct-border)";
