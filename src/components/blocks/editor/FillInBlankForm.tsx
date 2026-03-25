@@ -8,7 +8,7 @@ import { FieldLabel } from "./FieldLabel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, GripHorizontal, Plus } from "lucide-react";
-import { parseTemplate, segmentsToTemplate } from "./fillInBlankUtils";
+import { parseTemplate, segmentsToTemplate, type Segment } from "./fillInBlankUtils";
 
 type Props = { block: FillInBlankBlock; onChange: (b: FillInBlankBlock) => void };
 
@@ -32,7 +32,7 @@ function GapChip({ index, onRemove }: { index: number; onRemove: () => void }) {
 
 export function FillInBlankForm({ block, onChange }: Props) {
   const segments = parseTemplate(block.template);
-  const gapIndices = segments.filter((s) => s.type === "gap").map((s) => (s as any).index);
+  const gapIndices = (segments.filter((s) => s.type === "gap") as Extract<Segment, { type: "gap" }>[]).map((s) => s.index);
   const gapIds = gapIndices.map((i) => `gap-${i}`);
 
   function handleDragEnd(event: DragEndEvent) {
@@ -59,7 +59,7 @@ export function FillInBlankForm({ block, onChange }: Props) {
   }
 
   function removeGap(gapIndex: number) {
-    const newSegments = segments.filter((s) => !(s.type === "gap" && (s as any).index === gapIndex));
+    const newSegments = segments.filter((s) => !(s.type === "gap" && (s as Extract<Segment, { type: "gap" }>).index === gapIndex));
     let counter = 1;
     const renumbered = newSegments.map((s) => {
       if (s.type === "gap") return { type: "gap" as const, index: counter++ };

@@ -7,7 +7,10 @@ import {
   advanceBox,
   shuffle,
   gradeMultipleResponse,
+  gradeFillInBlank,
+  gradeMatching,
 } from "@/lib/assessment";
+import { parseTemplate } from "@/components/blocks/editor/fillInBlankUtils";
 import { useAssessmentProgress } from "@/hooks/useAssessmentProgress";
 
 type Screen = "home" | "study" | "exam" | "results" | "drill" | "notebook";
@@ -24,6 +27,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedMultiple, setSelectedMultiple] = useState<number[]>([]);
+  const [fillInputs, setFillInputs] = useState<string[]>([]);
+  const [matchSelections, setMatchSelections] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
@@ -47,6 +52,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQIndex(0);
     setSelected(null);
     setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -66,6 +73,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQIndex(0);
     setSelected(null);
     setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -85,6 +94,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQIndex(0);
     setSelected(null);
     setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -100,6 +111,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
   function handleReveal() {
     if (currentQ.kind === "multipleresponse") {
       if (selectedMultiple.length === 0) return;
+    } else if (currentQ.kind === "fillinblank") {
+      if (fillInputs.length === 0 || fillInputs.some((v) => v.trim() === "")) return;
+    } else if (currentQ.kind === "matching") {
+      if (!currentQ.left.every((l) => matchSelections[l.id])) return;
     } else {
       if (selected === null) return;
     }
@@ -111,6 +126,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
       correct = gradeMultipleResponse(currentQ.correctIndices, selectedMultiple);
     } else if (currentQ.kind === "mcq") {
       correct = selected === currentQ.correctIndex;
+    } else if (currentQ.kind === "fillinblank") {
+      correct = gradeFillInBlank(currentQ.blanks, fillInputs);
+    } else if (currentQ.kind === "matching") {
+      correct = gradeMatching(currentQ.pairs, matchSelections);
     } else {
       correct = false;
     }
@@ -133,6 +152,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
       setQIndex((i) => i + 1);
       setSelected(null);
       setSelectedMultiple([]);
+      setFillInputs([]);
+      setMatchSelections({});
       setRevealed(false);
       setConfidence(null);
     }
@@ -144,6 +165,16 @@ export function AssessmentView({ lesson, courseId }: Props) {
     if (screen !== "results") return 0;
     return Math.round((sessionCorrect / queue.length) * 100);
   }, [screen, sessionCorrect, queue.length]);
+
+  const shuffledMatchRight = useMemo(() => {
+    if (!currentQ || currentQ.kind !== "matching") return [];
+    const r = [...currentQ.right];
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+    return r;
+  }, [currentQ?.id]);
 
   const bloomBreakdown = useMemo(() => {
     if (screen !== "results") return null;
@@ -252,11 +283,22 @@ export function AssessmentView({ lesson, courseId }: Props) {
   if (screen === "study" || screen === "exam" || screen === "drill") {
     if (!currentQ) return null;
     const isStudy = mode === "study";
+    const isReadyToReveal =
+      (currentQ.kind === "mcq" && selected !== null) ||
+      (currentQ.kind === "multipleresponse" && selectedMultiple.length > 0) ||
+      (currentQ.kind === "fillinblank" && fillInputs.length > 0 && fillInputs.every((v) => v.trim() !== "")) ||
+      (currentQ.kind === "matching" && currentQ.left.every((l) => matchSelections[l.id]));
+    const checkDisabled = !isReadyToReveal || (isStudy && confidence === null);
+
     const revealedCorrect = revealed
       ? currentQ.kind === "mcq"
         ? selected === currentQ.correctIndex
         : currentQ.kind === "multipleresponse"
         ? gradeMultipleResponse(currentQ.correctIndices, selectedMultiple)
+        : currentQ.kind === "fillinblank"
+        ? gradeFillInBlank(currentQ.blanks, fillInputs)
+        : currentQ.kind === "matching"
+        ? gradeMatching(currentQ.pairs, matchSelections)
         : false
       : false;
     return (
@@ -270,11 +312,13 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </span>
         </div>
 
-        <div style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", borderRadius: 12, padding: 24, marginBottom: 16 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, margin: 0 }}>
-            {currentQ.text}
-          </p>
-        </div>
+        {currentQ.kind !== "fillinblank" && (
+          <div style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", borderRadius: 12, padding: 24, marginBottom: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, margin: 0 }}>
+              {currentQ.text}
+            </p>
+          </div>
+        )}
 
         {currentQ.kind === "mcq" && (
           <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
@@ -335,7 +379,79 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </ul>
         )}
 
-        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && (
+        {currentQ.kind === "fillinblank" && (() => {
+          const segments = parseTemplate(currentQ.text);
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 4, fontSize: 15, lineHeight: 1.6 }}>
+                {segments.map((seg, i) => {
+                  if (seg.type === "text") return <span key={i}>{seg.value}</span>;
+                  const blankIdx = seg.index - 1;
+                  const blank = currentQ.blanks[blankIdx];
+                  const userInput = fillInputs[blankIdx] ?? "";
+                  const isCorrect = revealed && blank ? gradeFillInBlank([blank], [userInput]) : null;
+                  return (
+                    <input
+                      key={i}
+                      type="text"
+                      value={userInput}
+                      disabled={revealed}
+                      onChange={(e) => {
+                        const newInputs = [...fillInputs];
+                        while (newInputs.length <= blankIdx) newInputs.push("");
+                        newInputs[blankIdx] = e.target.value;
+                        setFillInputs(newInputs);
+                      }}
+                      style={{
+                        width: 100, borderBottom: `2px solid ${isCorrect === true ? "var(--accent-hex)" : isCorrect === false ? "#ef4444" : "currentColor"}`,
+                        background: "transparent", outline: "none", textAlign: "center", fontSize: 14, padding: "0 4px",
+                        color: isCorrect === true ? "var(--accent-hex)" : isCorrect === false ? "#ef4444" : "inherit",
+                      }}
+                      aria-label={`Gap ${seg.index}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {currentQ.kind === "matching" && (() => {
+          const correctPairs = new Map(currentQ.pairs.map((p) => [p.leftId, p.rightId]));
+          return (
+            <div style={{ marginBottom: 16 }}>
+              {currentQ.left.map((l) => {
+                const sel = matchSelections[l.id];
+                const isCorrect = revealed && sel === correctPairs.get(l.id);
+                const isWrong = revealed && !!sel && sel !== correctPairs.get(l.id);
+                return (
+                  <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ width: 120, fontSize: 14, fontWeight: 500 }}>{l.label}</span>
+                    <span style={{ color: "#94a3b8" }}>→</span>
+                    <select
+                      value={sel ?? ""}
+                      disabled={revealed}
+                      onChange={(e) => setMatchSelections((prev) => ({ ...prev, [l.id]: e.target.value }))}
+                      style={{
+                        flex: 1, padding: "8px 12px", borderRadius: 8, fontSize: 14,
+                        border: `1.5px solid ${isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "hsl(var(--border))"}`,
+                        color: isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "inherit",
+                        background: "var(--canvas-white)",
+                      }}
+                    >
+                      <option value="">Choose...</option>
+                      {shuffledMatchRight.map((r) => (
+                        <option key={r.id} value={r.id}>{r.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && currentQ.kind !== "fillinblank" && currentQ.kind !== "matching" && (
           <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 16px" }}>
             [This question type will be interactive in a future update]
           </p>
@@ -368,12 +484,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
           {!revealed ? (
             <button
               onClick={handleReveal}
-              disabled={
-                (currentQ.kind === "mcq" ? selected === null : false) ||
-                (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) ||
-                (isStudy && confidence === null)
-              }
-              style={{ ...btnPrimary, opacity: ((currentQ.kind === "mcq" ? selected === null : false) || (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) || (isStudy && confidence === null)) ? 0.4 : 1, cursor: ((currentQ.kind === "mcq" ? selected === null : false) || (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) || (isStudy && confidence === null)) ? "not-allowed" : "pointer" }}
+              disabled={checkDisabled}
+              style={{ ...btnPrimary, opacity: checkDisabled ? 0.4 : 1, cursor: checkDisabled ? "not-allowed" : "pointer" }}
             >
               Check answer
             </button>
@@ -383,8 +495,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" ? "#ef4444" : "#64748b" }}>
-              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse") && (revealedCorrect ? "Correct!" : "Incorrect")}
+            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : (currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching") ? "#ef4444" : "#64748b" }}>
+              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching") && (revealedCorrect ? "Correct!" : "Incorrect")}
             </span>
           )}
         </div>
@@ -481,6 +593,20 @@ export function AssessmentView({ lesson, courseId }: Props) {
                     {q.kind === "multipleresponse" && (
                       <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
                         ✓ {q.correctIndices.map((ci) => q.options[ci]).join(", ")}
+                      </p>
+                    )}
+                    {q.kind === "fillinblank" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.blanks.map((b, i) => `Gap ${i + 1}: ${b.acceptable[0]}`).join(" · ")}
+                      </p>
+                    )}
+                    {q.kind === "matching" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.pairs.map((p) => {
+                          const l = q.left.find((i) => i.id === p.leftId)?.label ?? "?";
+                          const r = q.right.find((i) => i.id === p.rightId)?.label ?? "?";
+                          return `${l} → ${r}`;
+                        }).join(" · ")}
                       </p>
                     )}
                     {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}

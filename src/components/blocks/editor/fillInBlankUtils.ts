@@ -1,4 +1,4 @@
-type Segment = { type: "text"; value: string } | { type: "gap"; index: number };
+export type Segment = { type: "text"; value: string } | { type: "gap"; index: number };
 
 export function parseTemplate(template: string): Segment[] {
   const parts = template.split(/({{(\d+)}})/g);

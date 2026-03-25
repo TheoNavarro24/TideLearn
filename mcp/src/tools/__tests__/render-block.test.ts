@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { renderCourseToHtml, renderQuestion } from "../preview.js";
 import type { Course } from "../../lib/types.js";
 
-function courseWithBlock(block: any): Course {
+function courseWithBlock(block: Record<string, unknown>): Course {
   return {
     schemaVersion: 1,
     title: "Test",
@@ -116,6 +116,35 @@ describe("renderBlock — Phase 2A block types", () => {
     expect(result).toContain("✓ A");
     expect(result).toContain("✓ C");
     expect(result).not.toContain("✓ B");
+  });
+
+  it("fillinblank: shows template with blanks filled in", () => {
+    const block = {
+      id: "1", type: "fillinblank",
+      template: "The capital of {{1}} is {{2}}.",
+      blanks: [
+        { id: "a", acceptable: ["France"] },
+        { id: "b", acceptable: ["Paris"] },
+      ],
+    };
+    const result = renderCourseToHtml(courseWithBlock(block));
+    expect(result).toContain("Fill in the Blank");
+    expect(result).toContain("France");
+    expect(result).toContain("Paris");
+  });
+
+  it("matching: shows pairs", () => {
+    const block = {
+      id: "1", type: "matching",
+      prompt: "Match the capitals",
+      left: [{ id: "l1", label: "France" }, { id: "l2", label: "Germany" }],
+      right: [{ id: "r1", label: "Paris" }, { id: "r2", label: "Berlin" }],
+      pairs: [{ leftId: "l1", rightId: "r1" }, { leftId: "l2", rightId: "r2" }],
+    };
+    const result = renderCourseToHtml(courseWithBlock(block));
+    expect(result).toContain("Matching");
+    expect(result).toContain("France");
+    expect(result).toContain("Paris");
   });
 });
 
