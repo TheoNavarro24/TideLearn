@@ -101,6 +101,7 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [x] **RC1 — Accessibility & UX Polish** (merged to main) — accessible dialogs, HotspotForm keyboard nav, aria-live quiz results, focus management on lesson nav
 - [x] **RC2 — Frontend Test Suite** (merged to main) — 116 Vitest tests across 9 files (unit/component/integration), progress.ts extracted
 - [x] **RC3 — Block Modernisation** (merged to main) — all block components migrated from inline hex styles to Tailwind + CSS vars; quiz semantic colour tokens added to index.css
+- [x] **RC4 — Page Component Refactoring** (merged to main) — Editor/View/Courses decomposed into thin orchestrators; 11 custom hooks + 6 sub-components extracted; page files reduced from 776–873 lines to 144–380 lines
 
 ## Design Context
 
