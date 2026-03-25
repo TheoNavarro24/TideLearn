@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { MatchingBlock } from "@/types/course";
 
 type Props = { block: MatchingBlock };
@@ -43,22 +44,28 @@ export function MatchingView({ block }: Props) {
             const isCorrect = submitted && selections[l.id] === correctPairs.get(l.id);
             const isWrong = submitted && selections[l.id] && selections[l.id] !== correctPairs.get(l.id);
             return (
-              <select
-                key={l.id}
-                value={selections[l.id] ?? ""}
-                disabled={submitted}
-                onChange={(e) => select(l.id, e.target.value)}
-                className={`w-full px-3 py-2 border rounded text-sm bg-background ${
-                  isCorrect ? "border-[var(--accent-hex)] text-[var(--accent-hex)]" :
-                  isWrong ? "border-destructive text-destructive" : ""
-                }`}
-                aria-label={`Match for ${l.label}`}
-              >
-                <option value="">Choose...</option>
-                {shuffledRight.map((r) => (
-                  <option key={r.id} value={r.id}>{r.label}</option>
-                ))}
-              </select>
+              <div key={l.id} className="flex items-center gap-2">
+                <select
+                  value={selections[l.id] ?? ""}
+                  disabled={submitted}
+                  onChange={(e) => select(l.id, e.target.value)}
+                  className={`flex-1 px-3 py-2 border rounded text-sm bg-background ${
+                    isCorrect ? "border-[var(--accent-hex)] text-[var(--accent-hex)]" :
+                    isWrong ? "border-destructive text-destructive" : ""
+                  }`}
+                  aria-label={`Match for ${l.label}`}
+                >
+                  <option value="">Choose...</option>
+                  {shuffledRight.map((r) => (
+                    <option key={r.id} value={r.id}>{r.label}</option>
+                  ))}
+                </select>
+                {(isCorrect || isWrong) && (
+                  <span className={cn("text-xs font-bold", isCorrect ? "text-teal-600" : "text-destructive")} aria-hidden="true">
+                    {isCorrect ? "✓" : "✗"}
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>

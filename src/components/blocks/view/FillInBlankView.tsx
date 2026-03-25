@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { FillInBlankBlock } from "@/types/course";
 import { parseTemplate } from "../editor/fillInBlankUtils";
 
@@ -29,23 +30,29 @@ export function FillInBlankView({ block }: Props) {
           const userInput = inputs[blankIndex] ?? "";
           const isCorrect = submitted && blank ? checkBlank(blank, userInput) : null;
           return (
-            <input
-              key={i}
-              type="text"
-              value={userInput}
-              disabled={submitted}
-              onChange={(e) => {
-                const newInputs = [...inputs];
-                newInputs[blankIndex] = e.target.value;
-                setInputs(newInputs);
-              }}
-              className={`inline-block w-28 border-b-2 px-1 text-sm text-center bg-transparent outline-none ${
-                isCorrect === true ? "border-[var(--accent-hex)] text-[var(--accent-hex)]" :
-                isCorrect === false ? "border-destructive text-destructive" :
-                "border-current"
-              }`}
-              aria-label={`Gap ${seg.index}`}
-            />
+            <span key={i} className="inline-flex items-baseline gap-1">
+              <input
+                type="text"
+                value={userInput}
+                disabled={submitted}
+                onChange={(e) => {
+                  const newInputs = [...inputs];
+                  newInputs[blankIndex] = e.target.value;
+                  setInputs(newInputs);
+                }}
+                className={`inline-block w-28 border-b-2 px-1 text-sm text-center bg-transparent outline-none ${
+                  isCorrect === true ? "border-[var(--accent-hex)] text-[var(--accent-hex)]" :
+                  isCorrect === false ? "border-destructive text-destructive" :
+                  "border-current"
+                }`}
+                aria-label={`Gap ${seg.index}`}
+              />
+              {isCorrect !== null && (
+                <span className={cn("text-xs font-bold", isCorrect ? "text-teal-600" : "text-destructive")} aria-hidden="true">
+                  {isCorrect ? "✓" : "✗"}
+                </span>
+              )}
+            </span>
           );
         })}
       </div>
