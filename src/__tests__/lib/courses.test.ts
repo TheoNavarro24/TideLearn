@@ -197,7 +197,7 @@ describe("courses.ts — localStorage CRUD", () => {
     const copy = loadCourse(newId!);
     expect(copy).not.toBeNull();
     // Title gets "(Copy)" suffix
-    expect(copy!.title).toContain("Original");
+    expect(copy!.title).toBe("Original (Copy)");
     expect(copy!.lessons).toHaveLength(original.lessons.length);
     expect(copy!.lessons[0].title).toBe(original.lessons[0].title);
   });
