@@ -3,6 +3,16 @@ import type { AssessmentLesson, AssessmentQuestion } from "@/types/course";
 import { QuestionForm } from "./QuestionForm";
 import { QuestionCard } from "./QuestionCard";
 import { JsonImport } from "./JsonImport";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 type Props = {
   lesson: AssessmentLesson;
@@ -12,6 +22,7 @@ type Props = {
 export function AssessmentEditor({ lesson, onChange }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [addingNew, setAddingNew] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   function update(changes: Partial<Omit<AssessmentLesson, "kind" | "id">>) {
     onChange({ ...lesson, ...changes });
@@ -27,9 +38,11 @@ export function AssessmentEditor({ lesson, onChange }: Props) {
     setEditingId(null);
   }
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Delete this question?")) return;
-    update({ questions: lesson.questions.filter((q) => q.id !== id) });
+  function confirmDelete() {
+    if (deleteTargetId) {
+      update({ questions: lesson.questions.filter((q) => q.id !== deleteTargetId) });
+      setDeleteTargetId(null);
+    }
   }
 
   function handleImport(imported: AssessmentQuestion[]) {
@@ -94,7 +107,7 @@ export function AssessmentEditor({ lesson, onChange }: Props) {
               question={q}
               index={i}
               onEdit={() => setEditingId(q.id)}
-              onDelete={() => handleDelete(q.id)}
+              onDelete={() => setDeleteTargetId(q.id)}
             />
           )
         )}
@@ -117,6 +130,23 @@ export function AssessmentEditor({ lesson, onChange }: Props) {
       )}
 
       <JsonImport onImport={handleImport} />
+
+      <AlertDialog open={deleteTargetId !== null} onOpenChange={(open) => { if (!open) setDeleteTargetId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete question?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The question will be permanently removed from this lesson.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
