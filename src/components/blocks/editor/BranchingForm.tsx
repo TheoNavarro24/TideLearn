@@ -1,5 +1,6 @@
 import { BranchingBlock } from "@/types/course";
 import { uid } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: BranchingBlock; onChange: (b: BranchingBlock) => void };
 
@@ -19,6 +20,12 @@ export function BranchingForm({ block, onChange }: Props) {
         <label className="block text-sm font-medium mb-1">Prompt / scenario</label>
         <textarea value={block.prompt} onChange={(e) => onChange({ ...block, prompt: e.target.value })}
           rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+      </div>
+      <div>
+        <FieldLabel required>Branches</FieldLabel>
+        {block.choices.length < 2 && (
+          <p className="text-xs text-destructive mt-1">Add at least 2 branches</p>
+        )}
       </div>
       {block.choices.map((choice, i) => (
         <div key={choice.id} className="rounded-md border border-border p-3 space-y-2">

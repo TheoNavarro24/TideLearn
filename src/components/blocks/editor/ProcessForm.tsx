@@ -1,5 +1,6 @@
 import { ProcessBlock } from "@/types/course";
 import { uid } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: ProcessBlock; onChange: (b: ProcessBlock) => void };
 
@@ -15,6 +16,12 @@ export function ProcessForm({ block, onChange }: Props) {
 
   return (
     <div className="space-y-3">
+      <div>
+        <FieldLabel required>Steps</FieldLabel>
+        {block.steps.length < 2 && (
+          <p className="text-xs text-destructive mt-1">Add at least 2 steps</p>
+        )}
+      </div>
       {block.steps.map((step, i) => (
         <div key={step.id} className="flex gap-2 items-start">
           <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--accent-hex)] text-white text-xs flex items-center justify-center font-bold mt-1">{i + 1}</span>
@@ -25,7 +32,7 @@ export function ProcessForm({ block, onChange }: Props) {
               placeholder="Description (optional)" rows={2}
               className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm resize-none" />
           </div>
-          {block.steps.length > 1 && (
+          {block.steps.length > 2 && (
             <button onClick={() => removeStep(i)} aria-label="Remove step" className="text-destructive text-sm mt-1">✕</button>
           )}
         </div>

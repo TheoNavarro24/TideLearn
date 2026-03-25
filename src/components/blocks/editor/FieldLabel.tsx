@@ -5,8 +5,9 @@ export function FieldLabel({ children, required, htmlFor }: {
   htmlFor?: string;
 }) {
   return (
-    <label htmlFor={htmlFor} className="text-sm text-muted-foreground">
-      {children}{required && <span className="text-red-400 ml-0.5">*</span>}
+    <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
+      {children}
+      {required && <span className="text-destructive ml-1" aria-hidden>*</span>}
     </label>
   );
 }

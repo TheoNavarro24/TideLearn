@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock, TimelineBlock, ProcessBlock, ChartBlock, SortingBlock, HotspotBlock, BranchingBlock } from "@/types/course";
+import { factories, Block, BlockType, HeadingBlock, TextBlock, CodeBlock, ImageBlock, QuizBlock, ListBlock, QuoteBlock, AccordionBlock, TabsBlock, DividerBlock, TocBlock, CalloutBlock, VideoBlock, AudioBlock, TrueFalseBlock, ShortAnswerBlock, DocumentBlock, ButtonBlock, EmbedBlock, FlashcardBlock, TimelineBlock, ProcessBlock, ChartBlock, SortingBlock, HotspotBlock, BranchingBlock, MultipleResponseBlock, FillInBlankBlock, MatchingBlock } from "@/types/course";
 import { HeadingView } from "./view/Heading";
 import { TextView } from "./view/Text";
 import { CodeView } from "./view/Code";
@@ -52,7 +52,13 @@ import { HotspotForm } from "./editor/HotspotForm";
 import { HotspotView } from "./view/Hotspot";
 import { BranchingForm } from "./editor/BranchingForm";
 import { BranchingView } from "./view/Branching";
-import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard, ListOrdered, Workflow, BarChart2, GripVertical, MapPin, GitBranch } from "lucide-react";
+import { MultipleResponseForm } from "./editor/MultipleResponseForm";
+import { MultipleResponseView } from "./view/MultipleResponseView";
+import { FillInBlankForm } from "./editor/FillInBlankForm";
+import { FillInBlankView } from "./view/FillInBlankView";
+import { MatchingForm } from "./editor/MatchingForm";
+import { MatchingView } from "./view/MatchingView";
+import { FileText, Type, Code, Image as ImageIcon, List as ListIcon, Quote, SquareStack, PanelsTopLeft, HelpCircle, Minus, Info, Video, AudioLines, CheckSquare, Edit3, File as DocumentIcon, ExternalLink, Code2, CreditCard, ListOrdered, Workflow, BarChart2, GripVertical, MapPin, GitBranch, ListChecks, AlignLeft, Columns2 } from "lucide-react";
 
 export type EditorRenderer<T extends Block> = FC<{ block: T; onChange: (b: T) => void }>;
 export type ViewRenderer<T extends Block> = FC<{ block: T }>;
@@ -239,6 +245,26 @@ export const registry: BlockSpec[] = [
     Editor: HotspotForm as EditorRenderer<HotspotBlock>, View: HotspotView as ViewRenderer<HotspotBlock>, category: "Interactive" },
   { type: "branching", label: "Branching Scenario", icon: GitBranch, create: factories.branching,
     Editor: BranchingForm as EditorRenderer<BranchingBlock>, View: BranchingView as ViewRenderer<BranchingBlock>, category: "Interactive" },
+  { type: "multipleresponse", label: "Multiple Response", icon: ListChecks, create: factories.multipleresponse,
+    Editor: MultipleResponseForm as EditorRenderer<MultipleResponseBlock>, View: MultipleResponseView as ViewRenderer<MultipleResponseBlock>, category: "Knowledge" },
+  {
+    type: "fillinblank",
+    label: "Fill in the Blank",
+    icon: AlignLeft,
+    create: factories.fillinblank,
+    Editor: FillInBlankForm as EditorRenderer<FillInBlankBlock>,
+    View: FillInBlankView as ViewRenderer<FillInBlankBlock>,
+    category: "Knowledge",
+  },
+  {
+    type: "matching",
+    label: "Matching",
+    icon: Columns2,
+    create: factories.matching,
+    Editor: MatchingForm as EditorRenderer<MatchingBlock>,
+    View: MatchingView as ViewRenderer<MatchingBlock>,
+    category: "Knowledge",
+  },
 ];
 
 export const createBlock = (type: BlockType) => {

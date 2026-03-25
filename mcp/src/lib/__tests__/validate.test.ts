@@ -86,20 +86,26 @@ describe("Tier 2 block schemas", () => {
         { id: "i1", date: "2024", title: "Launch" }, { id: "i2", date: "2025", title: "Growth" }] }] }] };
     expect(validateCourseJson(course).ok).toBe(true);
   });
-  it("rejects timeline with no items", () => {
-    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+  it("rejects timeline with fewer than 2 items", () => {
+    const courseEmpty = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
       blocks: [{ id: "b1", type: "timeline", items: [] }] }] };
-    expect(validateCourseJson(course).ok).toBe(false);
+    expect(validateCourseJson(courseEmpty).ok).toBe(false);
+    const courseOne = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "timeline", items: [{ id: "i1", date: "2024", title: "Only one" }] }] }] };
+    expect(validateCourseJson(courseOne).ok).toBe(false);
   });
   it("accepts a valid process", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
       blocks: [{ id: "b1", type: "process", steps: [{ id: "s1", title: "Plan" }, { id: "s2", title: "Execute" }] }] }] };
     expect(validateCourseJson(course).ok).toBe(true);
   });
-  it("rejects process with no steps", () => {
-    const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+  it("rejects process with fewer than 2 steps", () => {
+    const courseEmpty = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
       blocks: [{ id: "b1", type: "process", steps: [] }] }] };
-    expect(validateCourseJson(course).ok).toBe(false);
+    expect(validateCourseJson(courseEmpty).ok).toBe(false);
+    const courseOne = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
+      blocks: [{ id: "b1", type: "process", steps: [{ id: "s1", title: "Only one" }] }] }] };
+    expect(validateCourseJson(courseOne).ok).toBe(false);
   });
   it("accepts a valid bar chart", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
@@ -133,10 +139,10 @@ describe("Tier 3 block schemas", () => {
         items: [{ id: "i1", text: "Only", bucketId: "bk1" }] }] }] };
     expect(validateCourseJson(course).ok).toBe(false);
   });
-  it("accepts hotspot with no pins", () => {
+  it("rejects hotspot with no pins", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",
       blocks: [{ id: "b1", type: "hotspot", src: "https://example.com/img.jpg", alt: "Diagram", hotspots: [] }] }] };
-    expect(validateCourseJson(course).ok).toBe(true);
+    expect(validateCourseJson(course).ok).toBe(false);
   });
   it("accepts hotspot with pins", () => {
     const course = { schemaVersion: 1, title: "T", lessons: [{ kind: "content", id: "l1", title: "L1",

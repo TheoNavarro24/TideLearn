@@ -1,12 +1,17 @@
 import { useState, useMemo } from "react";
-import type { AssessmentLesson } from "@/types/course";
+import type { AssessmentLesson, MCQQuestion } from "@/types/course";
 import {
   generateStudySession,
   generateExamSession,
   generateWeakAreaSession,
   advanceBox,
   shuffle,
+  gradeMultipleResponse,
+  gradeFillInBlank,
+  gradeMatching,
+  gradeSorting,
 } from "@/lib/assessment";
+import { parseTemplate } from "@/components/blocks/editor/fillInBlankUtils";
 import { useAssessmentProgress } from "@/hooks/useAssessmentProgress";
 
 type Screen = "home" | "study" | "exam" | "results" | "drill" | "notebook";
@@ -22,6 +27,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [queue, setQueue] = useState<typeof lesson.questions>([]);
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
+  const [selectedMultiple, setSelectedMultiple] = useState<number[]>([]);
+  const [fillInputs, setFillInputs] = useState<string[]>([]);
+  const [matchSelections, setMatchSelections] = useState<Record<string, string>>({});
+  const [sortingPlacements, setSortingPlacements] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
@@ -44,6 +53,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(shuffle(q));
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -62,6 +75,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(q);
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -80,6 +97,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(q);
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
+    setFillInputs([]);
+    setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -90,12 +111,38 @@ export function AssessmentView({ lesson, courseId }: Props) {
   }
 
   const currentQ = queue[qIndex];
+  const currentQAsMcq = currentQ?.kind === "mcq" ? currentQ : null;
 
   function handleReveal() {
-    if (selected === null) return;
+    if (currentQ.kind === "multipleresponse") {
+      if (selectedMultiple.length === 0) return;
+    } else if (currentQ.kind === "fillinblank") {
+      if (fillInputs.length === 0 || fillInputs.some((v) => v.trim() === "")) return;
+    } else if (currentQ.kind === "matching") {
+      if (!currentQ.left.every((l) => matchSelections[l.id])) return;
+    } else if (currentQ.kind === "sorting") {
+      if (!currentQ.items.every((item) => sortingPlacements[item.id])) return;
+    } else {
+      if (selected === null) return;
+    }
     if (mode === "study" && confidence === null) return;
     setRevealed(true);
-    const correct = selected === currentQ.correctIndex;
+
+    let correct: boolean;
+    if (currentQ.kind === "multipleresponse") {
+      correct = gradeMultipleResponse(currentQ.correctIndices, selectedMultiple);
+    } else if (currentQ.kind === "mcq") {
+      correct = selected === currentQ.correctIndex;
+    } else if (currentQ.kind === "fillinblank") {
+      correct = gradeFillInBlank(currentQ.blanks, fillInputs);
+    } else if (currentQ.kind === "matching") {
+      correct = gradeMatching(currentQ.pairs, matchSelections);
+    } else if (currentQ.kind === "sorting") {
+      correct = gradeSorting(currentQ.items, sortingPlacements);
+    } else {
+      correct = false;
+    }
+
     if (correct) {
       setSessionCorrect((n) => n + 1);
       setSessionCorrectIds((prev) => new Set([...prev, currentQ.id]));
@@ -113,6 +160,10 @@ export function AssessmentView({ lesson, courseId }: Props) {
     } else {
       setQIndex((i) => i + 1);
       setSelected(null);
+      setSelectedMultiple([]);
+      setFillInputs([]);
+      setMatchSelections({});
+      setSortingPlacements({});
       setRevealed(false);
       setConfidence(null);
     }
@@ -125,9 +176,21 @@ export function AssessmentView({ lesson, courseId }: Props) {
     return Math.round((sessionCorrect / queue.length) * 100);
   }, [screen, sessionCorrect, queue.length]);
 
+  const shuffledMatchRight = useMemo(() => {
+    if (!currentQ || currentQ.kind !== "matching") return [];
+    const r = [...currentQ.right];
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+    return r;
+  }, [currentQ?.id]);
+
   const bloomBreakdown = useMemo(() => {
     if (screen !== "results") return null;
-    const tagged = queue.filter((q) => q.bloomLevel);
+    const tagged = queue.filter((q): q is MCQQuestion =>
+      q.kind === "mcq" && !!q.bloomLevel
+    );
     if (tagged.length === 0) return null;
     const map: Record<string, { total: number; correct: number }> = {};
     for (const q of tagged) {
@@ -230,6 +293,27 @@ export function AssessmentView({ lesson, courseId }: Props) {
   if (screen === "study" || screen === "exam" || screen === "drill") {
     if (!currentQ) return null;
     const isStudy = mode === "study";
+    const isReadyToReveal =
+      (currentQ.kind === "mcq" && selected !== null) ||
+      (currentQ.kind === "multipleresponse" && selectedMultiple.length > 0) ||
+      (currentQ.kind === "fillinblank" && fillInputs.length > 0 && fillInputs.every((v) => v.trim() !== "")) ||
+      (currentQ.kind === "matching" && currentQ.left.every((l) => matchSelections[l.id])) ||
+      (currentQ.kind === "sorting" && currentQ.items.every((item) => sortingPlacements[item.id]));
+    const checkDisabled = !isReadyToReveal || (isStudy && confidence === null);
+
+    const revealedCorrect = revealed
+      ? currentQ.kind === "mcq"
+        ? selected === currentQ.correctIndex
+        : currentQ.kind === "multipleresponse"
+        ? gradeMultipleResponse(currentQ.correctIndices, selectedMultiple)
+        : currentQ.kind === "fillinblank"
+        ? gradeFillInBlank(currentQ.blanks, fillInputs)
+        : currentQ.kind === "matching"
+        ? gradeMatching(currentQ.pairs, matchSelections)
+        : currentQ.kind === "sorting"
+        ? gradeSorting(currentQ.items, sortingPlacements)
+        : false
+      : false;
     return (
       <div style={containerStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -241,34 +325,184 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </span>
         </div>
 
-        <div style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", borderRadius: 12, padding: 24, marginBottom: 16 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, margin: 0 }}>
-            {currentQ.text}
-          </p>
-        </div>
+        {currentQ.kind !== "fillinblank" && (
+          <div style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", borderRadius: 12, padding: 24, marginBottom: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, margin: 0 }}>
+              {currentQ.text}
+            </p>
+          </div>
+        )}
 
-        <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
-          {currentQ.options.map((opt, i) => {
-            const isSelected = selected === i;
-            const isCorrect = i === currentQ.correctIndex;
-            let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
-            if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
-            else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
-            return (
-              <li key={i} style={{ marginBottom: 8 }}>
-                <button
-                  onClick={() => { if (!revealed) setSelected(i); }}
-                  style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, fontWeight: isSelected || (revealed && isCorrect) ? 600 : 400, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
-                >
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${color}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
-                    {String.fromCharCode(65 + i)}
-                  </span>
-                  {opt}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {currentQ.kind === "mcq" && (
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
+            {currentQ.options.map((opt, i) => {
+              const isSelected = selected === i;
+              const isCorrect = i === currentQ.correctIndex;
+              let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
+              if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              return (
+                <li key={i} style={{ marginBottom: 8 }}>
+                  <button
+                    onClick={() => { if (!revealed) setSelected(i); }}
+                    style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, fontWeight: isSelected || (revealed && isCorrect) ? 600 : 400, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${color}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    {opt}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {currentQ.kind === "multipleresponse" && (
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 8px" }}>
+            <li style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Select all that apply</li>
+            {currentQ.options.map((opt, i) => {
+              const isSelected = selectedMultiple.includes(i);
+              const isCorrect = currentQ.correctIndices.includes(i);
+              let border = "1.5px solid hsl(var(--border))";
+              let bg = "#fff";
+              let color = "#334155";
+              if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              else if (revealed && isSelected && !isCorrect) { bg = "#fef2f2"; border = "1.5px solid #ef4444"; color = "#ef4444"; }
+              else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              return (
+                <li key={i} style={{ marginBottom: 8 }}>
+                  <button
+                    onClick={() => {
+                      if (revealed) return;
+                      setSelectedMultiple((prev) =>
+                        prev.includes(i) ? prev.filter((s) => s !== i) : [...prev, i]
+                      );
+                    }}
+                    style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span style={{ width: 16, height: 16, borderRadius: 3, border: `1.5px solid ${color}`, flexShrink: 0, background: isSelected ? "var(--accent-hex)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {isSelected && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                    </span>
+                    {opt}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {currentQ.kind === "fillinblank" && (() => {
+          const segments = parseTemplate(currentQ.text);
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 4, fontSize: 15, lineHeight: 1.6 }}>
+                {segments.map((seg, i) => {
+                  if (seg.type === "text") return <span key={i}>{seg.value}</span>;
+                  const blankIdx = seg.index - 1;
+                  const blank = currentQ.blanks[blankIdx];
+                  const userInput = fillInputs[blankIdx] ?? "";
+                  const isCorrect = revealed && blank ? gradeFillInBlank([blank], [userInput]) : null;
+                  return (
+                    <input
+                      key={i}
+                      type="text"
+                      value={userInput}
+                      disabled={revealed}
+                      onChange={(e) => {
+                        const newInputs = [...fillInputs];
+                        while (newInputs.length <= blankIdx) newInputs.push("");
+                        newInputs[blankIdx] = e.target.value;
+                        setFillInputs(newInputs);
+                      }}
+                      style={{
+                        width: 100, borderBottom: `2px solid ${isCorrect === true ? "var(--accent-hex)" : isCorrect === false ? "#ef4444" : "currentColor"}`,
+                        background: "transparent", outline: "none", textAlign: "center", fontSize: 14, padding: "0 4px",
+                        color: isCorrect === true ? "var(--accent-hex)" : isCorrect === false ? "#ef4444" : "inherit",
+                      }}
+                      aria-label={`Gap ${seg.index}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {currentQ.kind === "matching" && (() => {
+          const correctPairs = new Map(currentQ.pairs.map((p) => [p.leftId, p.rightId]));
+          return (
+            <div style={{ marginBottom: 16 }}>
+              {currentQ.left.map((l) => {
+                const sel = matchSelections[l.id];
+                const isCorrect = revealed && sel === correctPairs.get(l.id);
+                const isWrong = revealed && !!sel && sel !== correctPairs.get(l.id);
+                return (
+                  <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ width: 120, fontSize: 14, fontWeight: 500 }}>{l.label}</span>
+                    <span style={{ color: "#94a3b8" }}>→</span>
+                    <select
+                      value={sel ?? ""}
+                      disabled={revealed}
+                      onChange={(e) => setMatchSelections((prev) => ({ ...prev, [l.id]: e.target.value }))}
+                      style={{
+                        flex: 1, padding: "8px 12px", borderRadius: 8, fontSize: 14,
+                        border: `1.5px solid ${isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "hsl(var(--border))"}`,
+                        color: isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "inherit",
+                        background: "var(--canvas-white)",
+                      }}
+                    >
+                      <option value="">Choose...</option>
+                      {shuffledMatchRight.map((r) => (
+                        <option key={r.id} value={r.id}>{r.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {currentQ.kind === "sorting" && (() => {
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Place each item in the correct bucket</p>
+              {currentQ.items.map((item) => {
+                const sel = sortingPlacements[item.id];
+                const isCorrect = revealed && sel === item.bucketId;
+                const isWrong = revealed && !!sel && sel !== item.bucketId;
+                return (
+                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ flex: 1, fontSize: 14 }}>{item.text}</span>
+                    <select
+                      value={sel ?? ""}
+                      disabled={revealed}
+                      onChange={(e) => setSortingPlacements((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                      style={{
+                        padding: "8px 12px", borderRadius: 8, fontSize: 14,
+                        border: `1.5px solid ${isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "hsl(var(--border))"}`,
+                        color: isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "inherit",
+                        background: "var(--canvas-white)", width: 150,
+                      }}
+                    >
+                      <option value="">Bucket...</option>
+                      {currentQ.buckets.map((b) => (
+                        <option key={b.id} value={b.id}>{b.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && currentQ.kind !== "fillinblank" && currentQ.kind !== "matching" && currentQ.kind !== "sorting" && (
+          <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 16px" }}>
+            [This question type will be interactive in a future update]
+          </p>
+        )}
 
         {isStudy && !revealed && (
           <div style={{ marginBottom: 14 }}>
@@ -297,8 +531,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
           {!revealed ? (
             <button
               onClick={handleReveal}
-              disabled={selected === null || (isStudy && confidence === null)}
-              style={{ ...btnPrimary, opacity: (selected === null || (isStudy && confidence === null)) ? 0.4 : 1, cursor: (selected === null || (isStudy && confidence === null)) ? "not-allowed" : "pointer" }}
+              disabled={checkDisabled}
+              style={{ ...btnPrimary, opacity: checkDisabled ? 0.4 : 1, cursor: checkDisabled ? "not-allowed" : "pointer" }}
             >
               Check answer
             </button>
@@ -308,8 +542,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQ.correctIndex ? "var(--accent-hex)" : "#ef4444" }}>
-              {selected === currentQ.correctIndex ? "Correct!" : "Incorrect"}
+            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : (currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching" || currentQ.kind === "sorting") ? "#ef4444" : "#64748b" }}>
+              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching" || currentQ.kind === "sorting") && (revealedCorrect ? "Correct!" : "Incorrect")}
             </span>
           )}
         </div>
@@ -396,13 +630,44 @@ export function AssessmentView({ lesson, courseId }: Props) {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 10 }}>
                 {labels[conf]}
               </p>
-              {qs.map((q) => (
-                <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
-                  <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
-                  {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
-                </div>
-              ))}
+              {qs.map((q) => {
+                return (
+                  <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
+                    {q.kind === "mcq" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
+                    )}
+                    {q.kind === "multipleresponse" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.correctIndices.map((ci) => q.options[ci]).join(", ")}
+                      </p>
+                    )}
+                    {q.kind === "fillinblank" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.blanks.map((b, i) => `Gap ${i + 1}: ${b.acceptable[0]}`).join(" · ")}
+                      </p>
+                    )}
+                    {q.kind === "matching" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.pairs.map((p) => {
+                          const l = q.left.find((i) => i.id === p.leftId)?.label ?? "?";
+                          const r = q.right.find((i) => i.id === p.rightId)?.label ?? "?";
+                          return `${l} → ${r}`;
+                        }).join(" · ")}
+                      </p>
+                    )}
+                    {q.kind === "sorting" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.items.map((item) => {
+                          const bucketLabel = q.buckets.find((b) => b.id === item.bucketId)?.label ?? "?";
+                          return `${item.text} → ${bucketLabel}`;
+                        }).join(" · ")}
+                      </p>
+                    )}
+                    {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
+                  </div>
+                );
+              })}
             </div>
           );
         })}

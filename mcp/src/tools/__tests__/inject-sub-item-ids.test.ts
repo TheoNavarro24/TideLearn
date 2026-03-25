@@ -104,4 +104,34 @@ describe("injectSubItemIds", () => {
     const result = injectSubItemIds(block);
     expect(result.items).toEqual([]);
   });
+
+  it("fillinblank: injects id on each blank", () => {
+    const block = {
+      type: "fillinblank",
+      template: "The {{1}} is {{2}}.",
+      blanks: [{ acceptable: ["sky"] }, { acceptable: ["blue"] }],
+    };
+    const result = injectSubItemIds(block);
+    expect(result.blanks[0].id).toBeTruthy();
+    expect(result.blanks[1].id).toBeTruthy();
+  });
+
+  it("matching: injects id on both left and right items and converts index-based pairs to id-based", () => {
+    const block = {
+      type: "matching",
+      prompt: "Match",
+      left: [{ label: "A" }, { label: "B" }],
+      right: [{ label: "1" }, { label: "2" }],
+      pairs: [{ leftIndex: 0, rightIndex: 1 }, { leftIndex: 1, rightIndex: 0 }],
+    };
+    const result = injectSubItemIds(block);
+    expect(result.left[0].id).toBeTruthy();
+    expect(result.left[1].id).toBeTruthy();
+    expect(result.right[0].id).toBeTruthy();
+    expect(result.right[1].id).toBeTruthy();
+    // pairs should be converted: leftIndex 0 → left[0].id, rightIndex 1 → right[1].id
+    expect(result.pairs[0].leftId).toBe(result.left[0].id);
+    expect(result.pairs[0].rightId).toBe(result.right[1].id);
+    expect(result.pairs[0].leftIndex).toBeUndefined(); // indexes stripped
+  });
 });

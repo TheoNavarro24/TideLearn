@@ -60,6 +60,29 @@ export function injectSubItemIds(block: any): any {
           id: choice.id ?? uid(),
         })),
       };
+    case "fillinblank":
+      return {
+        ...block,
+        blanks: (block.blanks ?? []).map((b: any) => ({
+          ...b,
+          id: b.id ?? uid(),
+        })),
+      };
+    case "matching": {
+      const leftWithIds = (block.left ?? []).map((item: any) => ({
+        ...item,
+        id: item.id ?? uid(),
+      }));
+      const rightWithIds = (block.right ?? []).map((item: any) => ({
+        ...item,
+        id: item.id ?? uid(),
+      }));
+      const pairs = (block.pairs ?? []).map((p: any) => ({
+        leftId: leftWithIds[p.leftIndex]?.id ?? uid(),
+        rightId: rightWithIds[p.rightIndex]?.id ?? uid(),
+      }));
+      return { ...block, left: leftWithIds, right: rightWithIds, pairs };
+    }
     default:
       return block;
   }

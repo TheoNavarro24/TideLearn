@@ -1,5 +1,6 @@
 import { TimelineBlock } from "@/types/course";
 import { uid } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: TimelineBlock; onChange: (b: TimelineBlock) => void };
 
@@ -15,6 +16,12 @@ export function TimelineForm({ block, onChange }: Props) {
 
   return (
     <div className="space-y-4">
+      <div>
+        <FieldLabel required>Events</FieldLabel>
+        {block.items.length < 2 && (
+          <p className="text-xs text-destructive mt-1">Add at least 2 events</p>
+        )}
+      </div>
       {block.items.map((item, i) => (
         <div key={item.id} className="rounded-md border border-border p-3 space-y-2">
           <div className="flex gap-2">
@@ -22,7 +29,7 @@ export function TimelineForm({ block, onChange }: Props) {
               placeholder="Date or period" className="w-28 rounded-md border border-input bg-background px-3 py-1.5 text-sm" />
             <input type="text" value={item.title} onChange={(e) => updateItem(i, "title", e.target.value)}
               placeholder="Event title" className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm" />
-            {block.items.length > 1 && (
+            {block.items.length > 2 && (
               <button onClick={() => removeItem(i)} aria-label="Remove item" className="text-destructive text-sm px-2">✕</button>
             )}
           </div>

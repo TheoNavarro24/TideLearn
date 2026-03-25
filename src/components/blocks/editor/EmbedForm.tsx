@@ -1,4 +1,5 @@
 import { EmbedBlock } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: EmbedBlock; onChange: (b: EmbedBlock) => void };
 
@@ -9,9 +10,9 @@ export function EmbedForm({ block, onChange }: Props) {
   return (
     <div className="space-y-3">
       <div>
-        <label className="block text-sm font-medium mb-1">Embed URL</label>
+        <FieldLabel required>Embed URL</FieldLabel>
         <input type="url" value={block.url} onChange={(e) => set("url", e.target.value)}
-          placeholder="https://" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          placeholder="https://" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">

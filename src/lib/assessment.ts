@@ -53,8 +53,8 @@ export function generateExamSession(
   questions: AssessmentQuestion[],
   size: number
 ): AssessmentQuestion[] {
-  const tagged = questions.filter((q) => q.source);
-  const uniqueSources = new Set(tagged.map((q) => q.source));
+  const tagged = questions.filter((q): q is import("../types/course").MCQQuestion => q.kind === "mcq" && !!q.source);
+  const uniqueSources = new Set(tagged.map((q) => q.source!));
   if (tagged.length > 0 && uniqueSources.size > 1) {
     return generateSourceBalanced(questions, size);
   }
@@ -64,7 +64,7 @@ export function generateExamSession(
 function generateSourceBalanced(questions: AssessmentQuestion[], size: number): AssessmentQuestion[] {
   const bySource = new Map<string, AssessmentQuestion[]>();
   for (const q of questions) {
-    const key = q.source ?? "__untagged__";
+    const key = (q.kind === "mcq" ? q.source : undefined) ?? "__untagged__";
     if (!bySource.has(key)) bySource.set(key, []);
     bySource.get(key)!.push(q);
   }
@@ -123,4 +123,46 @@ export function shuffle<T>(arr: T[]): T[] {
 /** Initialise a question's progress if not present. */
 export function defaultQuestionProgress(): QuestionProgress {
   return { box: 1, testCount: 0, correctCount: 0, highConfidenceMisses: 0 };
+}
+
+/** Grade a multiple-response answer. Correct only if all correct indices selected and no incorrect ones. */
+export function gradeMultipleResponse(
+  correctIndices: number[],
+  selected: number[]
+): boolean {
+  const correctSet = new Set(correctIndices);
+  const selectedSet = new Set(selected);
+  return (
+    correctIndices.every((ci) => selectedSet.has(ci)) &&
+    selected.every((s) => correctSet.has(s))
+  );
+}
+
+/** Grade a fill-in-the-blank answer. All blanks must be correct. */
+export function gradeFillInBlank(
+  blanks: Array<{ acceptable: string[]; caseSensitive?: boolean }>,
+  inputs: string[]
+): boolean {
+  return blanks.every((blank, i) => {
+    const userInput = (inputs[i] ?? "").trim();
+    const accepted = blank.acceptable.filter(Boolean);
+    if (blank.caseSensitive) return accepted.includes(userInput);
+    return accepted.map((a) => a.toLowerCase()).includes(userInput.toLowerCase());
+  });
+}
+
+/** Grade a matching answer. All pairs must be correct. */
+export function gradeMatching(
+  pairs: Array<{ leftId: string; rightId: string }>,
+  selections: Record<string, string>
+): boolean {
+  return pairs.every((p) => selections[p.leftId] === p.rightId);
+}
+
+/** Grade a sorting answer. Correct when all items are in their correct bucket. */
+export function gradeSorting(
+  items: Array<{ id: string; bucketId: string }>,
+  placements: Record<string, string> // itemId → bucketId
+): boolean {
+  return items.every((item) => placements[item.id] === item.bucketId);
 }

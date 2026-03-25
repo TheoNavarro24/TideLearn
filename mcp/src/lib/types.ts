@@ -150,6 +150,38 @@ export type BranchingBlock = {
   choices: { id: string; label: string; content: string }[];
 };
 
+export type MultipleResponseBlock = {
+  type: "multipleresponse";
+  id: string;
+  question: string;
+  options: string[];
+  correctIndices: number[];
+  showFeedback?: boolean;
+  feedbackMessage?: string;
+};
+
+export type FillInBlankBlock = {
+  type: "fillinblank";
+  id: string;
+  template: string;
+  blanks: Array<{
+    id: string;
+    acceptable: string[];
+    caseSensitive?: boolean;
+  }>;
+  showFeedback?: boolean;
+};
+
+export type MatchingBlock = {
+  type: "matching";
+  id: string;
+  prompt: string;
+  left: Array<{ id: string; label: string }>;
+  right: Array<{ id: string; label: string }>;
+  pairs: Array<{ leftId: string; rightId: string }>;
+  showFeedback?: boolean;
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -198,9 +230,13 @@ export type Block =
   | ChartBlock
   | SortingBlock
   | HotspotBlock
-  | BranchingBlock;
+  | BranchingBlock
+  | MultipleResponseBlock
+  | FillInBlankBlock
+  | MatchingBlock;
 
-export type AssessmentQuestion = {
+export type MCQQuestion = {
+  kind: "mcq";
   id: string;
   text: string;
   options: [string, string, string, string];
@@ -209,6 +245,49 @@ export type AssessmentQuestion = {
   bloomLevel?: "K" | "C" | "UN" | "AP" | "AN" | "EV";
   source?: string;
 };
+
+export type MultipleResponseQuestion = {
+  kind: "multipleresponse";
+  id: string;
+  text: string;
+  options: string[];
+  correctIndices: number[];
+  feedback?: string;
+};
+
+export type FillInBlankQuestion = {
+  kind: "fillinblank";
+  id: string;
+  text: string;
+  blanks: Array<{ id: string; acceptable: string[]; caseSensitive?: boolean }>;
+  feedback?: string;
+};
+
+export type MatchingQuestion = {
+  kind: "matching";
+  id: string;
+  text: string;
+  left: Array<{ id: string; label: string }>;
+  right: Array<{ id: string; label: string }>;
+  pairs: Array<{ leftId: string; rightId: string }>;
+  feedback?: string;
+};
+
+export type SortingQuestion = {
+  kind: "sorting";
+  id: string;
+  text: string;
+  buckets: Array<{ id: string; label: string }>;
+  items: Array<{ id: string; text: string; bucketId: string }>;
+  feedback?: string;
+};
+
+export type AssessmentQuestion =
+  | MCQQuestion
+  | MultipleResponseQuestion
+  | FillInBlankQuestion
+  | MatchingQuestion
+  | SortingQuestion;
 
 export type AssessmentConfig = {
   passingScore?: number;
@@ -387,7 +466,7 @@ export const timelineBlockSchema = z.object({
   type: z.literal("timeline"),
   items: z.array(z.object({
     id: z.string(), date: z.string().min(1), title: z.string().min(1), description: z.string().optional(),
-  })).min(1),
+  })).min(2),
 });
 
 export const processBlockSchema = z.object({
@@ -395,7 +474,7 @@ export const processBlockSchema = z.object({
   type: z.literal("process"),
   steps: z.array(z.object({
     id: z.string(), title: z.string().min(1), description: z.string().optional(),
-  })).min(1),
+  })).min(2),
 });
 
 export const chartBlockSchema = z.object({
@@ -430,7 +509,7 @@ export const hotspotBlockSchema = z.object({
   hotspots: z.array(z.object({
     id: z.string(), x: z.number().min(0).max(100), y: z.number().min(0).max(100),
     label: z.string().min(1), description: z.string().optional(),
-  })),
+  })).min(1),
 });
 
 export const branchingBlockSchema = z.object({
@@ -440,6 +519,38 @@ export const branchingBlockSchema = z.object({
   choices: z.array(z.object({
     id: z.string(), label: z.string().min(1), content: z.string(),
   })).min(2),
+});
+
+export const multipleResponseBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("multipleresponse"),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).max(6),
+  correctIndices: z.array(z.number().int().min(0)).min(2),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
+});
+
+export const fillInBlankBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("fillinblank"),
+  template: z.string().min(1),
+  blanks: z.array(z.object({
+    id: z.string(),
+    acceptable: z.array(z.string().min(1)).min(1),
+    caseSensitive: z.boolean().optional(),
+  })).min(1),
+  showFeedback: z.boolean().optional(),
+});
+
+export const matchingBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("matching"),
+  prompt: z.string().min(1),
+  left: z.array(z.object({ id: z.string(), label: z.string().min(1) })).min(2),
+  right: z.array(z.object({ id: z.string(), label: z.string().min(1) })).min(2),
+  pairs: z.array(z.object({ leftId: z.string(), rightId: z.string() })).min(2),
+  showFeedback: z.boolean().optional(),
 });
 
 export const blockSchema = z.discriminatedUnion("type", [
@@ -469,6 +580,9 @@ export const blockSchema = z.discriminatedUnion("type", [
   sortingBlockSchema,
   hotspotBlockSchema,
   branchingBlockSchema,
+  multipleResponseBlockSchema,
+  fillInBlankBlockSchema,
+  matchingBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -478,19 +592,78 @@ const contentLessonSchema = z.object({
   blocks: z.array(blockSchema),
 }).passthrough();
 
-const assessmentLessonSchema = z.object({
-  kind: z.literal("assessment"),
+const mcqQuestionSchema = z.object({
+  kind: z.literal("mcq"),
   id: z.string(),
-  title: z.string(),
-  questions: z.array(z.object({
+  text: z.string(),
+  options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+  correctIndex: z.number().int().min(0).max(3),
+  feedback: z.string().optional(),
+  bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
+  source: z.string().optional(),
+});
+
+const multipleResponseQuestionSchema = z.object({
+  kind: z.literal("multipleresponse"),
+  id: z.string(),
+  text: z.string(),
+  options: z.array(z.string()),
+  correctIndices: z.array(z.number()),
+  feedback: z.string().optional(),
+});
+
+const fillInBlankQuestionSchema = z.object({
+  kind: z.literal("fillinblank"),
+  id: z.string(),
+  text: z.string(),
+  blanks: z.array(z.object({
+    id: z.string(),
+    acceptable: z.array(z.string()),
+    caseSensitive: z.boolean().optional(),
+  })),
+  feedback: z.string().optional(),
+});
+
+const matchingQuestionSchema = z.object({
+  kind: z.literal("matching"),
+  id: z.string(),
+  text: z.string(),
+  left: z.array(z.object({ id: z.string(), label: z.string() })),
+  right: z.array(z.object({ id: z.string(), label: z.string() })),
+  pairs: z.array(z.object({ leftId: z.string(), rightId: z.string() })),
+  feedback: z.string().optional(),
+});
+
+const sortingQuestionSchema = z.object({
+  kind: z.literal("sorting"),
+  id: z.string(),
+  text: z.string(),
+  buckets: z.array(z.object({ id: z.string(), label: z.string() })),
+  items: z.array(z.object({ id: z.string(), text: z.string(), bucketId: z.string() })),
+  feedback: z.string().optional(),
+});
+
+// Permissive question schema: defaults kind to "mcq" for legacy questions
+const assessmentQuestionSchemaPermissive = z.union([
+  mcqQuestionSchema,
+  multipleResponseQuestionSchema,
+  fillInBlankQuestionSchema,
+  matchingQuestionSchema,
+  sortingQuestionSchema,
+  // Legacy MCQ without kind field — default it
+  z.object({
     id: z.string(),
     text: z.string(),
     options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
     correctIndex: z.number().int().min(0).max(3),
-    bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
-    feedback: z.string().optional(),
-    source: z.string().optional(),
-  }).passthrough()),
+  }).passthrough().transform((q: any) => ({ kind: "mcq" as const, ...q })),
+]);
+
+const assessmentLessonSchema = z.object({
+  kind: z.literal("assessment"),
+  id: z.string(),
+  title: z.string(),
+  questions: z.array(assessmentQuestionSchemaPermissive),
   config: z.object({}).passthrough(),
 }).passthrough();
 
@@ -601,6 +774,31 @@ export const factories = {
       { id: uid(), label: "Option A", content: "<p>Content for Option A.</p>" },
       { id: uid(), label: "Option B", content: "<p>Content for Option B.</p>" },
     ],
+  }),
+  fillinblank: (): FillInBlankBlock => ({
+    id: uid(),
+    type: "fillinblank",
+    template: "The capital of {{1}} is {{2}}.",
+    blanks: [
+      { id: uid(), acceptable: ["France"], caseSensitive: false },
+      { id: uid(), acceptable: ["Paris"], caseSensitive: false },
+    ],
+    showFeedback: true,
+  }),
+  matching: (): MatchingBlock => ({
+    id: uid(),
+    type: "matching",
+    prompt: "Match each item to its pair.",
+    left: [
+      { id: uid(), label: "Item A" },
+      { id: uid(), label: "Item B" },
+    ],
+    right: [
+      { id: uid(), label: "Match 1" },
+      { id: uid(), label: "Match 2" },
+    ],
+    pairs: [],
+    showFeedback: true,
   }),
 } as const;
 

@@ -1,5 +1,6 @@
 import { SortingBlock } from "@/types/course";
 import { uid } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: SortingBlock; onChange: (b: SortingBlock) => void };
 
@@ -40,14 +41,15 @@ export function SortingForm({ block, onChange }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Prompt</label>
+        <FieldLabel required>Prompt</FieldLabel>
         <textarea value={block.prompt} onChange={e => onChange({ ...block, prompt: e.target.value })}
-          rows={2} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+          rows={2} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
       </div>
 
       <div>
-        <p className="text-sm font-medium mb-2">Buckets</p>
-        <div className="space-y-2">
+        <FieldLabel required>Buckets</FieldLabel>
+        {block.buckets.length < 2 && <p className="text-xs text-destructive mt-1">Add at least 2 buckets</p>}
+        <div className="mt-2 space-y-2">
           {block.buckets.map(bucket => (
             <div key={bucket.id} className="flex gap-2 items-center">
               <input type="text" value={bucket.label}
@@ -65,8 +67,9 @@ export function SortingForm({ block, onChange }: Props) {
       </div>
 
       <div>
-        <p className="text-sm font-medium mb-2">Items</p>
-        <div className="space-y-2">
+        <FieldLabel required>Items</FieldLabel>
+        {block.items.length < 2 && <p className="text-xs text-destructive mt-1">Add at least 2 items</p>}
+        <div className="mt-2 space-y-2">
           {block.items.map(item => (
             <div key={item.id} className="flex gap-2 items-center">
               <input type="text" value={item.text}

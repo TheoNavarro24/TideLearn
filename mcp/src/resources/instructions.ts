@@ -47,11 +47,10 @@ You interact with it entirely through these MCP tools — no direct database acc
   ├── kind: "assessment"
   ├── title (string)
   ├── config: { passingScore?: number, examSize?: number }
-  └── questions: AssessmentQuestion[]
+  └── questions: AssessmentQuestion[]  — multiple question types (see Assessment Question Types section)
         ├── id (UUID)
-        ├── text (string)
-        ├── options: [string, string, string, string]  — exactly 4
-        ├── correctIndex: number (0–3)
+        ├── kind: "mcq" | "multipleresponse" | "fillinblank" | "matching" | "sorting"
+        ├── text (string) — the question stem
         ├── feedback?: string  — shown to learner after answering
         ├── bloomLevel?: "K" | "C" | "UN" | "AP" | "AN" | "EV"  — see Bloom's section
         └── source?: string  — topic tag for balanced exam generation
@@ -237,13 +236,40 @@ chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "..
               ↑ pie chart only uses the first dataset.
 \`\`\`
 
+### Multiple Response / Fill-in-the-Blank / Matching (Phase 2B)
+\`\`\`
+multipleresponse { type: "multipleresponse",  question: "...",
+                   options: ["A", "B", "C", "D"],  correctIndices: [0, 2],
+                   showFeedback?: true,  feedbackMessage?: "..." }
+              ↑ options: 2–6 items. correctIndices: 0-based indices of ALL correct answers (minimum 2).
+              ↑ Learner selects multiple answers; all must match correctIndices to pass.
+
+fillinblank { type: "fillinblank", template: "The capital of {{1}} is {{2}}.",
+              blanks: [{ acceptable: ["France"], caseSensitive?: false }, { acceptable: ["Paris"], caseSensitive?: false }],
+              showFeedback?: true }
+              ↑ template uses {{1}}, {{2}}, etc. to mark gap positions. blanks[] order matches gap numbers.
+              ↑ Each blank has acceptable: [] of valid answers (case-insensitive by default).
+              ↑ blank id fields are injected automatically — do not provide them.
+
+matching    { type: "matching",  prompt: "Match the terms to their definitions:",
+              left: [{ label: "Mitochondria" }, { label: "Chloroplast" }],
+              right: [{ label: "Energy production in cells" }, { label: "Photosynthesis location" }],
+              pairs: [{ leftIndex: 0, rightIndex: 0 }, { leftIndex: 1, rightIndex: 1 }],
+              showFeedback?: true }
+              ↑ left and right item id fields are injected automatically — do not provide them. Minimum 2 pairs.
+              ↑ leftIndex and rightIndex are 0-based positions into left[] and right[] arrays.
+              ↑ pairs array defines correct pairings; learner drags to match.
+\`\`\`
+
 ### Interactive Scenarios (Sorting / Hotspot / Branching)
 \`\`\`
 sorting     { type: "sorting",   prompt: "...",  showFeedback: true | false,
-              buckets: [{ label: "Category A" }, { label: "Category B" }],
-              items: [{ text: "...", bucketId: "<bucket-id>" }, ...] }
-              ↑ bucket and item id fields are injected automatically — do not provide them. Minimum 2 buckets, 2 items.
-              ↑ Each item has a bucketId pointing to its correct bucket. Learner drags items into buckets.
+              buckets: [{ id: "bucket-a", label: "Category A" }, { id: "bucket-b", label: "Category B" }],
+              items: [{ text: "...", bucketId: "bucket-a" }, ...] }
+              ↑ For sorting blocks, you MUST supply your own bucket id strings so items can reference them.
+              ↑ Use any stable placeholder strings (e.g. "bucket-a", "bucket-b") — they will be overwritten with UUIDs server-side.
+              ↑ Minimum 2 buckets, 2 items. item id fields are injected automatically — do not provide them.
+              ↑ NOTE: Sorting QUESTIONS use bucketIndex (simpler). Sorting BLOCKS require bucketId strings as above.
 hotspot     { type: "hotspot",   src: "https://...",  alt: "...",
               hotspots: [{ x: 25.5, y: 40.2, label: "...", description?: "..." }] }
               ↑ hotspot id fields are injected automatically — do not provide them. Empty array is valid.
@@ -254,7 +280,76 @@ branching   { type: "branching", prompt: "...",
               ↑ Learner clicks a choice button to reveal the corresponding content panel.
 \`\`\`
 
-Valid block types (26 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart, sorting, hotspot, branching
+Valid block types (29 total): heading, text, image, video, audio, document, quiz, truefalse, shortanswer, list, callout, accordion, tabs, quote, code, divider, toc, button, embed, flashcard, timeline, process, chart, sorting, hotspot, branching, fillinblank, matching, multipleresponse
+
+---
+
+## Hotspot Block — MCP Workflow
+
+Hotspot blocks require image coordinates that must be set visually. The recommended workflow:
+
+1. **Upload the image** — call \`upload_media(file_path, course_id)\` to get a hosted image URL.
+2. **Add the block** — call \`add_block\` with type "hotspot", the image \`src\`, an \`alt\` description, and your hotspot labels. Use \`x: 50, y: 50\` as placeholder coordinates for each hotspot — exact positioning will be done by the user in the editor.
+   \`\`\`json
+   { "type": "hotspot", "src": "https://...", "alt": "Diagram of the heart",
+     "hotspots": [
+       { "x": 50, "y": 50, "label": "Left ventricle" },
+       { "x": 50, "y": 50, "label": "Right atrium" }
+     ] }
+   \`\`\`
+3. **Hand off to the user** — tell them to open the lesson in the TideLearn editor. A banner will appear on the hotspot block prompting them to click the image to reposition each pin. The editor shows a pin-placement mode where clicking on the image sets the x/y coordinates for the selected hotspot.
+4. The MCP cannot set pixel-precise coordinates — always delegate pin placement to the user via the editor.
+
+---
+
+## Assessment Question Types
+
+Assessment lessons contain a question bank (via add_question, import_questions, or in save_course) with the following question types:
+
+### Standard Question Types
+
+Note: all question types use a \`kind\` discriminator field (e.g. \`kind: "mcq"\`, \`kind: "multipleresponse"\`). The legacy MCQ type does not require a \`kind\` field — it defaults to "mcq".
+
+\`\`\`
+mcq         { kind: "mcq",  text: "What is the capital of France?",
+              options: ["Paris", "London", "Berlin", "Rome"],  correctIndex: 0,
+              feedback?: "Correct! Paris is the capital.",  bloomLevel?: "K",  source?: "Geography" }
+              ↑ Learner selects one of exactly 4 options. correctIndex is 0-based (0–3).
+              ↑ kind field is optional for mcq — legacy questions without kind default to "mcq".
+
+multipleresponse { kind: "multipleresponse",  text: "Which of the following are primary colours?",
+              options: ["Red", "Green", "Blue", "Yellow"],  correctIndices: [0, 2],
+              feedback?: "...",  bloomLevel?: "AP",  source?: "Art" }
+              ↑ Learner selects all correct answers. options: 2–6 items.
+              ↑ correctIndices: 0-based indices of ALL correct answers — minimum 2 required.
+              ↑ Do not provide id fields — they are injected automatically.
+
+fillinblank { kind: "fillinblank",  text: "The chemical formula for water is {{1}} and table salt is {{2}}.",
+              blanks: [{ acceptable: ["H2O"], caseSensitive?: false }, { acceptable: ["NaCl"], caseSensitive?: false }],
+              feedback?: "...",  bloomLevel?: "K",  source?: "Chemistry" }
+              ↑ text is the full template — use {{1}}, {{2}}, etc. to mark gap positions.
+              ↑ blanks[] order matches gap numbers. Each blank has acceptable[] of valid answers.
+              ↑ caseSensitive defaults to false. Do not provide id fields — they are injected automatically.
+
+matching    { kind: "matching",  text: "Match each term to its definition:",
+              left: [{ label: "Osmosis" }, { label: "Diffusion" }],
+              right: [{ label: "Movement of water across a membrane" }, { label: "Movement of particles down concentration gradient" }],
+              pairs: [{ leftIndex: 0, rightIndex: 0 }, { leftIndex: 1, rightIndex: 1 }],
+              feedback?: "...",  bloomLevel?: "UN",  source?: "Biology" }
+              ↑ Learner drags left items to match right items. leftIndex and rightIndex are 0-based positions.
+              ↑ left[], right[], and pairs[] item id fields are injected automatically — do not provide them.
+              ↑ pairs[] defines correct pairings for grading.
+
+sorting     { kind: "sorting",  text: "Sort each item into the correct category:",
+              buckets: [{ label: "Mammals" }, { label: "Reptiles" }],
+              items: [{ text: "Dog", bucketIndex: 0 }, { text: "Crocodile", bucketIndex: 1 }, { text: "Whale", bucketIndex: 0 }],
+              feedback?: "...",  bloomLevel?: "AP",  source?: "Biology" }
+              ↑ Learner drags items into buckets. buckets: minimum 2. items: minimum 2.
+              ↑ bucketIndex is 0-based index into the buckets[] array — resolved to IDs server-side.
+              ↑ bucket and item id fields are injected automatically — do not provide them.
+\`\`\`
+
+All question types accept optional \`bloomLevel\` ("K", "C", "UN", "AP", "AN", "EV") and \`source\` (topic tag) for analytics and balanced exam generation. See Bloom's Taxonomy and Assessment \`source\` Field sections above for details.
 
 ---
 
