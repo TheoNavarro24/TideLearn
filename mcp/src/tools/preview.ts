@@ -59,6 +59,26 @@ function renderBlock(block: Block): string {
       <span style="font-size:0.75em;color:#888;margin-left:0.5em">(${esc(block.fileType.toUpperCase())})</span>
     </div>
   </div>`;
+    case "button":
+      return `<div style="margin:1em 0"><a href="${esc(block.url)}" style="display:inline-block;padding:0.5em 1.5em;background:#40c8a0;color:#fff;border-radius:4px;text-decoration:none;font-weight:600"${block.openInNewTab ? ' target="_blank"' : ""}>${esc(block.label)}</a> <span style="font-size:0.75em;color:#888">[${esc(block.variant)}]</span></div>`;
+    case "embed":
+      return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>${esc(block.title)}</strong><br/><a href="${esc(block.url)}" style="font-size:0.875em;color:#6366f1">${esc(block.url)}</a><br/><span style="font-size:0.75em;color:#888">Embedded content · ${block.height}px</span></div>`;
+    case "flashcard":
+      return `<div style="border:1px solid #e0e0e0;border-radius:8px;padding:1em;margin:1em 0"><strong>Front:</strong> ${block.front}<br/><strong>Back:</strong> ${block.back}${block.hint ? `<br/><em style="color:#888">Hint: ${esc(block.hint)}</em>` : ""}</div>`;
+    case "timeline":
+      return `<div style="border-left:3px solid #40c8a0;padding-left:1em;margin:1em 0">${block.items.map((item: any) => `<div style="margin:0.5em 0"><strong>${esc(item.date)}</strong> — ${esc(item.title)}${item.description ? `<br/><span style="font-size:0.875em;color:#666">${esc(item.description)}</span>` : ""}</div>`).join("")}</div>`;
+    case "process":
+      return `<ol style="margin:1em 0;padding-left:1.5em">${block.steps.map((step: any) => `<li style="margin:0.5em 0"><strong>${esc(step.title)}</strong>${step.description ? ` — ${esc(step.description)}` : ""}</li>`).join("")}</ol>`;
+    case "chart":
+      return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0">${block.title ? `<strong>${esc(block.title)}</strong><br/>` : ""}[${esc(block.chartType)} chart · ${block.labels.length} labels · ${block.datasets.length} dataset(s)]<br/><span style="font-size:0.875em;color:#888">Labels: ${block.labels.map(esc).join(", ")}</span></div>`;
+    case "sorting": {
+      const bucketMap = new Map((block.buckets ?? []).map((b: any) => [b.id, b.label]));
+      return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Sorting:</strong> ${esc(block.prompt)}<br/><em>Buckets:</em> ${block.buckets.map((b: any) => esc(b.label)).join(", ")}<br/><em>Items:</em><ul>${block.items.map((item: any) => `<li>${esc(item.text)} → ${esc(bucketMap.get(item.bucketId) ?? "?")}</li>`).join("")}</ul></div>`;
+    }
+    case "hotspot":
+      return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Hotspot Image:</strong> ${esc(block.alt)}<br/><img src="${esc(block.src)}" alt="${esc(block.alt)}" style="max-width:100%"/>${block.hotspots.length > 0 ? `<ul>${block.hotspots.map((hs: any) => `<li>(${hs.x}%, ${hs.y}%) <strong>${esc(hs.label)}</strong>${hs.description ? `: ${esc(hs.description)}` : ""}</li>`).join("")}</ul>` : "<p><em>No hotspots defined.</em></p>"}</div>`;
+    case "branching":
+      return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Branching:</strong> ${esc(block.prompt)}<ul>${block.choices.map((c: any) => `<li><strong>${esc(c.label)}</strong>: ${c.content}</li>`).join("")}</ul></div>`;
     default:
       return `<p>[Unknown block type]</p>`;
   }
