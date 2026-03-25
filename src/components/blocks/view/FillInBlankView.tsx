@@ -47,7 +47,7 @@ export function FillInBlankView({ block }: Props) {
                 }`}
                 aria-label={`Gap ${seg.index}`}
               />
-              {isCorrect !== null && (
+              {submitted && isCorrect !== null && (
                 <span className={cn("text-xs font-bold", isCorrect ? "text-teal-600" : "text-destructive")} aria-hidden="true">
                   {isCorrect ? "✓" : "✗"}
                 </span>
