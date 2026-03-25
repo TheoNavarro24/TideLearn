@@ -124,3 +124,16 @@ export function shuffle<T>(arr: T[]): T[] {
 export function defaultQuestionProgress(): QuestionProgress {
   return { box: 1, testCount: 0, correctCount: 0, highConfidenceMisses: 0 };
 }
+
+/** Grade a multiple-response answer. Correct only if all correct indices selected and no incorrect ones. */
+export function gradeMultipleResponse(
+  correctIndices: number[],
+  selected: number[]
+): boolean {
+  const correctSet = new Set(correctIndices);
+  const selectedSet = new Set(selected);
+  return (
+    correctIndices.every((ci) => selectedSet.has(ci)) &&
+    selected.every((s) => correctSet.has(s))
+  );
+}
