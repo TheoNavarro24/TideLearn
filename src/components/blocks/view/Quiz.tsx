@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { QuizBlock } from "@/types/course";
+import { cn } from "@/lib/utils";
 
 export function QuizView({ block }: { block: QuizBlock }) {
   const [selected, setSelected] = useState<number | null>(null);
@@ -9,57 +10,50 @@ export function QuizView({ block }: { block: QuizBlock }) {
   const isCorrect = selected !== null && selected === block.correctIndex;
 
   const optBg = (i: number) => {
-    if (revealed && i === block.correctIndex) return "#f0fdfb";
-    if (selected === i) return "#f8fffe";
+    if (revealed && i === block.correctIndex) return "var(--quiz-correct-bg)";
+    if (selected === i) return "var(--quiz-selected-bg)";
     return "#fff";
   };
   const optBorder = (i: number) => {
-    if (revealed && i === block.correctIndex) return "1.5px solid #14b8a6";
-    if (selected === i) return "1.5px solid #5eead4";
-    return "1.5px solid #e0fdf4";
+    if (revealed && i === block.correctIndex) return "1.5px solid var(--quiz-correct-border)";
+    if (selected === i) return "1.5px solid var(--quiz-selected-border)";
+    return "1.5px solid var(--quiz-idle-border)";
   };
   const optColor = (i: number) => {
-    if (revealed && i === block.correctIndex) return "#0d9488";
-    if (selected === i) return "#0d9488";
-    return "#334155";
+    if (revealed && i === block.correctIndex) return "var(--quiz-correct-text)";
+    if (selected === i) return "var(--quiz-correct-text)";
+    return "var(--quiz-idle-text)";
   };
 
+  const isDisabled = revealed || selected == null || unset;
+
   return (
-    <div style={{ margin: "24px 0", padding: 24, background: "#fafffe", border: "1px solid #e0fdf4", borderRadius: 12 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#0d9488", marginBottom: 10 }}>
+    <div className="my-6 p-6 rounded-xl border border-[var(--quiz-idle-border)] bg-[var(--canvas-white)]">
+      <div className="text-[9px] font-bold tracking-[0.1em] uppercase mb-2.5 text-[var(--quiz-correct-text)]">
         Multiple Choice
       </div>
-      <p style={{ fontSize: 15, fontWeight: 600, color: "#0d2926", lineHeight: 1.55, marginBottom: 18 }}>{block.question}</p>
-      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+      <p className="text-[15px] font-semibold leading-[1.55] mb-[18px] text-[var(--ink)]">{block.question}</p>
+      <ul className="list-none p-0 m-0 flex flex-col gap-2">
         {block.options.map((opt, i) => (
           <li key={i}>
             <button
               onClick={() => { if (!revealed) setSelected(i); }}
               style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "12px 16px",
-                border: optBorder(i),
-                borderRadius: 8,
                 background: optBg(i),
+                border: optBorder(i),
                 color: optColor(i),
-                fontSize: 14,
-                fontWeight: selected === i || (revealed && i === block.correctIndex) ? 600 : 400,
-                cursor: revealed ? "default" : "pointer",
-                transition: "border-color 0.15s, color 0.15s, background 0.15s",
-                fontFamily: "Inter, sans-serif",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
               }}
+              className={cn(
+                "w-full text-left px-4 py-3 rounded-lg text-sm transition-[border-color,color,background] duration-150",
+                "flex items-center gap-2.5",
+                revealed || (selected === i) ? "font-semibold" : "font-normal",
+                revealed ? "cursor-default" : "cursor-pointer",
+              )}
             >
-              <span style={{
-                width: 18, height: 18, borderRadius: "50%",
-                border: `1.5px solid ${optColor(i)}`,
-                flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, fontWeight: 700,
-              }}>
+              <span
+                className="w-[18px] h-[18px] rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
+                style={{ border: `1.5px solid ${optColor(i)}` }}
+              >
                 {String.fromCharCode(65 + i)}
               </span>
               {opt}
@@ -67,7 +61,7 @@ export function QuizView({ block }: { block: QuizBlock }) {
           </li>
         ))}
       </ul>
-      <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="mt-3.5 flex gap-2 items-center">
         <button
           onClick={() => {
             if (revealed || selected == null || unset) return;
@@ -75,50 +69,35 @@ export function QuizView({ block }: { block: QuizBlock }) {
             const ok = selected === block.correctIndex;
             window.dispatchEvent(new CustomEvent("quiz:answered", { detail: { blockId: block.id, correct: ok } }));
           }}
-          disabled={revealed || selected == null || unset}
-          style={{
-            background: (revealed || selected == null || unset) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
-            border: "none",
-            borderRadius: 7,
-            color: (revealed || selected == null || unset) ? "#94a3b8" : "#fff",
-            fontSize: 12,
-            fontWeight: 700,
-            padding: "6px 14px",
-            cursor: (revealed || selected == null || unset) ? "not-allowed" : "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
+          disabled={isDisabled}
+          className={cn(
+            "border-none rounded-[7px] text-xs font-bold px-3.5 py-1.5",
+            isDisabled
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-gradient-to-br from-teal-600 to-sky-500 text-white cursor-pointer"
+          )}
         >
           Check
         </button>
         <button
           onClick={() => { setSelected(null); setRevealed(false); }}
-          style={{
-            background: "none",
-            border: "1.5px solid #e0fdf4",
-            borderRadius: 7,
-            color: "#64748b",
-            fontSize: 12,
-            fontWeight: 600,
-            padding: "5px 12px",
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
+          className="bg-transparent rounded-[7px] text-xs font-semibold px-3 py-[5px] cursor-pointer text-slate-500 border border-[var(--quiz-idle-border)]"
         >
           Reset
         </button>
         {unset && (
-          <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
+          <span className="text-[13px] text-slate-400 font-medium">
             No correct answer has been set for this question.
           </span>
         )}
         <div aria-live="polite" aria-atomic="true" role="status">
           {revealed && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 13, color: isCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+            <div className="flex flex-col gap-1">
+              <span className={cn("text-[13px] font-medium", isCorrect ? "text-teal-600" : "text-red-500")}>
                 {isCorrect ? "Correct!" : "Try again."}
               </span>
               {block.showFeedback && block.feedbackMessage && (
-                <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+                <span className="text-[13px] text-slate-600 leading-[1.5]">
                   {block.feedbackMessage}
                 </span>
               )}
