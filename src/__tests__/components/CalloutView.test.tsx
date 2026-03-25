@@ -3,6 +3,9 @@ import { render, screen } from "@testing-library/react";
 import { CalloutView } from "@/components/blocks/view/Callout";
 import type { CalloutBlock } from "@/types/course";
 
+// Force JSX runtime
+import "react/jsx-runtime";
+
 const BASE_CALLOUT: CalloutBlock = {
   id: "c1",
   type: "callout",
