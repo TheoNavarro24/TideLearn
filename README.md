@@ -1,73 +1,95 @@
-# Welcome to your Lovable project
+# TideLearn
 
-## Project info
+E-learning course authoring platform — React frontend, MCP server for Claude integration, Supabase backend.
 
-**URL**: https://lovable.dev/projects/f09e6641-cd36-49c7-a94c-933bf45f2fc9
+## What It Does
 
-## How can I edit this code?
+- **29 block types** for rich content (text, headings, images, video, code, quotes, callouts, accordion, tabs, timeline, process, chart, sorting, hotspot, branching, and more)
+- **7 question types** for assessment (MCQ, true/false, short answer, multiple response, fill-in-the-blank, matching, sorting)
+- **SCORM 1.2 export** via JSZip for LMS compatibility
+- **Cloud sync** with Supabase + Google OAuth
+- **MCP integration surface** for Claude-powered workflows
 
-There are several ways of editing your application.
+## Quick Start
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/f09e6641-cd36-49c7-a94c-933bf45f2fc9) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+**Frontend:**
+```bash
+npm install
+npm run dev          # Vite dev server on port 8080
+npm run build        # Production build
+npm run lint         # ESLint
 ```
 
-**Edit a file directly in GitHub**
+**MCP Server:**
+```bash
+cd mcp
+npm install
+npm run build
+npm test            # 238 Vitest tests
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Architecture
 
-**Use GitHub Codespaces**
+| Directory | Purpose |
+|-----------|---------|
+| `src/` | React 18 + TypeScript + Vite + Tailwind + shadcn/ui |
+| `mcp/` | MCP server (Node, stdio transport, strict TypeScript) |
+| `supabase/` | Migrations and Postgres configuration |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Key Files
 
-## What technologies are used for this project?
+| File | Purpose |
+|------|---------|
+| `src/types/course.ts` | Core types, Zod schemas, block factories |
+| `src/components/blocks/registry.ts` | Block type registry (29 types) |
+| `src/lib/courses.ts` | Course CRUD and localStorage |
+| `src/lib/assessment.ts` | Leitner spaced repetition algorithm |
+| `src/lib/scorm12.ts` | SCORM 1.2 export |
+| `mcp/src/index.ts` | MCP server entry and tool registration |
+| `mcp/src/resources/instructions.ts` | Full MCP documentation |
 
-This project is built with:
+## MCP Server
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+33 tools across 8 modules:
 
-## How can I deploy this project?
+- **Course Management** — create, read, update, delete, list, review
+- **Lesson Operations** — add, update, delete, reorder
+- **Block Operations** — add, update, move, delete across content lessons
+- **Assessment Tools** — add/update/delete assessment lessons, import/replace questions
+- **Question Bank** — add, update, delete individual questions
+- **Course Preview & Export** — preview HTML, SCORM 1.2 export
+- **Semantic Analysis** — review_course (gaps, coverage, reading time)
+- **Media Upload** — upload_media to course storage
 
-Simply open [Lovable](https://lovable.dev/projects/f09e6641-cd36-49c7-a94c-933bf45f2fc9) and click on Share -> Publish.
+## Environment Variables
 
-## Can I connect a custom domain to my Lovable project?
+**Frontend** (`.env.local`):
+```
+VITE_SUPABASE_URL=https://wlevkqlsabvmfdkphnza.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
-Yes, you can!
+**MCP Server**:
+```
+SUPABASE_URL=https://rljldeobjtgoqttuxhsf.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Design System
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Rockpool** design system with **Gunmetal** palette:
+
+- **Body font:** DM Sans
+- **Display font:** Lora (serif)
+- **Brand accent:** `var(--accent-hex)` (#40c8a0)
+- **Muted text:** `--text-muted: #6a7a90` (WCAG AA contrast)
+- **Layout tokens:** `--sidebar-w-editor`, `--sidebar-w-viewer`, `--topbar-h`, `--canvas-max-w`, `--reading-max-w`, `--content-px`
+
+## Tech Stack
+
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Radix UI
+- **State & Data:** TanStack Query, Zod validation
+- **Rich Text:** Tiptap editor
+- **Drag & Drop:** DnD Kit
+- **Backend:** Supabase (PostgreSQL), Google OAuth
+- **Export:** JSZip (SCORM 1.2)
