@@ -141,5 +141,6 @@ describe("renderQuestion", () => {
     const q = { kind: "unknown_future_type", text: "?" };
     const result = renderQuestion(q);
     expect(result).toContain("Unknown question kind");
+    expect(result).toContain("unknown_future_type");
   });
 });
