@@ -6,6 +6,7 @@ import {
   generateWeakAreaSession,
   advanceBox,
   shuffle,
+  gradeMultipleResponse,
 } from "@/lib/assessment";
 import { useAssessmentProgress } from "@/hooks/useAssessmentProgress";
 
@@ -22,6 +23,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [queue, setQueue] = useState<typeof lesson.questions>([]);
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
+  const [selectedMultiple, setSelectedMultiple] = useState<number[]>([]);
   const [revealed, setRevealed] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
@@ -44,6 +46,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(shuffle(q));
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -62,6 +65,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(q);
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -80,6 +84,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setQueue(q);
     setQIndex(0);
     setSelected(null);
+    setSelectedMultiple([]);
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -93,10 +98,23 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const currentQAsMcq = currentQ?.kind === "mcq" ? currentQ : null;
 
   function handleReveal() {
-    if (selected === null) return;
+    if (currentQ.kind === "multipleresponse") {
+      if (selectedMultiple.length === 0) return;
+    } else {
+      if (selected === null) return;
+    }
     if (mode === "study" && confidence === null) return;
     setRevealed(true);
-    const correct = selected === currentQAsMcq?.correctIndex;
+
+    let correct: boolean;
+    if (currentQ.kind === "multipleresponse") {
+      correct = gradeMultipleResponse(currentQ.correctIndices, selectedMultiple);
+    } else if (currentQ.kind === "mcq") {
+      correct = selected === currentQ.correctIndex;
+    } else {
+      correct = false;
+    }
+
     if (correct) {
       setSessionCorrect((n) => n + 1);
       setSessionCorrectIds((prev) => new Set([...prev, currentQ.id]));
@@ -114,6 +132,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     } else {
       setQIndex((i) => i + 1);
       setSelected(null);
+      setSelectedMultiple([]);
       setRevealed(false);
       setConfidence(null);
     }
@@ -250,28 +269,70 @@ export function AssessmentView({ lesson, courseId }: Props) {
           </p>
         </div>
 
-        <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
-          {(currentQAsMcq?.options ?? []).map((opt, i) => {
-            const isSelected = selected === i;
-            const isCorrect = i === currentQAsMcq?.correctIndex;
-            let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
-            if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
-            else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
-            return (
-              <li key={i} style={{ marginBottom: 8 }}>
-                <button
-                  onClick={() => { if (!revealed) setSelected(i); }}
-                  style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, fontWeight: isSelected || (revealed && isCorrect) ? 600 : 400, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
-                >
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${color}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
-                    {String.fromCharCode(65 + i)}
-                  </span>
-                  {opt}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {currentQ.kind === "mcq" && (
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
+            {currentQ.options.map((opt, i) => {
+              const isSelected = selected === i;
+              const isCorrect = i === currentQ.correctIndex;
+              let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
+              if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              return (
+                <li key={i} style={{ marginBottom: 8 }}>
+                  <button
+                    onClick={() => { if (!revealed) setSelected(i); }}
+                    style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, fontWeight: isSelected || (revealed && isCorrect) ? 600 : 400, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${color}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    {opt}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {currentQ.kind === "multipleresponse" && (
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 8px" }}>
+            <li style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Select all that apply</li>
+            {currentQ.options.map((opt, i) => {
+              const isSelected = selectedMultiple.includes(i);
+              const isCorrect = currentQ.correctIndices.includes(i);
+              let border = "1.5px solid hsl(var(--border))";
+              let bg = "#fff";
+              let color = "#334155";
+              if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              else if (revealed && isSelected && !isCorrect) { bg = "#fef2f2"; border = "1.5px solid #ef4444"; color = "#ef4444"; }
+              else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
+              return (
+                <li key={i} style={{ marginBottom: 8 }}>
+                  <button
+                    onClick={() => {
+                      if (revealed) return;
+                      setSelectedMultiple((prev) =>
+                        prev.includes(i) ? prev.filter((s) => s !== i) : [...prev, i]
+                      );
+                    }}
+                    style={{ width: "100%", textAlign: "left", padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 14, cursor: revealed ? "default" : "pointer", fontFamily: "Inter,sans-serif", display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span style={{ width: 16, height: 16, borderRadius: 3, border: `1.5px solid ${color}`, flexShrink: 0, background: isSelected ? "var(--accent-hex)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {isSelected && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                    </span>
+                    {opt}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && (
+          <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 16px" }}>
+            [This question type will be interactive in a future update]
+          </p>
+        )}
 
         {isStudy && !revealed && (
           <div style={{ marginBottom: 14 }}>
@@ -300,8 +361,12 @@ export function AssessmentView({ lesson, courseId }: Props) {
           {!revealed ? (
             <button
               onClick={handleReveal}
-              disabled={selected === null || (isStudy && confidence === null)}
-              style={{ ...btnPrimary, opacity: (selected === null || (isStudy && confidence === null)) ? 0.4 : 1, cursor: (selected === null || (isStudy && confidence === null)) ? "not-allowed" : "pointer" }}
+              disabled={
+                (currentQ.kind === "mcq" ? selected === null : false) ||
+                (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) ||
+                (isStudy && confidence === null)
+              }
+              style={{ ...btnPrimary, opacity: ((currentQ.kind === "mcq" ? selected === null : false) || (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) || (isStudy && confidence === null)) ? 0.4 : 1, cursor: ((currentQ.kind === "mcq" ? selected === null : false) || (currentQ.kind === "multipleresponse" ? selectedMultiple.length === 0 : false) || (isStudy && confidence === null)) ? "not-allowed" : "pointer" }}
             >
               Check answer
             </button>
@@ -311,8 +376,16 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQAsMcq?.correctIndex ? "var(--accent-hex)" : "#ef4444" }}>
-              {selected === currentQAsMcq?.correctIndex ? "Correct!" : "Incorrect"}
+            <span style={{ fontSize: 13, fontWeight: 600, color: (() => {
+              if (currentQ.kind === "mcq") return selected === currentQ.correctIndex ? "var(--accent-hex)" : "#ef4444";
+              if (currentQ.kind === "multipleresponse") return gradeMultipleResponse(currentQ.correctIndices, selectedMultiple) ? "var(--accent-hex)" : "#ef4444";
+              return "#64748b";
+            })() }}>
+              {(() => {
+                if (currentQ.kind === "mcq") return selected === currentQ.correctIndex ? "Correct!" : "Incorrect";
+                if (currentQ.kind === "multipleresponse") return gradeMultipleResponse(currentQ.correctIndices, selectedMultiple) ? "Correct!" : "Incorrect";
+                return "";
+              })()}
             </span>
           )}
         </div>
@@ -400,11 +473,17 @@ export function AssessmentView({ lesson, courseId }: Props) {
                 {labels[conf]}
               </p>
               {qs.map((q) => {
-                const qMcq = q.kind === "mcq" ? q : null;
                 return (
                   <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
-                    {qMcq && <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {qMcq.options[qMcq.correctIndex]}</p>}
+                    {q.kind === "mcq" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
+                    )}
+                    {q.kind === "multipleresponse" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.correctIndices.map((ci) => q.options[ci]).join(", ")}
+                      </p>
+                    )}
                     {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
                   </div>
                 );
