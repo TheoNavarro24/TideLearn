@@ -407,8 +407,11 @@ export const sortingBlockSchema = z.object({
   id: z.string(),
   type: z.literal("sorting"),
   prompt: z.string().min(1),
+  buckets: z.array(z.object({
+    id: z.string(), label: z.string().min(1),
+  })).min(2),
   items: z.array(z.object({
-    id: z.string(), text: z.string().min(1), correctPosition: z.number().int().min(0),
+    id: z.string(), text: z.string().min(1), bucketId: z.string(),
   })).min(2),
   showFeedback: z.boolean(),
 });
