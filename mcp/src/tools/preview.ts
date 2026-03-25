@@ -79,6 +79,8 @@ function renderBlock(block: Block): string {
       return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Hotspot Image:</strong> ${esc(block.alt)}<br/><img src="${esc(block.src)}" alt="${esc(block.alt)}" style="max-width:100%"/>${block.hotspots.length > 0 ? `<ul>${block.hotspots.map((hs: any) => `<li>(${hs.x}%, ${hs.y}%) <strong>${esc(hs.label)}</strong>${hs.description ? `: ${esc(hs.description)}` : ""}</li>`).join("")}</ul>` : "<p><em>No hotspots defined.</em></p>"}</div>`;
     case "branching":
       return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Branching:</strong> ${esc(block.prompt)}<ul>${block.choices.map((c: any) => `<li><strong>${esc(c.label)}</strong>: ${c.content}</li>`).join("")}</ul></div>`;
+    case "multipleresponse":
+      return `<div style="background:#f8f8f8;padding:1em;margin:1em 0"><strong>Multiple Response:</strong> ${esc(block.question)}<p style="font-size:0.875em;color:#666;margin:0.25em 0">Select all that apply:</p><ul>${block.options.map((o: string, i: number) => `<li>${block.correctIndices.includes(i) ? "✓ " : ""}${esc(o)}</li>`).join("")}</ul>${block.correctIndices.length < 2 ? "<p><em style='color:#f59e0b'>(fewer than 2 correct answers set)</em></p>" : ""}</div>`;
     default:
       return `<p>[Unknown block type]</p>`;
   }
@@ -88,14 +90,12 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function renderAssessmentLesson(lesson: any): string {
-  const questions = lesson.questions ?? [];
-  if (questions.length === 0) {
-    return `<p style="color:#888;font-style:italic">No questions in bank yet.</p>`;
-  }
-  return questions.map((q: any, i: number) => `
+export function renderQuestion(q: any): string {
+  switch (q.kind ?? "mcq") {
+    case "mcq":
+      return `
     <div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0">
-      <p style="font-weight:600;margin:0 0 0.5em">${i + 1}. ${esc(q.text)}</p>
+      <p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p>
       <ul style="margin:0 0 0.5em 1.25em;padding:0">
         ${(q.options ?? []).map((opt: string, idx: number) =>
           `<li style="${idx === q.correctIndex ? "color:#0d9488;font-weight:600" : ""}">${idx === q.correctIndex ? "✓ " : ""}${esc(opt)}</li>`
@@ -104,7 +104,37 @@ function renderAssessmentLesson(lesson: any): string {
       ${q.feedback ? `<p style="font-size:0.875em;color:#64748b;margin:0;font-style:italic">Feedback: ${esc(q.feedback)}</p>` : ""}
       ${q.bloomLevel ? `<span style="font-size:0.75em;background:#e0fdf4;color:#0d9488;padding:2px 6px;border-radius:4px">${esc(q.bloomLevel)}</span>` : ""}
       ${q.source ? `<span style="font-size:0.75em;background:#f1f5f9;color:#64748b;padding:2px 6px;border-radius:4px;margin-left:4px">${esc(q.source)}</span>` : ""}
-    </div>`
+    </div>`;
+    case "multipleresponse":
+      return `
+    <div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0">
+      <p style="font-weight:600;margin:0 0 0.25em">${esc(q.text)}</p>
+      <p style="font-size:0.8em;color:#64748b;margin:0 0 0.5em">Select all that apply</p>
+      <ul style="margin:0 0 0.5em 1.25em;padding:0">
+        ${(q.options ?? []).map((opt: string, idx: number) =>
+          `<li style="${(q.correctIndices ?? []).includes(idx) ? "color:#0d9488;font-weight:600" : ""}">${(q.correctIndices ?? []).includes(idx) ? "✓ " : ""}${esc(opt)}</li>`
+        ).join("")}
+      </ul>
+      ${q.feedback ? `<p style="font-size:0.875em;color:#64748b;margin:0;font-style:italic">Feedback: ${esc(q.feedback)}</p>` : ""}
+    </div>`;
+    case "fillinblank":
+      return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Fill-in-the-blank — ${(q.blanks ?? []).length} gap(s)]</p></div>`;
+    case "matching":
+      return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Matching — ${(q.left ?? []).length} pair(s)]</p></div>`;
+    case "sorting":
+      return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Sorting — ${(q.buckets ?? []).length} bucket(s), ${(q.items ?? []).length} item(s)]</p></div>`;
+    default:
+      return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-style:italic;color:#94a3b8">[Unknown question kind: ${esc(q.kind ?? "unknown")}]</p></div>`;
+  }
+}
+
+function renderAssessmentLesson(lesson: any): string {
+  const questions = lesson.questions ?? [];
+  if (questions.length === 0) {
+    return `<p style="color:#888;font-style:italic">No questions in bank yet.</p>`;
+  }
+  return questions.map((q: any, i: number) =>
+    `<div style="margin-bottom:0.5em"><span style="font-size:0.8em;color:#64748b;font-weight:600">${i + 1}.</span>${renderQuestion(q)}</div>`
   ).join("\n");
 }
 
