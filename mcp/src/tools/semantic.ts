@@ -6,16 +6,63 @@ import { uid, lessonSchema, blockSchema, type Block } from "../lib/types.js";
 import { validateCourseJson, formatZodErrors } from "../lib/validate.js";
 
 export function injectSubItemIds(block: any): any {
-  if (block.type === "accordion" || block.type === "tabs") {
-    return {
-      ...block,
-      items: (block.items ?? []).map((item: any) => ({
-        ...item,
-        id: item.id ?? uid(),
-      })),
-    };
+  switch (block.type) {
+    case "accordion":
+    case "tabs":
+      return {
+        ...block,
+        items: (block.items ?? []).map((item: any) => ({
+          ...item,
+          id: item.id ?? uid(),
+        })),
+      };
+    case "timeline":
+      return {
+        ...block,
+        items: (block.items ?? []).map((item: any) => ({
+          ...item,
+          id: item.id ?? uid(),
+        })),
+      };
+    case "process":
+      return {
+        ...block,
+        steps: (block.steps ?? []).map((step: any) => ({
+          ...step,
+          id: step.id ?? uid(),
+        })),
+      };
+    case "sorting":
+      return {
+        ...block,
+        buckets: (block.buckets ?? []).map((bucket: any) => ({
+          ...bucket,
+          id: bucket.id ?? uid(),
+        })),
+        items: (block.items ?? []).map((item: any) => ({
+          ...item,
+          id: item.id ?? uid(),
+        })),
+      };
+    case "hotspot":
+      return {
+        ...block,
+        hotspots: (block.hotspots ?? []).map((hs: any) => ({
+          ...hs,
+          id: hs.id ?? uid(),
+        })),
+      };
+    case "branching":
+      return {
+        ...block,
+        choices: (block.choices ?? []).map((choice: any) => ({
+          ...choice,
+          id: choice.id ?? uid(),
+        })),
+      };
+    default:
+      return block;
   }
-  return block;
 }
 
 export function injectIds(course: any) {
