@@ -259,16 +259,25 @@ export function registerAssessmentTools(server: McpServer) {
         if (passingScore === undefined && examSize === undefined) {
           return err("missing_fields", "At least one of passingScore or examSize must be provided");
         }
-        const mutError = await mutateCourse(client, userId, course_id, (course) => ({
-          ...course,
-          lessons: course.lessons.map((l) => {
-            if (l.id !== lesson_id || (l as any).kind !== "assessment") return l;
-            const config = { ...(l as any).config };
-            if (passingScore !== undefined) config.passingScore = passingScore;
-            if (examSize !== undefined) config.examSize = examSize;
-            return { ...l, config };
-          }),
-        }));
+        let notAssessment = false;
+        let lessonNotFound = false;
+        const mutError = await mutateCourse(client, userId, course_id, (course) => {
+          const lesson = course.lessons.find((l) => l.id === lesson_id);
+          if (!lesson) { lessonNotFound = true; return course; }
+          if ((lesson as any).kind !== "assessment") { notAssessment = true; return course; }
+          return {
+            ...course,
+            lessons: course.lessons.map((l) => {
+              if (l.id !== lesson_id) return l;
+              const config = { ...(l as any).config };
+              if (passingScore !== undefined) config.passingScore = passingScore;
+              if (examSize !== undefined) config.examSize = examSize;
+              return { ...l, config };
+            }),
+          };
+        });
+        if (lessonNotFound) return err("lesson_not_found", `No lesson with id ${lesson_id}`);
+        if (notAssessment) return err("not_assessment", "Lesson is not an assessment lesson");
         if (mutError) return err(mutError, "Failed to update assessment config");
         return ok({ updated: true });
       })
