@@ -252,6 +252,13 @@ export function AssessmentView({ lesson, courseId }: Props) {
   if (screen === "study" || screen === "exam" || screen === "drill") {
     if (!currentQ) return null;
     const isStudy = mode === "study";
+    const revealedCorrect = revealed
+      ? currentQ.kind === "mcq"
+        ? selected === currentQ.correctIndex
+        : currentQ.kind === "multipleresponse"
+        ? gradeMultipleResponse(currentQ.correctIndices, selectedMultiple)
+        : false
+      : false;
     return (
       <div style={containerStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -376,16 +383,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: (() => {
-              if (currentQ.kind === "mcq") return selected === currentQ.correctIndex ? "var(--accent-hex)" : "#ef4444";
-              if (currentQ.kind === "multipleresponse") return gradeMultipleResponse(currentQ.correctIndices, selectedMultiple) ? "var(--accent-hex)" : "#ef4444";
-              return "#64748b";
-            })() }}>
-              {(() => {
-                if (currentQ.kind === "mcq") return selected === currentQ.correctIndex ? "Correct!" : "Incorrect";
-                if (currentQ.kind === "multipleresponse") return gradeMultipleResponse(currentQ.correctIndices, selectedMultiple) ? "Correct!" : "Incorrect";
-                return "";
-              })()}
+            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" ? "#ef4444" : "#64748b" }}>
+              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse") && (revealedCorrect ? "Correct!" : "Incorrect")}
             </span>
           )}
         </div>
