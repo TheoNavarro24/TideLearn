@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TrueFalseBlock } from "@/types/course";
+import { cn } from "@/lib/utils";
 
 export function TrueFalseView({ block }: { block: TrueFalseBlock }) {
   const [choice, setChoice] = useState<boolean | null>(null);
@@ -8,96 +9,77 @@ export function TrueFalseView({ block }: { block: TrueFalseBlock }) {
   const wasCorrect = choice !== null && choice === block.correct;
 
   const choiceBg = (val: boolean) => {
-    if (revealed && val === block.correct) return "#f0fdfb";
-    if (choice === val) return "#f8fffe";
+    if (revealed && val === block.correct) return "var(--quiz-correct-bg)";
+    if (choice === val) return "var(--quiz-selected-bg)";
     return "#fff";
   };
   const choiceBorder = (val: boolean) => {
-    if (revealed && val === block.correct) return "1.5px solid #14b8a6";
-    if (choice === val) return "1.5px solid #5eead4";
-    return "1.5px solid #e0fdf4";
+    if (revealed && val === block.correct) return "1.5px solid var(--quiz-correct-border)";
+    if (choice === val) return "1.5px solid var(--quiz-selected-border)";
+    return "1.5px solid var(--quiz-idle-border)";
   };
   const choiceColor = (val: boolean) => {
-    if (revealed && val === block.correct) return "#0d9488";
-    if (choice === val) return "#0d9488";
-    return "#475569";
+    if (revealed && val === block.correct) return "var(--quiz-correct-text)";
+    if (choice === val) return "var(--quiz-correct-text)";
+    return "var(--quiz-idle-text)";
   };
 
+  const isDisabled = revealed || choice == null;
+
   return (
-    <div style={{ margin: "24px 0", padding: 24, background: "#fafffe", border: "1px solid #e0fdf4", borderRadius: 12 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#0d9488", marginBottom: 10 }}>
+    <div className="my-6 p-6 rounded-xl border border-[var(--quiz-idle-border)] bg-[var(--canvas-white)]">
+      <div className="text-[9px] font-bold tracking-[0.1em] uppercase mb-2.5 text-[var(--quiz-correct-text)]">
         True or False
       </div>
-      <p style={{ fontSize: 15, fontWeight: 600, color: "#0d2926", lineHeight: 1.55, marginBottom: 18 }}>{block.question}</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <p className="text-[15px] font-semibold leading-[1.55] mb-[18px] text-[var(--ink)]">{block.question}</p>
+      <div className="grid grid-cols-2 gap-3">
         {([true, false] as const).map((val) => (
           <button
             key={String(val)}
             onClick={() => { if (!revealed) setChoice(val); }}
             aria-pressed={choice === val}
             style={{
-              padding: 16,
-              border: choiceBorder(val),
-              borderRadius: 10,
               background: choiceBg(val),
-              fontSize: 14,
-              fontWeight: 600,
+              border: choiceBorder(val),
               color: choiceColor(val),
-              cursor: revealed ? "default" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              transition: "border-color 0.15s, color 0.15s, background 0.15s",
-              fontFamily: "Inter, sans-serif",
             }}
+            className={cn(
+              "p-4 rounded-[10px] text-sm font-semibold transition-[border-color,color,background] duration-150",
+              "flex items-center justify-center gap-2",
+              revealed ? "cursor-default" : "cursor-pointer",
+            )}
           >
-            <span style={{ fontSize: 16 }}>{val ? "✓" : "✗"}</span>
+            <span className="text-base">{val ? "✓" : "✗"}</span>
             {val ? "True" : "False"}
           </button>
         ))}
       </div>
-      <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="mt-3.5 flex gap-2 items-center">
         <button
           onClick={() => {
             if (revealed || choice == null) return;
             setRevealed(true);
             window.dispatchEvent(new CustomEvent("quiz:answered", { detail: { blockId: block.id, correct: wasCorrect } }));
           }}
-          disabled={revealed || choice == null}
-          style={{
-            background: (revealed || choice == null) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
-            border: "none",
-            borderRadius: 7,
-            color: (revealed || choice == null) ? "#94a3b8" : "#fff",
-            fontSize: 12,
-            fontWeight: 700,
-            padding: "6px 14px",
-            cursor: (revealed || choice == null) ? "not-allowed" : "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
+          disabled={isDisabled}
+          className={cn(
+            "border-none rounded-[7px] text-xs font-bold px-3.5 py-1.5",
+            isDisabled
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-gradient-to-br from-teal-600 to-sky-500 text-white cursor-pointer"
+          )}
         >
           Check
         </button>
         <button
           onClick={() => { setChoice(null); setRevealed(false); }}
-          style={{
-            background: "none",
-            border: "1.5px solid #e0fdf4",
-            borderRadius: 7,
-            color: "#64748b",
-            fontSize: 12,
-            fontWeight: 600,
-            padding: "5px 12px",
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
+          className="bg-transparent rounded-[7px] text-xs font-semibold px-3 py-[5px] cursor-pointer text-slate-500 border border-[var(--quiz-idle-border)]"
         >
           Reset
         </button>
         <div aria-live="polite" aria-atomic="true" role="status">
           {block.showFeedback && revealed && (
-            <span style={{ fontSize: 13, color: wasCorrect ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+            <span className={cn("text-[13px] font-medium", wasCorrect ? "text-teal-600" : "text-red-500")}>
               {wasCorrect ? (block.feedbackCorrect || "Correct!") : (block.feedbackIncorrect || "Incorrect.")}
             </span>
           )}
