@@ -41,7 +41,7 @@ interface CourseIndex {
   id: string;
   title: string;
   updatedAt: string | number;
-  lessons?: unknown[];
+  lessonCount?: number;
   isPublic?: boolean;
   coverImageUrl?: string | null;
 }
@@ -151,7 +151,7 @@ function CourseCard({
   const dropRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
 
-  const lessonCount = Array.isArray(course.lessons) ? course.lessons.length : 0;
+  const lessonCount = course.lessonCount ?? 0;
 
   const updatedLabel = (() => {
     try {

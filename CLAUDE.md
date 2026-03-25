@@ -11,7 +11,7 @@ npm run build        # Production build
 npm run lint         # ESLint
 
 # MCP server (mcp/)
-cd mcp && npm test   # 173+ Vitest tests
+cd mcp && npm test   # 238 Vitest tests
 cd mcp && npm run build
 ```
 
@@ -23,7 +23,7 @@ mcp/           → MCP server (Node, stdio transport, strict TS)
 supabase/      → Migrations & config
 ```
 
-- **28 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
+- **26 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
 - **Discriminated union lessons**: `kind: "content"` (has blocks) or `kind: "assessment"` (has questions)
 - **Dual storage**: localStorage (fast) + Supabase (sync via Google OAuth)
 - **SCORM 1.2 export** via jszip
@@ -43,6 +43,7 @@ supabase/      → Migrations & config
 ## Critical Rules
 
 - When adding a new block type, update **both** `courseSchema` AND `courseSchemaPermissive` in `src/types/course.ts` — stale permissive schema causes viewer to silently show "Course not found"
+- When adding a new block type with nested items, update `injectSubItemIds` in `mcp/src/tools/semantic.ts` and `renderBlock` in `mcp/src/tools/preview.ts`
 - `"schemaVersion": 1` is **required** in all course JSON
 - Never include `id` fields in blocks/lessons — auto-generated
 - Always `get_course` before editing — never guess IDs
@@ -91,6 +92,7 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [x] **A.5 — Courses Overhaul** (merged to main)
 - [x] **Gunmetal UI Overhaul** (merged to main) — full dark-theme Gunmetal design system: AppShell, Auth, Settings, token migration, a11y hardening
 - [x] **Phase 2A — New Block Types** (merged to main) — Button/CTA, Embed, Flashcard, Timeline, Process, Chart, Sorting, Hotspot, Branching
+- [x] **Phase 2A+ — MCP Cleanup** (merged to main) — Fixed sortingBlockSchema, extended injectSubItemIds for all complex blocks, added renderBlock for Phase 2A types, updated tool descriptions & instructions, fixed update_assessment_config silent no-op, added 238 MCP tests
 
 ## Design Context
 
@@ -106,6 +108,43 @@ Course authors (educators, instructional designers) who build e-learning content
 3. **Accessible by default** — WCAG AA minimum. Semantic HTML, keyboard nav, proper ARIA.
 4. **System consistency** — Use Rockpool tokens, Tailwind utilities, shadcn/ui. Never hard-code token values.
 5. **Progressive disclosure** — Show what's needed, when it's needed. Each element earns its space.
+
+## Visual Verification
+
+The app is **auth-gated** (Google OAuth). Preview tools (`preview_snapshot`, `preview_screenshot`, `preview_inspect`) cannot access the authenticated app and will show a login wall.
+
+**Use Control Chrome MCP instead:**
+- `mcp__Control_Chrome__get_page_content` — read DOM/text from the live app
+- `mcp__Control_Chrome__execute_javascript` — query elements, check styles
+- `mcp__Control_Chrome__reload_tab` — reload after a build/HMR update
+- `mcp__Control_Chrome__take_screenshot` — does not exist; use `get_page_content` + `execute_javascript`
+
+The browser session in Control Chrome is already logged in with Theo's Google account. Navigate to `http://localhost:8080` (dev) and verify changes there. If the dev server isn't running, start it with `npm run dev`.
+
+**Verification workflow:**
+1. Make the change
+2. Check HMR updated (or reload via `mcp__Control_Chrome__reload_tab`)
+3. Use `mcp__Control_Chrome__get_page_content` or `execute_javascript` to confirm the change is live
+4. Report findings directly — do not fall back to "I couldn't verify"
+
+## Available Tools & MCPs
+
+Key MCPs available in this project — check before falling back to Bash or manual steps:
+
+| MCP | When to use |
+|-----|-------------|
+| `mcp__tidelearn__*` | Course/lesson/block CRUD via the TideLearn MCP server |
+| `mcp__Control_Chrome__*` | Visual verification of the auth-gated frontend |
+| `mcp__Claude_Preview__*` | **Not useful here** — app requires auth, preview tools hit login wall |
+| `mcp__Desktop_Commander__*` | Long-running processes, background tasks |
+
+**Skills** — always check for a relevant skill before doing ad-hoc work:
+- `/commit` — structured git commit
+- `/commit-push-pr` — commit + push + open PR
+- `impeccable:*` — design quality passes (polish, animate, colorize, etc.)
+- `frontend-design` — high-quality UI implementation
+- `superpowers:brainstorming` — before any creative/feature work
+- `superpowers:writing-plans` — before multi-step implementation
 
 ## Hosting (planned)
 

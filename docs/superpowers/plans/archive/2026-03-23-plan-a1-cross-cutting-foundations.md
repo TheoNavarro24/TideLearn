@@ -1,6 +1,6 @@
 # Plan A.1 — Cross-cutting Foundations
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Each task invokes one or more impeccable plugin skills — use the Skill tool to invoke them (e.g., `Skill("impeccable:harden")`).
 
 **Goal:** Establish design tokens, font swap, skip link, and cleanup that all subsequent plans (A.2–A.5) depend on.
 
@@ -10,47 +10,38 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-23-audit-fixes-design.md`
 
+**Depends on:** Nothing (this is the foundation)
+
 ---
 
-### Task 1: Add layout CSS custom properties
+### Task 1: Add layout CSS custom properties + fix contrast
 
-**Commands:** `/harden` (C-1 contrast fix), `/normalize` (magic numbers → CSS vars)
+**Invoke:** `/harden` — target `src/index.css`, fix C-1 muted text contrast (`--text-muted: #94a3b8` → `#64748b`, 5.1:1 ratio)
 
 **Files:**
-- Modify: `src/index.css` (`:root` block, lines 10–99)
+- Modify: `src/index.css` (`:root` block)
 
-- [ ] **Step 1: Add layout variables to :root**
+- [ ] **Step 1: Invoke `/harden`**
 
-In `src/index.css`, add these properties inside the existing `:root` block (after the existing design tokens, before the closing `}`):
+Invoke the `impeccable:harden` skill. Context for the skill:
+- **Target file:** `src/index.css`
+- **Issue C-1:** `--text-muted: #94a3b8` on white yields 3.06:1 contrast. Change to `#64748b` (5.1:1, WCAG AA).
+- **Also add** layout CSS custom properties inside `:root`:
+  ```css
+  --sidebar-w-editor: 220px;
+  --sidebar-w-viewer: 200px;
+  --topbar-h: 48px;
+  --canvas-max-w: 828px;
+  --reading-max-w: 680px;
+  --content-px: 64px;
+  ```
 
-```css
-/* Layout constants (used by Editor, Viewer, all pages) */
---sidebar-w-editor: 220px;
---sidebar-w-viewer: 200px;
---topbar-h: 48px;
---canvas-max-w: 828px;
---reading-max-w: 680px;
---content-px: 64px;
-```
-
-- [ ] **Step 2: Fix muted text contrast (C-1)**
-
-In the same `:root` block, change:
-```css
-/* Before */
---text-muted: #94a3b8;
-/* After */
---text-muted: #64748b;
-```
-
-This raises contrast from 3.06:1 to 5.1:1 (passes WCAG AA).
-
-- [ ] **Step 3: Verify build**
+- [ ] **Step 2: Verify build**
 
 Run: `npm run build`
-Expected: SUCCESS — CSS changes are valid, no downstream breakage.
+Expected: SUCCESS
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/index.css
@@ -61,53 +52,29 @@ git commit -m "fix(tokens): add layout CSS vars, fix muted text contrast to WCAG
 
 ### Task 2: Swap Inter → DM Sans
 
-**Commands:** `/typeset` (H-6 Inter typeface)
+**Invoke:** `/typeset` — swap Inter for DM Sans across `index.html`, `tailwind.config.ts`, `src/index.css`
 
 **Files:**
 - Modify: `index.html` (Google Fonts link)
-- Modify: `tailwind.config.ts` (line 23)
-- Modify: `src/index.css` (line 109, body font-family)
+- Modify: `tailwind.config.ts` (sans font family)
+- Modify: `src/index.css` (body font-family)
 
-- [ ] **Step 1: Update Google Fonts import in index.html**
+- [ ] **Step 1: Invoke `/typeset`**
 
-Find the existing Inter font import `<link>` in `index.html` and replace with DM Sans. If there's a `<link>` for Inter, change it to:
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-```
+Invoke the `impeccable:typeset` skill. Context for the skill:
+- **Issue H-6:** Inter is on the don't-use list (AI-slop typeface).
+- **Replacement:** DM Sans — geometric, clean, good x-height, pairs well with Lora (existing serif).
+- **Targets:**
+  - `index.html`: Update Google Fonts `<link>` to load DM Sans (400–700, italic 400–500) + Lora
+  - `tailwind.config.ts`: Change `sans: ['Inter', ...]` to `sans: ['DM Sans', ...]`
+  - `src/index.css`: Change body `font-family: 'Inter', ...` to `font-family: 'DM Sans', ...`
 
-If there's no existing font `<link>`, add this in `<head>` before the closing `</head>`.
+- [ ] **Step 2: Verify build and visual check**
 
-- [ ] **Step 2: Update Tailwind config**
+Run: `npm run build` — SUCCESS
+Run: `npm run dev` — verify DM Sans renders on Courses page, Editor page.
 
-In `tailwind.config.ts`, change the `sans` font family (line 23):
-```typescript
-// Before
-sans: ['Inter', 'system-ui', 'sans-serif'],
-// After
-sans: ['DM Sans', 'system-ui', 'sans-serif'],
-```
-
-- [ ] **Step 3: Update body font-family in CSS**
-
-In `src/index.css` (line 109), update the body rule:
-```css
-/* Before */
-font-family: 'Inter', system-ui, sans-serif;
-/* After */
-font-family: 'DM Sans', system-ui, sans-serif;
-```
-
-- [ ] **Step 4: Verify build and visual check**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-Run: `npm run dev`
-Visually verify that body text across all pages renders in DM Sans (check Courses page, Editor page).
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add index.html tailwind.config.ts src/index.css
@@ -118,53 +85,25 @@ git commit -m "feat(typography): swap Inter for DM Sans across the app"
 
 ### Task 3: Remove dead CSS and dark mode infrastructure
 
-**Commands:** `/normalize` (L-5, M-6 dead CSS), `/colorize` (M-3 dark mode infra), `/optimize` (M-4 backdrop-blur)
+**Invoke:** `/normalize` — clean up dead utilities and unused dark mode infra in `src/index.css` and `tailwind.config.ts`
 
 **Files:**
-- Modify: `src/index.css` (lines 120–130)
-- Modify: `tailwind.config.ts` (line 5)
+- Modify: `src/index.css` (delete `.card-surface`, `.text-gradient`)
+- Modify: `tailwind.config.ts` (remove `darkMode: ["class"]`)
 
-- [ ] **Step 1: Delete `.card-surface` utility (L-5, also resolves M-4)**
+- [ ] **Step 1: Invoke `/normalize`**
 
-In `src/index.css`, delete the `.card-surface` block (lines 120–123):
-```css
-/* DELETE THIS ENTIRE BLOCK */
-.card-surface {
-  @apply bg-white/80 backdrop-blur-md border border-white/20;
-}
-```
+Invoke the `impeccable:normalize` skill. Context for the skill:
+- **Issue L-5:** `.card-surface` utility (lines 120–123) is dead CSS — grep shows zero usages. Delete it. This also resolves M-4 (backdrop-blur without fallback).
+- **Issue M-6:** `.text-gradient` utility (lines 125–130) is an anti-pattern utility. Delete it.
+- **Issue M-3:** `darkMode: ["class"]` in `tailwind.config.ts` has no implementation. Remove it.
+- **`dark:` utilities:** Only remove from project-authored files (pages, custom components). Leave `dark:` utilities in `src/components/ui/` (shadcn-managed) and `dark:prose-invert` classes — they are inert without darkMode config and harmless to keep.
 
-- [ ] **Step 2: Delete `.text-gradient` utility (M-6)**
+- [ ] **Step 2: Verify build**
 
-In `src/index.css`, delete the `.text-gradient` block (lines 125–130):
-```css
-/* DELETE THIS ENTIRE BLOCK */
-.text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-```
+Run: `npm run build` — SUCCESS
 
-- [ ] **Step 3: Remove darkMode config (M-3)**
-
-In `tailwind.config.ts`, remove the `darkMode` line (line 5):
-```typescript
-// DELETE this line:
-darkMode: ["class"],
-```
-
-- [ ] **Step 4: Search for any `dark:` utility usage in project-authored files and remove**
-
-Run: `grep -r "dark:" src/ --include="*.tsx" --include="*.css"` to find any `dark:` utilities. **Only remove from project-authored files** (pages, custom components). Leave `dark:` utilities in `src/components/ui/` (shadcn-managed — removing them risks merge conflicts on future updates) and `dark:prose-invert` classes (inert without darkMode config, harmless to keep).
-
-- [ ] **Step 5: Verify build**
-
-Run: `npm run build`
-Expected: SUCCESS
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/index.css tailwind.config.ts
@@ -175,40 +114,26 @@ git commit -m "chore: remove dead CSS (.card-surface, .text-gradient) and dark m
 
 ### Task 4: Add skip-to-content link (H-4)
 
-**Commands:** `/harden` (H-4 skip-to-content link)
+**Invoke:** `/harden` — add skip-to-content link in `App.tsx` with CSS in `src/index.css`
 
 **Files:**
-- Modify: `src/App.tsx` (line 29, inside BrowserRouter)
-- Modify: `src/index.css` (add skip-link styles)
+- Modify: `src/App.tsx` (first child inside BrowserRouter)
+- Modify: `src/index.css` (skip-link styles)
 
-- [ ] **Step 1: Add skip link CSS**
+- [ ] **Step 1: Invoke `/harden`**
 
-In `src/index.css`, add inside the `@layer utilities` block:
-```css
-.skip-link {
-  @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-teal-700 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:ring-2 focus:ring-teal-500 focus:outline-none;
-}
-```
+Invoke the `impeccable:harden` skill. Context for the skill:
+- **Issue H-4:** No skip-to-content link on any page. WCAG 2.4.1 Bypass Blocks — Level A.
+- **Implementation:**
+  - Add `<a href="#main-content" className="skip-link">Skip to content</a>` as first child inside `<BrowserRouter>` in `App.tsx`
+  - Add `.skip-link` CSS: visually hidden, revealed on focus with `sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999]` etc.
+  - Target `id="main-content"` will be added per-page in A.2–A.5.
 
-- [ ] **Step 2: Add skip link to App.tsx**
+- [ ] **Step 2: Verify skip link appears on Tab**
 
-In `src/App.tsx`, add as the first child inside `<BrowserRouter>` (after line 29):
-```tsx
-<a href="#main-content" className="skip-link">
-  Skip to content
-</a>
-```
+Run: `npm run dev` — Tab once, skip link should appear at top-left.
 
-- [ ] **Step 3: Add `id="main-content"` targets to each page**
-
-Each page's main content area needs `id="main-content"`. This will be done in each subsequent plan (A.2–A.5) as part of the Tailwind migration for that page. For now, just add the skip link — the target IDs will land with each page rewrite.
-
-- [ ] **Step 4: Verify the skip link works**
-
-Run: `npm run dev`
-Tab once from the page — the skip link should appear visually at top-left. It won't navigate to `#main-content` yet (targets come in A.2–A.5), but it should be visible and styled.
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/App.tsx src/index.css
@@ -219,30 +144,7 @@ git commit -m "feat(a11y): add skip-to-content link (WCAG 2.4.1)"
 
 ### Task 5: Final verification
 
-- [ ] **Step 1: Run full build**
-
-```bash
-npm run build
-```
-Expected: SUCCESS with no errors.
-
-- [ ] **Step 2: Run lint**
-
-```bash
-npm run lint
-```
-Expected: PASS (or only pre-existing warnings).
-
-- [ ] **Step 3: Run MCP tests**
-
-```bash
-cd mcp && npm test
-```
-Expected: All 173+ tests pass. A.1 touches no MCP code, so this is a sanity check.
-
-- [ ] **Step 4: Visual spot-check**
-
-Run `npm run dev` and check:
-- Courses page: DM Sans renders for body text, Lora for headings
-- Muted text (#64748b) is visibly darker than before
-- No visual regressions from removed CSS utilities
+- [ ] **Step 1: Run full build** — `npm run build` — SUCCESS
+- [ ] **Step 2: Run lint** — `npm run lint` — PASS
+- [ ] **Step 3: Run MCP tests** — `cd mcp && npm test` — all 173+ pass
+- [ ] **Step 4: Visual spot-check** — DM Sans renders, muted text darker, no regressions

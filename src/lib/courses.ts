@@ -13,6 +13,7 @@ export type CourseIndexItem = {
   id: string;
   title: string;
   updatedAt: number;
+  lessonCount?: number;
   isPublic?: boolean;
   coverImageUrl?: string | null;
 };
@@ -64,7 +65,7 @@ export function saveCourse(id: string, course: Course) {
   } catch {}
   const index = getCoursesIndex();
   const exists = index.find((i) => i.id === id);
-  const item: CourseIndexItem = { id, title: course.title || "Untitled Course", updatedAt: Date.now() };
+  const item: CourseIndexItem = { id, title: course.title || "Untitled Course", updatedAt: Date.now(), lessonCount: course.lessons.length };
   const next = exists ? index.map((i) => (i.id === id ? item : i)) : [item, ...index];
   setCoursesIndex(next);
 }
@@ -151,7 +152,7 @@ export function migrateFromLegacy(): string | null {
 export async function loadCoursesFromCloud(): Promise<CourseIndexItem[]> {
   const { data, error } = await supabase
     .from("courses")
-    .select("id, title, updated_at, is_public, cover_image_url")
+    .select("id, title, updated_at, is_public, cover_image_url, content")
     .order("updated_at", { ascending: false });
   if (error || !data) return [];
   return data.map((row) => ({
@@ -160,6 +161,7 @@ export async function loadCoursesFromCloud(): Promise<CourseIndexItem[]> {
     updatedAt: new Date(row.updated_at).getTime(),
     isPublic: row.is_public,
     coverImageUrl: row.cover_image_url,
+    lessonCount: Array.isArray((row.content as any)?.lessons) ? (row.content as any).lessons.length : 0,
   }));
 }
 

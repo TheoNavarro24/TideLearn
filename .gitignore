@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .worktrees/
 .superpowers/
+
+# Local Claude Code hook rules
+.claude/*.local.md
