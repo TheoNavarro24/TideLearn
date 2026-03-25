@@ -24,7 +24,7 @@ Note: `sorting` (drag-drop) already exists as a content block — no new block n
 - `multipleresponse`
 - `fillinblank`
 - `matching`
-- `sorting` (drag-drop categorisation — mirrors SortingBlock data shape)
+- `sorting` (drag-drop categorisation — shares `buckets`/`items` structure with SortingBlock but omits `showFeedback`; assessment grading is handled by the Leitner engine)
 
 ### Other work
 - `AssessmentQuestion` discriminated union migration (MCQ gets `kind: "mcq"`)
@@ -57,7 +57,7 @@ type MultipleResponseQuestion = {
   id: string;
   text: string;
   options: string[];        // 2–6 options
-  correctIndices: number[]; // ≥1 correct (select-all-that-apply with 1 correct is valid)
+  correctIndices: number[]; // ≥2 correct (a multiple-response with 1 correct is functionally MCQ)
   feedback?: string;
 };
 
@@ -100,9 +100,11 @@ type AssessmentQuestion =
   | SortingQuestion;
 ```
 
-**Migration strategy:** Permissive schema defaults `kind` to `"mcq"` when absent. Existing courses load without changes. A `migrateQuestions` function is added to `src/lib/courses.ts` (same file and pattern as the existing `migrateLessons` function which adds `kind: "content"` to legacy lessons) — it adds `kind: "mcq"` to any question missing a `kind` field. Called at the same load points as `migrateLessons`.
+**Migration strategy:** Permissive schema defaults `kind` to `"mcq"` when absent. Existing courses load without changes. A `migrateQuestions` function is added to `src/lib/courses.ts` (same file and pattern as the existing `migrateLessons` function at line 26) — it walks assessment lesson questions and adds `kind: "mcq"` to any question missing a `kind` field. Called from `loadCourse()` alongside `migrateLessons`. Note: `loadCourseFromCloud()` currently does not call `migrateLessons` either — preserve this existing gap as-is; do not fix it as part of Phase 2B.
 
-The `assessmentLessonSchema` in **both** `src/types/course.ts` and `mcp/src/lib/types.ts` must have their `questions` array updated from the current hardcoded MCQ shape (4-tuple options, `correctIndex: number`) to a discriminated union schema covering all 5 question types. Both strict and permissive variants need updating.
+The `assessmentLessonSchema` in **both** `src/types/course.ts` and `mcp/src/lib/types.ts` must have their `questions` array updated from the current hardcoded MCQ shape (4-tuple options, `correctIndex: number`) to a discriminated union schema covering all 5 question types. Both strict and permissive variants need updating. The permissive variant must use `.catch()` or `.default()` on the `kind` field to default to `"mcq"` — same principle as block schema permissive variants. Failing to update the permissive schema causes the viewer to silently show "Course not found" (see CLAUDE.md critical rules).
+
+`bloomLevel` exists only on `MCQQuestion`. Any code that accesses `q.bloomLevel` (e.g. the bloom breakdown memo in `AssessmentView.tsx`) must narrow to `kind === "mcq"` before accessing it, or it will produce a TypeScript error on the union type.
 
 ### New block types
 
@@ -200,7 +202,7 @@ All 4 new question types participate in Leitner spaced repetition identically to
 
 | Block | Required fields | Optional fields |
 |-------|----------------|-----------------|
-| `multipleresponse` | `question`, ≥2 options, ≥1 `correctIndices` | `showFeedback`, `feedbackMessage` |
+| `multipleresponse` | `question`, ≥2 options, ≥2 `correctIndices` | `showFeedback`, `feedbackMessage` |
 | `fillinblank` | `template` with ≥1 gap, ≥1 acceptable answer per gap | `showFeedback` |
 | `matching` | `prompt`, ≥2 left items, ≥2 right items, all pairs defined | `showFeedback` |
 
@@ -216,8 +218,8 @@ Several Phase 2A Zod schemas already have tight constraints (e.g. `sorting`, `br
 | `button` | `label`, `url` |
 | `embed` | `url` |
 | `flashcard` | `front`, `back` |
-| `timeline` | ≥2 events, each with non-empty label |
-| `process` | ≥2 steps, each with non-empty label |
+| `timeline` | ≥2 events, each with non-empty label (**intentional tightening** from current ≥1 — a timeline with 1 event is not meaningful) |
+| `process` | ≥2 steps, each with non-empty label (**intentional tightening** from current ≥1 — a process with 1 step is not meaningful) |
 | `chart` | `title`, ≥1 data series with ≥1 data point |
 | `sorting` | `prompt`, ≥2 buckets, ≥2 items |
 | `hotspot` | `src`, ≥1 hotspot with non-empty label |
@@ -233,7 +235,7 @@ Several Phase 2A Zod schemas already have tight constraints (e.g. `sorting`, `br
 **Error messages:**
 - "Question text is required"
 - "Add at least 2 options"
-- "Mark at least 2 correct answers"
+- "Mark at least 2 correct answers" (multipleresponse requires ≥2 correct — a single correct answer is functionally MCQ)
 - "Template must contain at least one gap"
 - "Gap {{n}} needs at least one acceptable answer"
 - "Add at least 2 items to each column"
@@ -250,7 +252,7 @@ All MCP work ships with its corresponding feature — no deferred cleanup phase.
 | `mcp/src/lib/types.ts` | New Zod schemas for 3 block types + 5 question types (incl. migrated MCQ); tighten Phase 2A block schemas |
 | `mcp/src/tools/blocks.ts` | `add_block` description + input schema for 3 new block types |
 | `mcp/src/tools/questions.ts` | `add_question` + `update_question` support `kind` parameter and all 5 question shapes |
-| `mcp/src/tools/semantic.ts` | `injectSubItemIds` — handle `fillinblank` block blanks, `matching` block left/right items; add a new `injectQuestionSubItemIds` function for question types (`fillinblank` blanks, `matching` left/right items, `sorting` items/buckets) — called from `add_question` in `questions.ts` |
+| `mcp/src/tools/semantic.ts` | `injectSubItemIds` — handle `fillinblank` block blanks (one pass), `matching` block left items AND right items (two separate passes); add a new `injectQuestionSubItemIds` function for question types (`fillinblank` blanks, `matching` left AND right items, `sorting` items/buckets) — called from `add_question` in `questions.ts` |
 | `mcp/src/tools/preview.ts` | `renderBlock` — 3 new cases; add new `renderQuestion` function with cases for all 5 question types (MCQ + 4 new) |
 | `mcp/src/resources/instructions.ts` | Docs for all new block/question types |
 | `mcp/src/tools/__tests__/` | Tests for all new schemas, injectSubItemIds cases, grading logic |
@@ -263,9 +265,11 @@ All MCP work ships with its corresponding feature — no deferred cleanup phase.
 
 - Add `kind` to all 5 question type definitions in `src/types/course.ts`
 - Update permissive schema to default `kind: "mcq"` on legacy questions
-- Add migration shim in `AssessmentView.tsx` (same pattern as lesson `kind: "content"` shim)
+- Add `migrateQuestions` function to `src/lib/courses.ts` (same pattern as `migrateLessons` at line 26)
 - Update `mcp/src/lib/types.ts` with new question union schema
 - Update `add_question` + `update_question` MCP tools for discriminated union
+- Update `generateExamSession` and `generateSourceBalanced` in `src/lib/assessment.ts` to narrow to `kind === "mcq"` before accessing `source` and `bloomLevel`
+- Update bloom breakdown memo in `AssessmentView.tsx` to narrow to `kind === "mcq"`
 - All existing MCQ tests still pass
 
 ### Tier 2 — Multiple response (simplest new type)
@@ -284,7 +288,7 @@ All MCP work ships with its corresponding feature — no deferred cleanup phase.
 - Block viewers + question renderers in `AssessmentView.tsx`
 - Grading functions for both
 - Validation for both
-- MCP updates: `injectSubItemIds` for blanks and matching left/right items; `renderBlock` + `renderQuestion` cases; `instructions.ts` docs
+- MCP updates: `injectSubItemIds` for blanks and matching left AND right items (two passes); `injectQuestionSubItemIds` called from `add_question` for both types; `renderBlock` + `renderQuestion` cases; `instructions.ts` docs
 - Tests
 
 ### Tier 4 — Sorting question + Phase 2A validation catch-up + full tests
