@@ -49,7 +49,7 @@ export function ShortAnswerForm({ block, onChange }: { block: ShortAnswerBlock; 
       </div>
 
       {/* Feedback section */}
-      <div style={{ borderTop: "1px solid #e0fdf4", paddingTop: 12, marginTop: 4 }}>
+      <div className="border-t border-[color:hsl(var(--border))] pt-3 mt-1">
         <div className="flex items-center gap-2 mb-2">
           <Switch
             id={`feedback-${block.id}`}
