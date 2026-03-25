@@ -205,7 +205,7 @@ document    { type: "document",  src: "https://...",  fileType: "pdf" | "docx" |
 accordion   { type: "accordion",  items: [{ title: "...", content: "HTML or markdown" }] }
 tabs        { type: "tabs",       items: [{ label: "...", content: "HTML or markdown" }] }
 \`\`\`
-Note: item \`id\` fields are injected automatically — do not provide them.
+Note: item \`id\` fields are injected automatically — do not provide them. This applies to all block types with sub-items: accordion, tabs, timeline, process, sorting, hotspot, and branching.
 
 ### Inline Knowledge Checks (for content lessons only)
 \`\`\`
@@ -228,9 +228,9 @@ flashcard   { type: "flashcard", front: "...",  back: "...",  hint?: "..." }
 ### Timeline / Process / Chart
 \`\`\`
 timeline    { type: "timeline",  items: [{ date: "2024", title: "...", description?: "..." }] }
-              ↑ items need id fields (auto-generated); minimum 1 item.
+              ↑ item id fields are injected automatically — do not provide them. Minimum 1 item.
 process     { type: "process",   steps: [{ title: "...", description?: "..." }] }
-              ↑ steps need id fields (auto-generated); minimum 1 step.
+              ↑ step id fields are injected automatically — do not provide them. Minimum 1 step.
 chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "...",
               labels: ["A", "B", "C"],  datasets: [{ label: "Series 1", values: [10, 20, 30] }] }
               ↑ labels and datasets must be non-empty. values length must match labels length.
@@ -242,15 +242,15 @@ chart       { type: "chart",     chartType: "bar" | "line" | "pie",  title?: "..
 sorting     { type: "sorting",   prompt: "...",  showFeedback: true | false,
               buckets: [{ label: "Category A" }, { label: "Category B" }],
               items: [{ text: "...", bucketId: "<bucket-id>" }, ...] }
-              ↑ buckets and items need id fields (auto-generated); minimum 2 buckets, 2 items.
+              ↑ bucket and item id fields are injected automatically — do not provide them. Minimum 2 buckets, 2 items.
               ↑ Each item has a bucketId pointing to its correct bucket. Learner drags items into buckets.
 hotspot     { type: "hotspot",   src: "https://...",  alt: "...",
               hotspots: [{ x: 25.5, y: 40.2, label: "...", description?: "..." }] }
-              ↑ hotspots need id fields (auto-generated); empty array is valid.
+              ↑ hotspot id fields are injected automatically — do not provide them. Empty array is valid.
               ↑ x and y are percentages (0–100) relative to image dimensions.
 branching   { type: "branching", prompt: "...",
               choices: [{ label: "...", content: "<p>HTML shown on selection</p>" }] }
-              ↑ choices need id fields (auto-generated); minimum 2 choices. content accepts HTML.
+              ↑ choice id fields are injected automatically — do not provide them. Minimum 2 choices. content accepts HTML.
               ↑ Learner clicks a choice button to reveal the corresponding content panel.
 \`\`\`
 
