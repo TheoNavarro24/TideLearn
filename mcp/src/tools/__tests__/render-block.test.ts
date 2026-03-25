@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renderCourseToHtml } from "../preview.js";
+import { renderCourseToHtml, renderQuestion } from "../preview.js";
 import type { Course } from "../../lib/types.js";
 
 function courseWithBlock(block: any): Course {
@@ -103,5 +103,43 @@ describe("renderBlock — Phase 2A block types", () => {
     expect(html).toContain("What would you do?");
     expect(html).toContain("Option A");
     expect(html).not.toContain("[Unknown block type]");
+  });
+
+  it("multipleresponse: renders question with correct answers marked", () => {
+    const block = {
+      id: "1", type: "multipleresponse",
+      question: "Pick two", options: ["A", "B", "C"], correctIndices: [0, 2],
+    };
+    const result = renderCourseToHtml(courseWithBlock(block));
+    expect(result).toContain("Multiple Response");
+    expect(result).toContain("Pick two");
+    expect(result).toContain("✓ A");
+    expect(result).toContain("✓ C");
+    expect(result).not.toContain("✓ B");
+  });
+});
+
+describe("renderQuestion", () => {
+  it("mcq: renders question text and correct option", () => {
+    const q = { kind: "mcq", text: "What color?", options: ["Red", "Blue"], correctIndex: 1 };
+    const result = renderQuestion(q);
+    expect(result).toContain("What color?");
+    expect(result).toContain("✓ Blue");
+    expect(result).not.toContain("✓ Red");
+  });
+
+  it("multipleresponse: renders with select-all hint and correct options", () => {
+    const q = { kind: "multipleresponse", text: "Pick all", options: ["A", "B", "C"], correctIndices: [0, 2] };
+    const result = renderQuestion(q);
+    expect(result).toContain("Pick all");
+    expect(result).toContain("Select all that apply");
+    expect(result).toContain("✓ A");
+    expect(result).not.toContain("✓ B");
+  });
+
+  it("unknown kind: renders fallback", () => {
+    const q = { kind: "unknown_future_type", text: "?" };
+    const result = renderQuestion(q);
+    expect(result).toContain("Unknown question kind");
   });
 });
