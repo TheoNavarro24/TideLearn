@@ -53,8 +53,8 @@ export function generateExamSession(
   questions: AssessmentQuestion[],
   size: number
 ): AssessmentQuestion[] {
-  const tagged = questions.filter((q) => q.kind === "mcq" && q.source);
-  const uniqueSources = new Set(tagged.map((q) => (q as any).source as string));
+  const tagged = questions.filter((q): q is import("../types/course").MCQQuestion => q.kind === "mcq" && !!q.source);
+  const uniqueSources = new Set(tagged.map((q) => q.source!));
   if (tagged.length > 0 && uniqueSources.size > 1) {
     return generateSourceBalanced(questions, size);
   }

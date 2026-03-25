@@ -79,16 +79,59 @@ export function injectQuestionSubItemIds(q: any): any {
     }
     case "sorting": {
       const bucketsWithIds = (q.buckets ?? []).map((b: any) => ({ ...b, id: uid() }));
-      const itemsWithIds = (q.items ?? []).map((item: any) => ({
-        ...item,
+      const itemsWithIds = (q.items ?? []).map(({ bucketIndex, ...rest }: any) => ({
+        ...rest,
         id: uid(),
-        bucketId: bucketsWithIds[item.bucketIndex]?.id ?? uid(),
+        bucketId: bucketsWithIds[bucketIndex]?.id ?? uid(),
       }));
       return { ...withId, buckets: bucketsWithIds, items: itemsWithIds };
     }
     default:
       return withId;
   }
+}
+
+/** Injects IDs into sub-item arrays when updating a question's sub-items. */
+export function injectPartialQuestionSubItemIds(fields: any): any {
+  const result = { ...fields };
+
+  // fillinblank blanks
+  if (result.blanks) {
+    result.blanks = result.blanks.map((b: any) => ({
+      ...b,
+      id: b.id ?? uid(),
+    }));
+  }
+
+  // matching left/right items
+  if (result.left) {
+    result.left = result.left.map((item: any) => ({ ...item, id: item.id ?? uid() }));
+  }
+  if (result.right) {
+    result.right = result.right.map((item: any) => ({ ...item, id: item.id ?? uid() }));
+  }
+  // Note: pairs with leftIndex/rightIndex cannot be converted without knowing the full
+  // left/right arrays — if pairs are included, they must already use leftId/rightId,
+  // OR the caller must send left+right+pairs together. Document this in the tool description.
+
+  // sorting buckets/items
+  if (result.buckets) {
+    result.buckets = result.buckets.map((b: any) => ({ ...b, id: b.id ?? uid() }));
+  }
+  if (result.items && result.buckets) {
+    // If both buckets and items are updated together, convert bucketIndex → bucketId
+    const bucketsWithIds = result.buckets;
+    result.items = result.items.map(({ bucketIndex, ...rest }: any) => ({
+      ...rest,
+      id: rest.id ?? uid(),
+      bucketId: bucketsWithIds[bucketIndex]?.id ?? rest.bucketId ?? uid(),
+    }));
+  } else if (result.items) {
+    // items only — just ensure ids
+    result.items = result.items.map((item: any) => ({ ...item, id: item.id ?? uid() }));
+  }
+
+  return result;
 }
 
 export function registerAssessmentTools(server: McpServer) {
@@ -222,6 +265,7 @@ export function registerAssessmentTools(server: McpServer) {
     },
     async ({ course_id, lesson_id, question_id, fields }) =>
       withAuth(async (client, userId) => {
+        const injectedFields = injectPartialQuestionSubItemIds(fields);
         let notFound = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const lesson = course.lessons.find((l) => l.id === lesson_id) as any;
@@ -234,7 +278,7 @@ export function registerAssessmentTools(server: McpServer) {
               l.id !== lesson_id ? l : {
                 ...l,
                 questions: (l as any).questions.map((q: any, i: number) =>
-                  i === qIdx ? { ...q, ...fields } : q
+                  i === qIdx ? { ...q, ...injectedFields } : q
                 ),
               }
             ),

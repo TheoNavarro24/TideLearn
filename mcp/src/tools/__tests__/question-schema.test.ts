@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { injectQuestionSubItemIds } from "../assessment.js";
+import { injectQuestionSubItemIds, injectPartialQuestionSubItemIds } from "../assessment.js";
 
 describe("injectQuestionSubItemIds", () => {
   it("mcq: injects top-level id only", () => {
@@ -56,5 +56,21 @@ describe("injectQuestionSubItemIds", () => {
     const result = injectQuestionSubItemIds(q);
     expect(result.id).toBeTruthy();
     expect(result.correctIndices).toEqual([0, 2]);
+  });
+});
+
+describe("injectPartialQuestionSubItemIds", () => {
+  it("injects ids on new blanks", () => {
+    const result = injectPartialQuestionSubItemIds({
+      blanks: [{ acceptable: ["sky"] }],
+    });
+    expect(result.blanks[0].id).toBeTruthy();
+  });
+
+  it("preserves existing blank ids", () => {
+    const result = injectPartialQuestionSubItemIds({
+      blanks: [{ id: "existing-id", acceptable: ["sky"] }],
+    });
+    expect(result.blanks[0].id).toBe("existing-id");
   });
 });
