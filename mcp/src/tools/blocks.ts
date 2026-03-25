@@ -80,28 +80,37 @@ Text fields (e.g. in text blocks) must be HTML (e.g. "<p>content</p>"), not mark
   server.tool(
     "add_block",
     `Add a block to a lesson. Omit the 'id' field — it is generated automatically.
+Sub-item ids (in accordion, tabs, timeline, process, sorting, hotspot, branching) are also auto-generated — omit them.
 
 BLOCK TYPES — pass exactly these fields in the 'block' object:
 
-  heading    { type:"heading", text:"..." }
-  text       { type:"text", text:"..." }
-  image      { type:"image", src:"https://...", alt:"..." }
-  video      { type:"video", url:"https://youtube.com/..." }
-  audio      { type:"audio", src:"https://...", title?:"..." }
-  code       { type:"code", language:"python", code:"..." }
-  list       { type:"list", style:"bulleted"|"numbered", items:["item1","item2"] }
-  quote      { type:"quote", text:"...", cite?:"Author" }
-  callout    { type:"callout", variant:"info"|"success"|"warning"|"danger", title?:"...", text:"..." }
-  accordion  { type:"accordion", items:[{ title:"...", content:"..." }] }
-  tabs       { type:"tabs", items:[{ label:"...", content:"..." }] }
-  quiz       { type:"quiz", question:"...", options:["A","B","C","D"], correctIndex:0 }
-  truefalse  { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
+  heading     { type:"heading", text:"..." }
+  text        { type:"text", text:"..." }
+  image       { type:"image", src:"https://...", alt:"..." }
+  video       { type:"video", url:"https://youtube.com/..." }
+  audio       { type:"audio", src:"https://...", title?:"..." }
+  code        { type:"code", language:"python", code:"..." }
+  list        { type:"list", style:"bulleted"|"numbered", items:["item1","item2"] }
+  quote       { type:"quote", text:"...", cite?:"Author" }
+  callout     { type:"callout", variant:"info"|"success"|"warning"|"danger", title?:"...", text:"..." }
+  accordion   { type:"accordion", items:[{ title:"...", content:"..." }] }
+  tabs        { type:"tabs", items:[{ label:"...", content:"..." }] }
+  quiz        { type:"quiz", question:"...", options:["A","B","C","D"], correctIndex:0 }
+  truefalse   { type:"truefalse", question:"...", correct:true|false, feedbackCorrect?:"...", feedbackIncorrect?:"..." }
   shortanswer { type:"shortanswer", question:"...", answer:"...", acceptable?:["alt1"], caseSensitive?:false, trimWhitespace?:true }
-  document   { type:"document", src:"https://...", fileType:"pdf"|"docx"|"xlsx"|"pptx", title?:"..." }
-  divider    { type:"divider" }
-  toc        { type:"toc" }
+  document    { type:"document", src:"https://...", fileType:"pdf"|"docx"|"xlsx"|"pptx", title?:"..." }
+  divider     { type:"divider" }
+  toc         { type:"toc" }
+  button      { type:"button", label:"...", url:"https://...", variant:"primary"|"secondary"|"outline", openInNewTab:boolean }
+  embed       { type:"embed", url:"https://...", title:"...", height:400 }
+  flashcard   { type:"flashcard", front:"...", back:"...", hint?:"..." }
+  timeline    { type:"timeline", items:[{ date:"2024", title:"...", description?:"..." }] }
+  process     { type:"process", steps:[{ title:"...", description?:"..." }] }
+  chart       { type:"chart", chartType:"bar"|"line"|"pie", title?:"...", labels:["A","B"], datasets:[{ label:"S1", values:[10,20] }] }
+  sorting     { type:"sorting", prompt:"...", showFeedback:boolean, buckets:[{ label:"..." }], items:[{ text:"...", bucketId:"<bucket-id>" }] }
+  hotspot     { type:"hotspot", src:"https://...", alt:"...", hotspots:[{ x:25, y:40, label:"...", description?:"..." }] }
+  branching   { type:"branching", prompt:"...", choices:[{ label:"...", content:"<p>...</p>" }] }
 
-accordion and tabs item IDs are generated automatically — omit them.
 position is 1-based and optional; omit to append at the end.`,
     {
       course_id: z.string().uuid(),
