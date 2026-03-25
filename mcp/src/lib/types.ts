@@ -150,6 +150,16 @@ export type BranchingBlock = {
   choices: { id: string; label: string; content: string }[];
 };
 
+export type MultipleResponseBlock = {
+  type: "multipleresponse";
+  id: string;
+  question: string;
+  options: string[];
+  correctIndices: number[];
+  showFeedback?: boolean;
+  feedbackMessage?: string;
+};
+
 export type TrueFalseBlock = {
   id: string;
   type: "truefalse";
@@ -198,7 +208,8 @@ export type Block =
   | ChartBlock
   | SortingBlock
   | HotspotBlock
-  | BranchingBlock;
+  | BranchingBlock
+  | MultipleResponseBlock;
 
 export type MCQQuestion = {
   kind: "mcq";
@@ -486,6 +497,16 @@ export const branchingBlockSchema = z.object({
   })).min(2),
 });
 
+export const multipleResponseBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("multipleresponse"),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).max(6),
+  correctIndices: z.array(z.number().int().min(0)).min(2),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -513,6 +534,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   sortingBlockSchema,
   hotspotBlockSchema,
   branchingBlockSchema,
+  multipleResponseBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({

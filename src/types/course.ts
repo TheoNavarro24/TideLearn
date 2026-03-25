@@ -173,6 +173,16 @@ export type ShortAnswerBlock = {
   feedbackMessage?: string;
 };
 
+export type MultipleResponseBlock = {
+  type: "multipleresponse";
+  id: string;
+  question: string;
+  options: string[];
+  correctIndices: number[];
+  showFeedback?: boolean;
+  feedbackMessage?: string;
+};
+
 export type Block =
   | HeadingBlock
   | TextBlock
@@ -199,7 +209,8 @@ export type Block =
   | ChartBlock
   | SortingBlock
   | HotspotBlock
-  | BranchingBlock;
+  | BranchingBlock
+  | MultipleResponseBlock;
 
 export type MCQQuestion = {
   kind: "mcq";
@@ -480,6 +491,16 @@ export const branchingBlockSchema = z.object({
   })).min(2),
 });
 
+export const multipleResponseBlockSchema = z.object({
+  id: z.string(),
+  type: z.literal("multipleresponse"),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).max(6),
+  correctIndices: z.array(z.number().int().min(0)).min(2),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
+});
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   textBlockSchema,
@@ -506,6 +527,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   sortingBlockSchema,
   hotspotBlockSchema,
   branchingBlockSchema,
+  multipleResponseBlockSchema,
 ]);
 
 const contentLessonSchema = z.object({
@@ -689,6 +711,16 @@ const branchingBlockSchemaPermissive = z.object({
   choices: z.array(z.object({ id: z.string(), label: z.string(), content: z.string() })),
 });
 
+const multipleResponseBlockSchemaPermissive = z.object({
+  id: z.string(),
+  type: z.literal("multipleresponse"),
+  question: z.string(),
+  options: z.array(z.string()),
+  correctIndices: z.array(z.number()),
+  showFeedback: z.boolean().optional(),
+  feedbackMessage: z.string().optional(),
+});
+
 export const blockSchemaPermissive = z.discriminatedUnion("type", [
   headingBlockSchemaPermissive, textBlockSchemaPermissive, imageBlockSchemaPermissive,
   quizBlockSchemaPermissive, codeBlockSchemaPermissive, trueFalseBlockSchemaPermissive,
@@ -698,7 +730,7 @@ export const blockSchemaPermissive = z.discriminatedUnion("type", [
   documentBlockSchemaPermissive, buttonBlockSchemaPermissive, embedBlockSchemaPermissive,
   flashcardBlockSchemaPermissive, timelineBlockSchemaPermissive, processBlockSchemaPermissive,
   chartBlockSchemaPermissive, sortingBlockSchemaPermissive, hotspotBlockSchemaPermissive,
-  branchingBlockSchemaPermissive,
+  branchingBlockSchemaPermissive, multipleResponseBlockSchemaPermissive,
 ]);
 
 const contentLessonSchemaPermissive = z.object({
@@ -831,6 +863,14 @@ export const factories = {
       { id: uid(), label: "Option A", content: "<p>Content for Option A.</p>" },
       { id: uid(), label: "Option B", content: "<p>Content for Option B.</p>" },
     ],
+  }),
+  multipleresponse: (): MultipleResponseBlock => ({
+    id: uid(),
+    type: "multipleresponse",
+    question: "Select all that apply.",
+    options: ["Option A", "Option B", "Option C"],
+    correctIndices: [-1, -1],
+    showFeedback: true,
   }),
 } as const;
 
