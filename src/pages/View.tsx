@@ -7,74 +7,46 @@ import { getSpec } from "@/components/blocks/registry";
 
 import { courseSchemaPermissive as courseSchema, type Course } from "@/types/course";
 import { AssessmentView } from "@/pages/AssessmentView";
-
-interface QuizAnsweredDetail {
-  blockId: string;
-  correct: boolean;
-}
-
-type QuizAnsweredEvent = CustomEvent<QuizAnsweredDetail>;
-
-interface ResumeState {
-  completed?: string[];
-  lastLessonId?: string;
-}
-
-interface ResumeMessage {
-  type: "resume";
-  state?: ResumeState;
-}
-
-interface ReadyMessage {
-  type: "ready";
-}
-
-interface ProgressMessage {
-  type: "progress";
-  completed: string[];
-  lastLessonId: string | null;
-  courseCompleted: boolean;
-  score: number | null;
-  totalQuestions: number;
-  correctAnswers: number;
-}
+import { ViewSidebar } from "@/pages/ViewSidebar";
+import { ViewBottomNav } from "@/pages/ViewBottomNav";
+import { useQuizAnswers } from "@/hooks/useQuizAnswers";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { useScormBridge } from "@/hooks/useScormBridge";
+import { useLessonNavigation } from "@/hooks/useLessonNavigation";
 
 export default function View() {
   const [course, setCourse] = useState<Course | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  const courseId = useMemo(() => params.get("id") ?? "", [params]);
+  const gateParam = useMemo(() => params.get("gate"), [params]);
+  const gateEnabled = gateParam === "1" || gateParam === "quiz";
+  const gateQuiz = gateParam === "quiz";
 
   useEffect(() => {
     async function loadCourse() {
-      // Option 1: load by course ID (clean URL, requires Supabase)
-      const params = new URLSearchParams(window.location.search);
-      const courseId = params.get("id");
-      if (courseId) {
-        const course = await loadCourseFromCloud(courseId);
-        if (course) {
-          const result = courseSchema.safeParse(course);
-          if (result.success) {
-            setCourse(result.data as Course);
-            return;
-          }
+      const id = params.get("id");
+      if (id) {
+        const loaded = await loadCourseFromCloud(id);
+        if (loaded) {
+          const result = courseSchema.safeParse(loaded);
+          if (result.success) { setCourse(result.data as Course); return; }
         }
         setError("Course not found");
         return;
       }
-
-      // Option 2: load from URL hash (legacy / anonymous sharing)
       const hash = window.location.hash.slice(1);
       if (!hash) return;
       try {
         const json = decompressFromEncodedURIComponent(hash);
         if (json) {
-          const parsed = JSON.parse(json);
-          const result = courseSchema.safeParse(parsed);
-          if (result.success) {
-            setCourse(result.data as Course);
-          } else {
-            console.error("Invalid course data", result.error);
-            setError("Invalid course data");
-          }
+          const result = courseSchema.safeParse(JSON.parse(json));
+          if (result.success) { setCourse(result.data as Course); }
+          else { console.error("Invalid course data", result.error); setError("Invalid course data"); }
         }
       } catch (e) {
         console.error("Failed to parse course", e);
@@ -84,24 +56,29 @@ export default function View() {
     loadCourse();
   }, []);
 
-  const flatNav = useMemo(() => course?.lessons.map((l) => ({ id: l.id, title: l.title })) ?? [], [course]);
-  const params = useMemo(() => new URLSearchParams(window.location.search), []);
-  const courseId = useMemo(() => params.get("id") ?? "", [params]);
-  const gateParam = useMemo(() => params.get("gate"), [params]);
-  const gateEnabled = useMemo(() => gateParam === "1" || gateParam === "quiz", [gateParam]);
-  const gateQuiz = useMemo(() => gateParam === "quiz", [gateParam]);
-  const initialPaged = useMemo(() => {
-    const p = params.get("paged");
-    // Default to paged mode unless explicitly disabled (?paged=0)
-    if (p === "0") return false;
-    return true;
-  }, [params]);
-  const [isPaged, setIsPaged] = useState<boolean>(initialPaged);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
-  const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const mainContentRef = useRef<HTMLDivElement>(null);
+  const { answers } = useQuizAnswers();
+  const { completed, lastLessonId, toggleComplete, trackLesson, applyResumeState } = useCourseProgress();
+  const {
+    isPaged, setIsPaged, activeId,
+    currentLessonId, setCurrentLessonId,
+    go, goToLesson, switchToPaged, switchToScrollMode,
+  } = useLessonNavigation(course);
+
+  useScormBridge({
+    course,
+    completed,
+    lastLessonId,
+    answers,
+    onResume: (completedIds, resumeLessonId) => {
+      applyResumeState(completedIds, resumeLessonId);
+      setIsPaged(true);
+      setCurrentLessonId(resumeLessonId);
+      const url = new URL(window.location.href);
+      url.searchParams.set("paged", "1");
+      url.searchParams.set("lesson", resumeLessonId);
+      history.replaceState(null, "", url.toString());
+    },
+  });
 
   useEffect(() => {
     if (!course) return;
@@ -121,214 +98,10 @@ export default function View() {
   }, [course, gateEnabled, isPaged, params]);
 
   useEffect(() => {
-    if (currentLessonId) {
-      requestAnimationFrame(() => mainContentRef.current?.focus());
-    }
-  }, [currentLessonId]);
-
-  const currentHash = useMemo(() => window.location.hash.slice(1), []);
-  const [answers, setAnswers] = useState<Record<string, boolean>>({});
-  const storageKey = useMemo(() => {
-    const p = new URLSearchParams(window.location.search);
-    const id = p.get("id");
-    return "quizAnswers:" + (id ? `id:${id}` : window.location.hash.slice(1));
-  }, []);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
-  }, [storageKey]);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as QuizAnsweredEvent).detail;
-      const blockId = detail?.blockId;
-      const correct = detail?.correct;
-      if (!blockId) return;
-      setAnswers((prev) => {
-        const next = { ...prev, [blockId]: !!correct };
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(next));
-        } catch {}
-        return next;
-      });
-    };
-    window.addEventListener("quiz:answered", handler);
-    return () => window.removeEventListener("quiz:answered", handler);
-  }, [storageKey]);
-
-  // Persistent course progress (completed lessons + resume)
-  const progressKey = useMemo(() => {
-    const p = new URLSearchParams(window.location.search);
-    const id = p.get("id");
-    return "courseProgress:" + (id ? `id:${id}` : window.location.hash.slice(1));
-  }, []);
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const [lastLessonId, setLastLessonId] = useState<string | null>(null);
-
-  const loadProgress = () => {
-    try {
-      const raw = localStorage.getItem(progressKey);
-      if (raw) {
-        const p = JSON.parse(raw) as { completed?: string[]; lastLessonId?: string };
-        setCompleted(new Set(p.completed || []));
-        setLastLessonId(p.lastLessonId || null);
-      } else {
-        setCompleted(new Set());
-        setLastLessonId(null);
-      }
-    } catch {}
-  };
-
-  useEffect(() => { loadProgress(); }, [progressKey]);
-
-  const persistProgress = (nextCompleted: Set<string>, nextLast: string | null) => {
-    try {
-      localStorage.setItem(
-        progressKey,
-        JSON.stringify({ completed: Array.from(nextCompleted), lastLessonId: nextLast || undefined })
-      );
-    } catch {}
-  };
-
-  const toggleComplete = (lessonId: string) => {
-    setCompleted((prev) => {
-      const next = new Set(prev);
-      if (next.has(lessonId)) next.delete(lessonId); else next.add(lessonId);
-      persistProgress(next, lastLessonId);
-      window.dispatchEvent(new Event("course:progress:changed"));
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    const handler = () => loadProgress();
-    window.addEventListener("course:progress:changed", handler as EventListener);
-    return () => window.removeEventListener("course:progress:changed", handler as EventListener);
-  }, [progressKey]);
-
-  // Update last viewed lesson (resume)
-  useEffect(() => {
     if (!currentLessonId) return;
-    setLastLessonId(currentLessonId);
-    persistProgress(completed, currentLessonId);
-    window.dispatchEvent(new Event("course:progress:changed"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    trackLesson(currentLessonId);
+    requestAnimationFrame(() => mainContentRef.current?.focus());
   }, [currentLessonId]);
-
-  // SCORM/LMS bridge: messaging (ready/resume/progress)
-  useEffect(() => {
-    if (!course) return;
-    try {
-      if (window.parent && window.parent !== window) {
-        const msg: ReadyMessage = { type: "ready" };
-        // SCORM bridge: target origin is "*" intentionally — SCORM players
-        // serve content from unpredictable origins, so scoping is not reliable.
-        window.parent.postMessage(msg, "*");
-      }
-    } catch {}
-  }, [course]);
-
-  useEffect(() => {
-    if (!course) return;
-    const onMsg = (event: MessageEvent<ResumeMessage>) => {
-      const data = event.data;
-      if (!data || typeof data !== "object") return;
-      if (data.type === "resume") {
-        const st = data.state || {};
-        if (Array.isArray(st.completed)) setCompleted(new Set(st.completed));
-        if (st.lastLessonId && course.lessons.some((l) => l.id === st.lastLessonId)) {
-          setIsPaged(true);
-          setCurrentLessonId(st.lastLessonId);
-          const url = new URL(window.location.href);
-          url.searchParams.set("paged", "1");
-          url.searchParams.set("lesson", st.lastLessonId);
-          history.replaceState(null, "", url.toString());
-        }
-      }
-    };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [course]);
-
-  useEffect(() => {
-    if (!course) return;
-    const total = course.lessons.length || 0;
-    const courseCompleted = total > 0 && completed.size >= total;
-
-    const allQuizIds: string[] = [];
-    for (const lesson of course.lessons) {
-      if (lesson.kind !== "content") continue;
-      for (const block of lesson.blocks) {
-        if (["quiz", "truefalse", "shortanswer"].includes(block.type)) {
-          if (block.id) allQuizIds.push(block.id);
-        }
-      }
-    }
-    const totalQuestions = allQuizIds.length;
-    const correctAnswers = allQuizIds.filter((id) => answers[id] === true).length;
-    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : null;
-
-    try {
-      if (window.parent && window.parent !== window) {
-        const msg: ProgressMessage = {
-          type: "progress",
-          completed: Array.from(completed),
-          lastLessonId,
-          courseCompleted,
-          score,
-          totalQuestions,
-          correctAnswers,
-        };
-        // SCORM bridge: target origin is "*" intentionally — SCORM players
-        // serve content from unpredictable origins, so scoping is not reliable.
-        window.parent.postMessage(msg, "*");
-      }
-    } catch {}
-  }, [completed, lastLessonId, course, answers]);
-
-  // Scrollspy for active section
-  useEffect(() => {
-    if (!course) return;
-    const ids = course.lessons.map((l) => l.id);
-    const handler = (entries: IntersectionObserverEntry[]) => {
-      let visibleId: string | null = activeId;
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          visibleId = (entry.target as HTMLElement).id;
-          break;
-        }
-      }
-      if (visibleId && visibleId !== activeId) setActiveId(visibleId);
-    };
-    const io = new IntersectionObserver(handler, { root: null, threshold: 0.5 });
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
-  }, [course, activeId]);
-
-  // Lesson ref for scroll position (kept for future use)
-  const lessonRef = useRef<HTMLElement | null>(null);
-
-  // Arrow key navigation in paged mode
-  useEffect(() => {
-    if (!isPaged) return;
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement;
-      if (el?.tagName && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
-      if (el?.isContentEditable) return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); go("prev"); }
-      if (e.key === "ArrowRight") { e.preventDefault(); go("next"); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isPaged, currentLessonId, course]);
-
-  // ── Error / no-course states ──────────────────────────────────────────────
 
   if (error) {
     return (
@@ -340,7 +113,6 @@ export default function View() {
       </main>
     );
   }
-
   if (!course) {
     return (
       <main role="alert" className="min-h-screen flex items-center justify-center font-sans">
@@ -352,22 +124,7 @@ export default function View() {
     );
   }
 
-  // ── Computed values ───────────────────────────────────────────────────────
-
-  const go = (dir: "prev" | "next") => {
-    if (!course || !currentLessonId) return;
-    const idx = course.lessons.findIndex((l) => l.id === currentLessonId);
-    const nextIdx = dir === "prev" ? idx - 1 : idx + 1;
-    const next = course.lessons[nextIdx];
-    if (next) {
-      setCurrentLessonId(next.id);
-      const url = new URL(window.location.href);
-      url.searchParams.set("paged", "1");
-      url.searchParams.set("lesson", next.id);
-      history.replaceState(null, "", url.toString());
-    }
-  };
-
+  const flatNav = course.lessons.map((l) => ({ id: l.id, title: l.title }));
   const currentLesson = currentLessonId ? course.lessons.find((l) => l.id === currentLessonId) : null;
   const idx = currentLesson ? course.lessons.findIndex((l) => l.id === currentLesson.id) : -1;
   const prevLesson = idx > 0 ? course.lessons[idx - 1] : null;
@@ -377,51 +134,16 @@ export default function View() {
   const canResume = !!(lastLessonId && course.lessons.some((l) => l.id === lastLessonId));
   const isCourseCompleted = totalLessons > 0 && completed.size >= totalLessons;
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  const getDotStyle = (lessonId: string, isCurrent: boolean): React.CSSProperties => {
-    if (completed.has(lessonId)) {
-      return { width: 8, height: 8, borderRadius: "50%", background: "var(--accent-hex)", flexShrink: 0 };
-    }
-    if (isCurrent) {
-      return {
-        width: 8, height: 8, borderRadius: "50%", background: "var(--accent-hex)", flexShrink: 0,
-        boxShadow: "0 0 0 3px rgba(64,200,160,0.25)",
-        animation: "pulse-ring 1.8s ease-in-out infinite",
-      };
-    }
-    return { width: 8, height: 8, borderRadius: "50%", border: "1.5px solid var(--text-muted)", background: "transparent", flexShrink: 0 };
-  };
-
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <div className="font-sans h-screen flex flex-col overflow-hidden">
 
-      {/* Progress stripe — very top */}
-      <div
-        role="progressbar"
-        aria-label="Course progress"
-        aria-valuenow={Math.round(courseProgress)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        className="h-[3px] w-full bg-[hsl(var(--border))] shrink-0"
-      >
-        <div
-          className="h-full bg-[var(--accent-hex)] transition-all duration-300"
-          style={{ width: `${courseProgress}%` }}
-        />
+      <div role="progressbar" aria-label="Course progress" aria-valuenow={Math.round(courseProgress)} aria-valuemin={0} aria-valuemax={100} className="h-[3px] w-full bg-[hsl(var(--border))] shrink-0">
+        <div className="h-full bg-[var(--accent-hex)] transition-all duration-300" style={{ width: `${courseProgress}%` }} />
       </div>
 
-      {/* Topbar */}
       <header className="h-[var(--topbar-h)] bg-[var(--sidebar)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
-        {/* Left: hamburger (mobile) + logo */}
         <div className="flex items-center gap-2">
-          <button
-            className="md:hidden p-2 -ml-2 text-white/70 hover:text-white transition-colors"
-            aria-label="Toggle lesson list"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
+          <button className="md:hidden p-2 -ml-2 text-white/70 hover:text-white transition-colors" aria-label="Toggle lesson list" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu className="w-5 h-5" />
           </button>
           <a href="/courses" aria-label="TideLearn home" className="flex items-center gap-2 no-underline">
@@ -429,298 +151,89 @@ export default function View() {
             <span className="text-white font-extrabold text-sm tracking-tight">TideLearn</span>
           </a>
         </div>
-
-        {/* Center: course title (absolute) */}
-        <div className="absolute left-1/2 -translate-x-1/2 text-white text-[13px] font-semibold whitespace-nowrap opacity-90 max-w-[calc(100%-300px)] overflow-hidden text-ellipsis hidden md:block">
-          {course.title}
-        </div>
-
-        {/* Right: view-mode toggle + exit */}
+        <div className="absolute left-1/2 -translate-x-1/2 text-white text-[13px] font-semibold whitespace-nowrap opacity-90 max-w-[calc(100%-300px)] overflow-hidden text-ellipsis hidden md:block">{course.title}</div>
         <div className="flex items-center gap-3">
-          {/* Subtle paged/view-all toggle */}
           <div role="group" aria-label="View mode" className="flex items-center gap-2">
             {canResume && (
-              <button
-                className="bg-transparent border-none text-slate-400 text-xs cursor-pointer px-2 py-0.5 rounded font-sans hover:text-[var(--accent-hex)] transition-colors"
-                onClick={() => {
-                  if (!lastLessonId) return;
-                  setIsPaged(true);
-                  setCurrentLessonId(lastLessonId);
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("paged", "1");
-                  url.searchParams.set("lesson", lastLessonId);
-                  history.replaceState(null, "", url.toString());
-                }}
-              >
-                Resume: {currentLesson?.title || "Continue"}
-              </button>
+              <button className="bg-transparent border-none text-slate-400 text-xs cursor-pointer px-2 py-0.5 rounded font-sans hover:text-[var(--accent-hex)] transition-colors" onClick={() => { if (lastLessonId) { setIsPaged(true); setCurrentLessonId(lastLessonId); const url = new URL(window.location.href); url.searchParams.set("paged", "1"); url.searchParams.set("lesson", lastLessonId); history.replaceState(null, "", url.toString()); } }}>Resume: {currentLesson?.title || "Continue"}</button>
             )}
-            <button
-              aria-pressed={isPaged}
-              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
-              onClick={() => {
-                if (isPaged) return;
-                setIsPaged(true);
-                const url = new URL(window.location.href);
-                url.searchParams.set("paged", "1");
-                const target = currentLessonId ?? course.lessons[0]?.id ?? "";
-                if (target) url.searchParams.set("lesson", target);
-                history.replaceState(null, "", url.toString());
-              }}
-            >
-              Paged
-            </button>
-            <button
-              aria-pressed={!isPaged}
-              className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${!isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`}
-              onClick={() => {
-                if (!isPaged) return;
-                setIsPaged(false);
-                const url = new URL(window.location.href);
-                url.searchParams.set("paged", "0");
-                url.searchParams.delete("lesson");
-                history.replaceState(null, "", url.toString());
-              }}
-            >
-              View All
-            </button>
+            <button aria-pressed={isPaged} className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`} onClick={() => { if (!isPaged) switchToPaged(); }}>Paged</button>
+            <button aria-pressed={!isPaged} className={`bg-transparent border-none text-xs cursor-pointer px-2 py-0.5 rounded font-sans transition-colors ${!isPaged ? "text-[var(--accent-hex)] font-semibold" : "text-[var(--text-muted)] hover:text-slate-300"}`} onClick={() => { if (isPaged) switchToScrollMode(); }}>View All</button>
           </div>
-
-          <a
-            href="/courses"
-            className="text-[var(--accent-hex)] text-[13px] font-medium px-2.5 py-1 rounded-[var(--radius-sm)] no-underline font-sans hover:text-[var(--accent-hex)]/80 transition-colors"
-          >
-            Exit
-          </a>
+          <a href="/courses" className="text-[var(--accent-hex)] text-[13px] font-medium px-2.5 py-1 rounded-[var(--radius-sm)] no-underline font-sans hover:text-[var(--accent-hex)]/80 transition-colors">Exit</a>
         </div>
       </header>
 
-      {/* Main layout: sidebar + reading area */}
       <div className="flex flex-1 overflow-hidden">
+        {sidebarOpen && <div className="fixed inset-0 bg-black/30 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />}
 
-        {/* Mobile sidebar backdrop */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 z-20 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+        <ViewSidebar
+          flatNav={flatNav}
+          currentLessonId={currentLessonId}
+          activeId={activeId}
+          completed={completed}
+          isPaged={isPaged}
+          sidebarOpen={sidebarOpen}
+          onSelectLesson={(id) => { if (isPaged) goToLesson(id); else document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+          onCloseSidebar={() => setSidebarOpen(false)}
+        />
 
-        {/* Sidebar */}
-        <nav
-          aria-label="Lesson navigation"
-          className={cn(
-            "fixed md:relative z-30 md:z-auto",
-            "w-[var(--sidebar-w-viewer)] h-full",
-            "bg-[var(--canvas)] border-r border-[hsl(var(--border))] flex flex-col shrink-0 overflow-y-auto py-5",
-            "transition-transform md:transition-none",
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          )}
-        >
-          <div className="text-[9px] font-bold tracking-[0.1em] uppercase text-[var(--accent-hex)] px-4 pb-2.5">
-            Lessons
-          </div>
-
-          {flatNav.map((l, i) => {
-            const isActive = isPaged ? l.id === currentLessonId : l.id === activeId;
-            const isCurrent = l.id === currentLessonId;
-
-            return (
-              <button
-                key={l.id}
-                onClick={() => {
-                  if (isPaged) {
-                    setCurrentLessonId(l.id);
-                    const url = new URL(window.location.href);
-                    url.searchParams.set("paged", "1");
-                    url.searchParams.set("lesson", l.id);
-                    history.replaceState(null, "", url.toString());
-                  } else {
-                    document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }
-                  setSidebarOpen(false);
-                }}
-                className={cn(
-                  "w-full text-left flex items-start gap-2.5 py-2 px-4 pl-3 border-l-[3px] transition-colors",
-                  isActive
-                    ? "border-l-[var(--accent-hex)] bg-[var(--canvas-2)]"
-                    : "border-l-transparent hover:bg-[var(--canvas-2)]"
-                )}
-              >
-                {/* Dot */}
-                <div className="shrink-0 w-4 flex items-center justify-center pt-[3px]">
-                  <div style={getDotStyle(l.id, isCurrent)} />
-                </div>
-                {/* Number */}
-                <span className={cn("text-[9px] font-semibold shrink-0 pt-px", isActive ? "text-[var(--accent-hex)]" : "text-slate-400")}>
-                  {i + 1}
-                </span>
-                {/* Title */}
-                <span className={cn("text-xs leading-[1.45]", isActive ? "text-[var(--accent-hex)] font-semibold" : "text-slate-600")}>
-                  {l.title}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Reading area */}
         <main id="main-content" ref={mainContentRef} tabIndex={-1} className="flex-1 overflow-y-auto bg-white outline-none">
           <div className="max-w-[var(--reading-max-w)] mx-auto px-4 md:px-16 py-10 pb-32">
 
             {isPaged ? (
               currentLesson ? (
-                <section key={currentLesson.id} ref={lessonRef as React.RefObject<HTMLElement>}>
-                  {/* Lesson breadcrumb */}
-                  <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">
-                    Lesson {idx + 1}
-                  </div>
-
-                  {/* Lesson title — hidden for assessment lessons (AssessmentView renders its own) */}
+                <section key={currentLesson.id}>
+                  <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">Lesson {idx + 1}</div>
                   {currentLesson.kind !== "assessment" && (
-                    <h1 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">
-                      {currentLesson.title}
-                    </h1>
+                    <h1 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">{currentLesson.title}</h1>
                   )}
-
-                  {/* Blocks */}
-                  {currentLesson.kind === "content" && currentLesson.blocks.map((b) => {
-                    const spec = getSpec(b.type);
-                    const ViewComp = spec.View;
-                    return (
-                      <article key={b.id}>
-                        <ViewComp block={b} />
-                      </article>
-                    );
-                  })}
-                  {currentLesson.kind === "assessment" && (
-                    <AssessmentView lesson={currentLesson} courseId={courseId} />
-                  )}
-
-                  {/* Mark complete toggle — not shown for assessment lessons */}
+                  {currentLesson.kind === "content" && currentLesson.blocks.map((b) => { const spec = getSpec(b.type); return <article key={b.id}><spec.View block={b} /></article>; })}
+                  {currentLesson.kind === "assessment" && <AssessmentView lesson={currentLesson} courseId={courseId} />}
                   {currentLesson.kind !== "assessment" && (
                     <div className="mt-8 flex justify-end">
-                      <button
-                        aria-label={completed.has(currentLesson.id) ? "Completed" : "Mark as complete"}
-                        aria-pressed={completed.has(currentLesson.id)}
-                        onClick={() => toggleComplete(currentLesson.id)}
-                        className={cn(
-                          "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
-                          completed.has(currentLesson.id)
-                            ? "bg-[var(--accent-hex)] text-white border-none"
-                            : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]"
-                        )}
-                      >
-                        {completed.has(currentLesson.id) ? (
-                          <><span aria-hidden="true">&#10003; </span>Completed</>
-                        ) : (
-                          "Mark complete"
-                        )}
+                      <button aria-label={completed.has(currentLesson.id) ? "Completed" : "Mark as complete"} aria-pressed={completed.has(currentLesson.id)} onClick={() => toggleComplete(currentLesson.id)} className={cn("text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors", completed.has(currentLesson.id) ? "bg-[var(--accent-hex)] text-white border-none" : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]")}>
+                        {completed.has(currentLesson.id) ? <><span aria-hidden="true">&#10003; </span>Completed</> : "Mark complete"}
                       </button>
                     </div>
                   )}
                 </section>
-              ) : (
-                <p className="text-[var(--text-muted)]">Select a lesson to begin.</p>
-              )
+              ) : <p className="text-[var(--text-muted)]">Select a lesson to begin.</p>
             ) : (
-              /* View All mode */
               <div>
                 {course.lessons.map((l, lessonIdx) => {
                   const isUnlocked = unlocked.has(l.id);
                   const nextId = course.lessons[lessonIdx + 1]?.id as string | undefined;
-                  const quizIds = l.kind === "content"
-                    ? l.blocks.filter((b) => ["quiz", "truefalse", "shortanswer"].includes(b.type)).map((b) => b.id)
-                    : [];
+                  const quizIds = l.kind === "content" ? l.blocks.filter((b) => ["quiz", "truefalse", "shortanswer"].includes(b.type)).map((b) => b.id) : [];
                   const totalChecks = quizIds.length;
                   const correctChecks = quizIds.filter((id: string) => answers[id]).length;
-
                   return (
                     <section key={l.id} id={l.id} className="mb-16 scroll-mt-24">
-                      {/* Lesson breadcrumb */}
-                      <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">
-                        Lesson {lessonIdx + 1}
-                      </div>
-
-                      {/* Lesson title */}
-                      <h2 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">
-                        {l.title}
-                      </h2>
-
+                      <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[var(--accent-hex)] mb-3">Lesson {lessonIdx + 1}</div>
+                      <h2 className="font-display text-[28px] font-bold text-[var(--ink)] leading-[1.3] mb-8 tracking-tight">{l.title}</h2>
                       {gateEnabled && !isUnlocked ? (
                         <div className="rounded-[var(--radius-md)] border border-[hsl(var(--border))] p-6 text-center bg-[var(--canvas)]">
                           <p className="text-[var(--text-muted)] text-sm">This section is locked. Continue the previous section to unlock.</p>
-                          <button
-                            className="text-[var(--accent-hex)] hover:underline text-sm mt-1"
-                            onClick={() => { const prev = course.lessons.findLast((_l, i) => i < lessonIdx && unlocked.has(_l.id)); if (prev) { setCurrentLessonId(prev.id); setIsPaged(true); } }}
-                          >
-                            Go to previous section
-                          </button>
+                          <button className="text-[var(--accent-hex)] hover:underline text-sm mt-1" onClick={() => { const prev = course.lessons.findLast((_l, i) => i < lessonIdx && unlocked.has(_l.id)); if (prev) { setCurrentLessonId(prev.id); setIsPaged(true); } }}>Go to previous section</button>
                         </div>
                       ) : (
                         <>
                           <div>
-                            {l.kind === "content" && l.blocks.map((b) => {
-                              const spec = getSpec(b.type);
-                              const ViewComp = spec.View;
-                              return (
-                                <article key={b.id}>
-                                  <ViewComp block={b} />
-                                </article>
-                              );
-                            })}
+                            {l.kind === "content" && l.blocks.map((b) => { const spec = getSpec(b.type); return <article key={b.id}><spec.View block={b} /></article>; })}
                             {l.kind === "assessment" && (
-                              <div className="italic text-[var(--text-muted)] text-sm py-4">
-                                Assessment: {l.questions?.length ?? 0} questions —{" "}
-                                <button
-                                  className="text-[var(--accent-hex)] hover:underline font-medium not-italic"
-                                  onClick={() => { setIsPaged(true); setCurrentLessonId(l.id); }}
-                                >
-                                  Take assessment
-                                </button>
-                              </div>
+                              <div className="italic text-[var(--text-muted)] text-sm py-4">Assessment: {l.questions?.length ?? 0} questions — <button className="text-[var(--accent-hex)] hover:underline font-medium not-italic" onClick={() => { setIsPaged(true); setCurrentLessonId(l.id); }}>Take assessment</button></div>
                             )}
                           </div>
-
-                          {/* Mark complete toggle */}
                           <div className="mt-6 flex justify-end">
-                            <button
-                              aria-label={completed.has(l.id) ? "Completed" : "Mark as complete"}
-                              aria-pressed={completed.has(l.id)}
-                              onClick={() => toggleComplete(l.id)}
-                              className={cn(
-                                "text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
-                                completed.has(l.id)
-                                  ? "bg-[var(--accent-hex)] text-white border-none"
-                                  : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]"
-                              )}
-                            >
-                              {completed.has(l.id) ? (
-                                <><span aria-hidden="true">&#10003; </span>Completed</>
-                              ) : (
-                                "Mark complete"
-                              )}
+                            <button aria-label={completed.has(l.id) ? "Completed" : "Mark as complete"} aria-pressed={completed.has(l.id)} onClick={() => toggleComplete(l.id)} className={cn("text-[13px] font-medium cursor-pointer px-4 py-2 rounded-[var(--radius-md)] font-sans transition-colors", completed.has(l.id) ? "bg-[var(--accent-hex)] text-white border-none" : "bg-transparent border border-[hsl(var(--border))] text-[var(--text-muted)] hover:border-[var(--accent-hex)] hover:text-[var(--accent-hex)]")}>
+                              {completed.has(l.id) ? <><span aria-hidden="true">&#10003; </span>Completed</> : "Mark complete"}
                             </button>
                           </div>
-
                           {gateEnabled && nextId && !unlocked.has(nextId) && (
                             <div className="mt-4 flex flex-col gap-2">
-                              {gateQuiz && (
-                                <p className="text-[13px] text-[var(--text-muted)]">
-                                  Checks: {correctChecks}/{totalChecks} correct{totalChecks > 0 && correctChecks < totalChecks ? " — answer all to continue" : ""}
-                                </p>
-                              )}
+                              {gateQuiz && <p className="text-[13px] text-[var(--text-muted)]">Checks: {correctChecks}/{totalChecks} correct{totalChecks > 0 && correctChecks < totalChecks ? " — answer all to continue" : ""}</p>}
                               <div className="flex justify-end">
-                                <button
-                                  disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks}
-                                  onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })}
-                                  className={cn(
-                                    "bg-[var(--accent-hex)] border-none text-white text-[13px] font-semibold px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
-                                    (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-90"
-                                  )}
-                                >
-                                  Continue
-                                </button>
+                                <button disabled={gateQuiz && totalChecks > 0 && correctChecks < totalChecks} onClick={() => setUnlocked((prev) => { const n = new Set(prev); if (nextId) n.add(nextId); return n; })} className={cn("bg-[var(--accent-hex)] border-none text-white text-[13px] font-semibold px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity", (gateQuiz && totalChecks > 0 && correctChecks < totalChecks) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-90")}>Continue</button>
                               </div>
                             </div>
                           )}
@@ -731,63 +244,21 @@ export default function View() {
                 })}
               </div>
             )}
-
           </div>
         </main>
       </div>
 
-      {/* Bottom nav — fixed, only shown in paged mode */}
       {isPaged && (
-        <nav
-          aria-label="Lesson pagination"
-          className="fixed bottom-0 inset-x-0 h-14 flex items-center justify-between px-4 md:px-8 bg-white border-t border-[hsl(var(--border))] z-10 pb-[env(safe-area-inset-bottom)]"
-        >
-          {/* Previous */}
-          <button
-            aria-label="Previous lesson"
-            disabled={!prevLesson}
-            onClick={() => go("prev")}
-            className={cn(
-              "bg-transparent border-none text-[13px] font-medium flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] font-sans transition-colors",
-              prevLesson ? "text-[var(--text-muted)] cursor-pointer hover:bg-[var(--canvas-2)] hover:text-[var(--accent-hex)]" : "text-slate-300 cursor-not-allowed"
-            )}
-          >
-            <span aria-hidden="true">&larr; </span>Previous lesson
-          </button>
-
-          {/* Counter */}
-          <span className="text-xs text-slate-400 font-medium">
-            {isCourseCompleted
-              ? "Course complete \u2713"
-              : `Lesson ${idx + 1} of ${totalLessons}`}
-          </span>
-
-          {/* Next */}
-          {isCourseCompleted && !nextLesson ? (
-            <button
-              disabled
-              className="bg-[var(--accent-hex)] border-none text-[13px] font-semibold text-white cursor-not-allowed flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans opacity-75"
-            >
-              Completed &#10003;
-            </button>
-          ) : (
-            <button
-              aria-label="Next lesson"
-              disabled={!nextLesson}
-              onClick={() => go("next")}
-              className={cn(
-                "border-none text-[13px] font-semibold flex items-center gap-1.5 px-[18px] py-2 rounded-[var(--radius-md)] font-sans transition-opacity",
-                nextLesson
-                  ? "bg-[var(--accent-hex)] text-white cursor-pointer hover:opacity-90"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
-              )}
-            >
-              Next lesson<span aria-hidden="true"> &rarr;</span>
-            </button>
-          )}
-        </nav>
+        <ViewBottomNav
+          idx={idx}
+          totalLessons={totalLessons}
+          hasPrev={!!prevLesson}
+          hasNext={!!nextLesson}
+          isCourseCompleted={isCourseCompleted}
+          onPrev={() => go("prev")}
+          onNext={() => go("next")}
+        />
       )}
-
     </div>
   );
 }
