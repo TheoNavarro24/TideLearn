@@ -81,6 +81,21 @@ function renderBlock(block: Block): string {
       return `<div style="border:1px solid #ccc;border-radius:4px;padding:1em;margin:1em 0"><strong>Branching:</strong> ${esc(block.prompt)}<ul>${block.choices.map((c: any) => `<li><strong>${esc(c.label)}</strong>: ${c.content}</li>`).join("")}</ul></div>`;
     case "multipleresponse":
       return `<div style="background:#f8f8f8;padding:1em;margin:1em 0"><strong>Multiple Response:</strong> ${esc(block.question)}<p style="font-size:0.875em;color:#666;margin:0.25em 0">Select all that apply:</p><ul>${block.options.map((o: string, i: number) => `<li>${block.correctIndices.includes(i) ? "✓ " : ""}${esc(o)}</li>`).join("")}</ul>${block.correctIndices.length < 2 ? "<p><em style='color:#f59e0b'>(fewer than 2 correct answers set)</em></p>" : ""}</div>`;
+    case "fillinblank": {
+      const display = (block as any).template.replace(/{{(\d+)}}/g, (_: string, i: string) => {
+        const blank = (block as any).blanks[parseInt(i) - 1];
+        return `<span style="display:inline-block;min-width:60px;border-bottom:2px solid #40c8a0;padding:0 4px;color:#0d9488;font-style:italic">[${blank?.acceptable[0] ?? "?"}]</span>`;
+      });
+      return `<div style="padding:1em;margin:1em 0;border:1px solid #e0fdf4;border-radius:8px"><strong>Fill in the Blank:</strong> <span style="line-height:2">${display}</span>${(block as any).blanks.length === 0 ? "<p><em style='color:#f59e0b'>(no gaps defined)</em></p>" : ""}</div>`;
+    }
+    case "matching": {
+      const pairs = ((block as any).pairs ?? []).map((p: any) => {
+        const l = ((block as any).left ?? []).find((i: any) => i.id === p.leftId)?.label ?? "?";
+        const r = ((block as any).right ?? []).find((i: any) => i.id === p.rightId)?.label ?? "?";
+        return `<li><strong>${esc(l)}</strong> ↔ ${esc(r)}</li>`;
+      });
+      return `<div style="padding:1em;margin:1em 0;border:1px solid #e0fdf4;border-radius:8px"><strong>Matching:</strong> ${esc((block as any).prompt)}<ul>${pairs.join("")}</ul></div>`;
+    }
     default:
       return `<p>[Unknown block type]</p>`;
   }
