@@ -98,6 +98,9 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [x] **Phase 2A — New Block Types** (merged to main) — Button/CTA, Embed, Flashcard, Timeline, Process, Chart, Sorting, Hotspot, Branching
 - [x] **Phase 2A+ — MCP Cleanup** (merged to main) — Fixed sortingBlockSchema, extended injectSubItemIds for all complex blocks, added renderBlock for Phase 2A types, updated tool descriptions & instructions, fixed update_assessment_config silent no-op, added 238 MCP tests
 - [x] **Phase 2B — Assessment Question Types** (merged to main) — 3 new blocks (multipleresponse, fillinblank, matching), 4 new question types (multipleresponse, fillinblank, matching, sorting), AssessmentQuestion discriminated union migration, Phase 2A validation catch-up (FieldLabel required, Zod schema tightening, hotspot MCP handoff banner)
+- [x] **RC1 — Accessibility & UX Polish** (merged to main) — accessible dialogs, HotspotForm keyboard nav, aria-live quiz results, focus management on lesson nav
+- [x] **RC2 — Frontend Test Suite** (merged to main) — 116 Vitest tests across 9 files (unit/component/integration), progress.ts extracted
+- [x] **RC3 — Block Modernisation** (merged to main) — all block components migrated from inline hex styles to Tailwind + CSS vars; quiz semantic colour tokens added to index.css
 
 ## Design Context
 
