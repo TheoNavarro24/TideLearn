@@ -32,6 +32,22 @@ function migrateLessons(course: Course): Course {
   };
 }
 
+/** Adds kind: "mcq" to any assessment question missing it. Safe to call multiple times. */
+function migrateQuestions(course: Course): Course {
+  return {
+    ...course,
+    lessons: course.lessons.map((l: any) => {
+      if (l.kind !== "assessment") return l;
+      return {
+        ...l,
+        questions: (l.questions ?? []).map((q: any) =>
+          q.kind ? q : { ...q, kind: "mcq" }
+        ),
+      };
+    }) as Course["lessons"],
+  };
+}
+
 export function getCoursesIndex(): CourseIndexItem[] {
   try {
     const raw = localStorage.getItem(INDEX_KEY);
@@ -52,7 +68,7 @@ export function loadCourse(id: string): Course | null {
   try {
     const raw = localStorage.getItem(COURSE_KEY(id));
     if (!raw) return null;
-    return migrateLessons(JSON.parse(raw) as Course);
+    return migrateQuestions(migrateLessons(JSON.parse(raw) as Course));
   } catch {
     return null;
   }

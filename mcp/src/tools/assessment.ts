@@ -4,14 +4,92 @@ import { withAuth, ok, err } from "../lib/supabase.js";
 import { mutateCourse } from "../lib/mutate.js";
 import { uid } from "../lib/uid.js";
 
-const questionSchema = z.object({
+const mcqQuestionInputSchema = z.object({
+  kind: z.literal("mcq"),
   text: z.string().min(1),
-  options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+  options: z.tuple([z.string().min(1), z.string().min(1), z.string().min(1), z.string().min(1)]),
   correctIndex: z.number().int().min(0).max(3),
   feedback: z.string().optional(),
   bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
   source: z.string().optional(),
 });
+
+const multipleResponseQuestionInputSchema = z.object({
+  kind: z.literal("multipleresponse"),
+  text: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).max(6),
+  correctIndices: z.array(z.number().int().min(0)).min(2),
+  feedback: z.string().optional(),
+});
+
+const fillInBlankQuestionInputSchema = z.object({
+  kind: z.literal("fillinblank"),
+  text: z.string().min(1),
+  blanks: z.array(z.object({
+    acceptable: z.array(z.string().min(1)).min(1),
+    caseSensitive: z.boolean().optional(),
+  })).min(1),
+  feedback: z.string().optional(),
+});
+
+const matchingQuestionInputSchema = z.object({
+  kind: z.literal("matching"),
+  text: z.string().min(1),
+  left: z.array(z.object({ label: z.string().min(1) })).min(2),
+  right: z.array(z.object({ label: z.string().min(1) })).min(2),
+  pairs: z.array(z.object({ leftIndex: z.number().int().min(0), rightIndex: z.number().int().min(0) })).min(2),
+  feedback: z.string().optional(),
+});
+
+const sortingQuestionInputSchema = z.object({
+  kind: z.literal("sorting"),
+  text: z.string().min(1),
+  buckets: z.array(z.object({ label: z.string().min(1) })).min(2),
+  items: z.array(z.object({ text: z.string().min(1), bucketIndex: z.number().int().min(0) })).min(2),
+  feedback: z.string().optional(),
+});
+
+const questionInputSchema = z.discriminatedUnion("kind", [
+  mcqQuestionInputSchema,
+  multipleResponseQuestionInputSchema,
+  fillInBlankQuestionInputSchema,
+  matchingQuestionInputSchema,
+  sortingQuestionInputSchema,
+]);
+
+export function injectQuestionSubItemIds(q: any): any {
+  const withId = { ...q, id: uid() };
+  switch (q.kind) {
+    case "fillinblank":
+      return {
+        ...withId,
+        blanks: (q.blanks ?? []).map((b: any) => ({
+          ...b,
+          id: uid(),
+        })),
+      };
+    case "matching": {
+      const leftWithIds = (q.left ?? []).map((item: any) => ({ ...item, id: uid() }));
+      const rightWithIds = (q.right ?? []).map((item: any) => ({ ...item, id: uid() }));
+      const pairs = (q.pairs ?? []).map((p: any) => ({
+        leftId: leftWithIds[p.leftIndex]?.id ?? uid(),
+        rightId: rightWithIds[p.rightIndex]?.id ?? uid(),
+      }));
+      return { ...withId, left: leftWithIds, right: rightWithIds, pairs };
+    }
+    case "sorting": {
+      const bucketsWithIds = (q.buckets ?? []).map((b: any) => ({ ...b, id: uid() }));
+      const itemsWithIds = (q.items ?? []).map((item: any) => ({
+        ...item,
+        id: uid(),
+        bucketId: bucketsWithIds[item.bucketIndex]?.id ?? uid(),
+      }));
+      return { ...withId, buckets: bucketsWithIds, items: itemsWithIds };
+    }
+    default:
+      return withId;
+  }
+}
 
 export function registerAssessmentTools(server: McpServer) {
   // ── add_assessment_lesson ─────────────────────────────────────────────────
@@ -67,8 +145,9 @@ export function registerAssessmentTools(server: McpServer) {
         return ok((lesson.questions ?? []).map((q: any, i: number) => ({
           position: i + 1,
           id: q.id,
+          kind: q.kind ?? "mcq",
           text: q.text,
-          correctIndex: q.correctIndex,
+          ...(q.kind === "mcq" || !q.kind ? { correctIndex: q.correctIndex } : {}),
           bloomLevel: q.bloomLevel,
           source: q.source,
         })));
@@ -78,16 +157,16 @@ export function registerAssessmentTools(server: McpServer) {
   // ── add_question ──────────────────────────────────────────────────────────
   server.tool(
     "add_question",
-    "Add a question to an assessment lesson's question bank",
+    "Add a question to an assessment lesson's question bank. Supports 5 question kinds: mcq (4-option multiple choice), multipleresponse (select all that apply, ≥2 correct), fillinblank (fill in the gaps), matching (pair left to right), sorting (drag items into buckets). Set kind to select the type.",
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
-      question: questionSchema,
+      question: questionInputSchema,
     },
     async ({ course_id, lesson_id, question }) =>
       withAuth(async (client, userId) => {
-        const questionId = uid();
-        const newQuestion = { ...question, id: questionId };
+        const newQuestion = injectQuestionSubItemIds(question);
+        const questionId = newQuestion.id;
         let notAssessment = false;
         let lessonNotFound = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
@@ -119,7 +198,27 @@ export function registerAssessmentTools(server: McpServer) {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
       question_id: z.string().uuid(),
-      fields: questionSchema.partial(),
+      fields: z.object({
+        kind: z.enum(["mcq", "multipleresponse", "fillinblank", "matching", "sorting"]).optional(),
+        text: z.string().min(1).optional(),
+        // mcq fields
+        options: z.tuple([z.string().min(1), z.string().min(1), z.string().min(1), z.string().min(1)]).optional(),
+        correctIndex: z.number().int().min(0).max(3).optional(),
+        bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
+        source: z.string().optional(),
+        // multipleresponse fields
+        correctIndices: z.array(z.number().int().min(0)).optional(),
+        // fillinblank fields
+        blanks: z.array(z.object({ acceptable: z.array(z.string().min(1)).min(1), caseSensitive: z.boolean().optional() })).optional(),
+        // matching fields
+        left: z.array(z.object({ label: z.string().min(1) })).optional(),
+        right: z.array(z.object({ label: z.string().min(1) })).optional(),
+        pairs: z.array(z.object({ leftIndex: z.number().int().min(0), rightIndex: z.number().int().min(0) })).optional(),
+        // sorting fields
+        buckets: z.array(z.object({ label: z.string().min(1) })).optional(),
+        items: z.array(z.object({ text: z.string().min(1), bucketIndex: z.number().int().min(0) })).optional(),
+        feedback: z.string().optional(),
+      }),
     },
     async ({ course_id, lesson_id, question_id, fields }) =>
       withAuth(async (client, userId) => {
@@ -187,11 +286,11 @@ export function registerAssessmentTools(server: McpServer) {
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
-      questions: z.array(questionSchema).min(1),
+      questions: z.array(questionInputSchema).min(1),
     },
     async ({ course_id, lesson_id, questions }) =>
       withAuth(async (client, userId) => {
-        const withIds = questions.map((q) => ({ ...q, id: uid() }));
+        const withIds = questions.map((q) => injectQuestionSubItemIds(q));
         let notAssessment = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {
           const lesson = course.lessons.find((l) => l.id === lesson_id) as any;
@@ -219,11 +318,11 @@ export function registerAssessmentTools(server: McpServer) {
     {
       course_id: z.string().uuid(),
       lesson_id: z.string().uuid(),
-      questions: z.array(questionSchema).min(1),
+      questions: z.array(questionInputSchema).min(1),
     },
     async ({ course_id, lesson_id, questions }) =>
       withAuth(async (client, userId) => {
-        const withIds = questions.map((q) => ({ ...q, id: uid() }));
+        const withIds = questions.map((q) => injectQuestionSubItemIds(q));
         let notAssessment = false;
         let lessonNotFound = false;
         const mutError = await mutateCourse(client, userId, course_id, (course) => {

@@ -201,7 +201,8 @@ export type Block =
   | HotspotBlock
   | BranchingBlock;
 
-export type AssessmentQuestion = {
+export type MCQQuestion = {
+  kind: "mcq";
   id: string;
   text: string;
   options: [string, string, string, string];
@@ -210,6 +211,49 @@ export type AssessmentQuestion = {
   bloomLevel?: "K" | "C" | "UN" | "AP" | "AN" | "EV";
   source?: string;
 };
+
+export type MultipleResponseQuestion = {
+  kind: "multipleresponse";
+  id: string;
+  text: string;
+  options: string[];
+  correctIndices: number[];
+  feedback?: string;
+};
+
+export type FillInBlankQuestion = {
+  kind: "fillinblank";
+  id: string;
+  text: string;
+  blanks: Array<{ id: string; acceptable: string[]; caseSensitive?: boolean }>;
+  feedback?: string;
+};
+
+export type MatchingQuestion = {
+  kind: "matching";
+  id: string;
+  text: string;
+  left: Array<{ id: string; label: string }>;
+  right: Array<{ id: string; label: string }>;
+  pairs: Array<{ leftId: string; rightId: string }>;
+  feedback?: string;
+};
+
+export type SortingQuestion = {
+  kind: "sorting";
+  id: string;
+  text: string;
+  buckets: Array<{ id: string; label: string }>;
+  items: Array<{ id: string; text: string; bucketId: string }>;
+  feedback?: string;
+};
+
+export type AssessmentQuestion =
+  | MCQQuestion
+  | MultipleResponseQuestion
+  | FillInBlankQuestion
+  | MatchingQuestion
+  | SortingQuestion;
 
 export type AssessmentConfig = {
   passingScore?: number;
@@ -471,16 +515,78 @@ const contentLessonSchema = z.object({
   blocks: z.array(blockSchema),
 }).passthrough();
 
-const assessmentLessonSchema = z.object({
-  kind: z.literal("assessment"),
+const mcqQuestionSchema = z.object({
+  kind: z.literal("mcq"),
   id: z.string(),
-  title: z.string(),
-  questions: z.array(z.object({
+  text: z.string(),
+  options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+  correctIndex: z.number().int().min(0).max(3),
+  feedback: z.string().optional(),
+  bloomLevel: z.enum(["K", "C", "UN", "AP", "AN", "EV"]).optional(),
+  source: z.string().optional(),
+});
+
+const multipleResponseQuestionSchema = z.object({
+  kind: z.literal("multipleresponse"),
+  id: z.string(),
+  text: z.string(),
+  options: z.array(z.string()),
+  correctIndices: z.array(z.number()),
+  feedback: z.string().optional(),
+});
+
+const fillInBlankQuestionSchema = z.object({
+  kind: z.literal("fillinblank"),
+  id: z.string(),
+  text: z.string(),
+  blanks: z.array(z.object({
+    id: z.string(),
+    acceptable: z.array(z.string()),
+    caseSensitive: z.boolean().optional(),
+  })),
+  feedback: z.string().optional(),
+});
+
+const matchingQuestionSchema = z.object({
+  kind: z.literal("matching"),
+  id: z.string(),
+  text: z.string(),
+  left: z.array(z.object({ id: z.string(), label: z.string() })),
+  right: z.array(z.object({ id: z.string(), label: z.string() })),
+  pairs: z.array(z.object({ leftId: z.string(), rightId: z.string() })),
+  feedback: z.string().optional(),
+});
+
+const sortingQuestionSchema = z.object({
+  kind: z.literal("sorting"),
+  id: z.string(),
+  text: z.string(),
+  buckets: z.array(z.object({ id: z.string(), label: z.string() })),
+  items: z.array(z.object({ id: z.string(), text: z.string(), bucketId: z.string() })),
+  feedback: z.string().optional(),
+});
+
+// Permissive question schema: defaults kind to "mcq" for legacy questions
+const assessmentQuestionSchemaPermissive = z.union([
+  mcqQuestionSchema,
+  multipleResponseQuestionSchema,
+  fillInBlankQuestionSchema,
+  matchingQuestionSchema,
+  sortingQuestionSchema,
+  // Legacy MCQ without kind field — default it
+  z.object({
     id: z.string(),
     text: z.string(),
     options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
     correctIndex: z.number().int().min(0).max(3),
-  }).passthrough()),
+  }).passthrough().transform((q: any) => ({ kind: "mcq" as const, ...q })),
+]);
+
+const assessmentLessonSchema = z.object({
+  kind: z.literal("assessment"),
+  id: z.string(),
+  title: z.string(),
+  questions: z.array(assessmentQuestionSchemaPermissive),
   config: z.object({}).passthrough(),
 }).passthrough();
 

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { AssessmentLesson } from "@/types/course";
+import type { AssessmentLesson, MCQQuestion } from "@/types/course";
 import {
   generateStudySession,
   generateExamSession,
@@ -90,12 +90,13 @@ export function AssessmentView({ lesson, courseId }: Props) {
   }
 
   const currentQ = queue[qIndex];
+  const currentQAsMcq = currentQ?.kind === "mcq" ? currentQ : null;
 
   function handleReveal() {
     if (selected === null) return;
     if (mode === "study" && confidence === null) return;
     setRevealed(true);
-    const correct = selected === currentQ.correctIndex;
+    const correct = selected === currentQAsMcq?.correctIndex;
     if (correct) {
       setSessionCorrect((n) => n + 1);
       setSessionCorrectIds((prev) => new Set([...prev, currentQ.id]));
@@ -127,7 +128,9 @@ export function AssessmentView({ lesson, courseId }: Props) {
 
   const bloomBreakdown = useMemo(() => {
     if (screen !== "results") return null;
-    const tagged = queue.filter((q) => q.bloomLevel);
+    const tagged = queue.filter((q): q is MCQQuestion =>
+      q.kind === "mcq" && !!q.bloomLevel
+    );
     if (tagged.length === 0) return null;
     const map: Record<string, { total: number; correct: number }> = {};
     for (const q of tagged) {
@@ -248,9 +251,9 @@ export function AssessmentView({ lesson, courseId }: Props) {
         </div>
 
         <ul style={{ listStyle: "none", padding: 0, margin: "0 0 16px" }}>
-          {currentQ.options.map((opt, i) => {
+          {(currentQAsMcq?.options ?? []).map((opt, i) => {
             const isSelected = selected === i;
-            const isCorrect = i === currentQ.correctIndex;
+            const isCorrect = i === currentQAsMcq?.correctIndex;
             let bg = "#fff", border = "1.5px solid hsl(var(--border))", color = "#334155";
             if (revealed && isCorrect) { bg = "var(--accent-bg)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
             else if (isSelected) { bg = "var(--canvas-white)"; border = "1.5px solid var(--accent-hex)"; color = "var(--accent-hex)"; }
@@ -308,8 +311,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQ.correctIndex ? "var(--accent-hex)" : "#ef4444" }}>
-              {selected === currentQ.correctIndex ? "Correct!" : "Incorrect"}
+            <span style={{ fontSize: 13, fontWeight: 600, color: selected === currentQAsMcq?.correctIndex ? "var(--accent-hex)" : "#ef4444" }}>
+              {selected === currentQAsMcq?.correctIndex ? "Correct!" : "Incorrect"}
             </span>
           )}
         </div>
@@ -396,13 +399,16 @@ export function AssessmentView({ lesson, courseId }: Props) {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 10 }}>
                 {labels[conf]}
               </p>
-              {qs.map((q) => (
-                <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
-                  <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {q.options[q.correctIndex]}</p>
-                  {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
-                </div>
-              ))}
+              {qs.map((q) => {
+                const qMcq = q.kind === "mcq" ? q : null;
+                return (
+                  <div key={q.id} style={{ background: "#fff", border: "1.5px solid #fecaca", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "0 0 6px" }}>{q.text}</p>
+                    {qMcq && <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>✓ {qMcq.options[qMcq.correctIndex]}</p>}
+                    {q.feedback && <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", fontStyle: "italic" }}>{q.feedback}</p>}
+                  </div>
+                );
+              })}
             </div>
           );
         })}

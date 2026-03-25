@@ -53,8 +53,8 @@ export function generateExamSession(
   questions: AssessmentQuestion[],
   size: number
 ): AssessmentQuestion[] {
-  const tagged = questions.filter((q) => q.source);
-  const uniqueSources = new Set(tagged.map((q) => q.source));
+  const tagged = questions.filter((q) => q.kind === "mcq" && q.source);
+  const uniqueSources = new Set(tagged.map((q) => (q as any).source as string));
   if (tagged.length > 0 && uniqueSources.size > 1) {
     return generateSourceBalanced(questions, size);
   }
@@ -64,7 +64,7 @@ export function generateExamSession(
 function generateSourceBalanced(questions: AssessmentQuestion[], size: number): AssessmentQuestion[] {
   const bySource = new Map<string, AssessmentQuestion[]>();
   for (const q of questions) {
-    const key = q.source ?? "__untagged__";
+    const key = (q.kind === "mcq" ? q.source : undefined) ?? "__untagged__";
     if (!bySource.has(key)) bySource.set(key, []);
     bySource.get(key)!.push(q);
   }
