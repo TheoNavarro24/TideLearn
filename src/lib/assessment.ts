@@ -137,3 +137,24 @@ export function gradeMultipleResponse(
     selected.every((s) => correctSet.has(s))
   );
 }
+
+/** Grade a fill-in-the-blank answer. All blanks must be correct. */
+export function gradeFillInBlank(
+  blanks: Array<{ acceptable: string[]; caseSensitive?: boolean }>,
+  inputs: string[]
+): boolean {
+  return blanks.every((blank, i) => {
+    const userInput = (inputs[i] ?? "").trim();
+    const accepted = blank.acceptable.filter(Boolean);
+    if (blank.caseSensitive) return accepted.includes(userInput);
+    return accepted.map((a) => a.toLowerCase()).includes(userInput.toLowerCase());
+  });
+}
+
+/** Grade a matching answer. All pairs must be correct. */
+export function gradeMatching(
+  pairs: Array<{ leftId: string; rightId: string }>,
+  selections: Record<string, string>
+): boolean {
+  return pairs.every((p) => selections[p.leftId] === p.rightId);
+}
