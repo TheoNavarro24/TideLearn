@@ -1,10 +1,11 @@
+import { cn } from "@/lib/utils";
 import { CalloutBlock } from "@/types/course";
 
 const VARIANT = {
-  info:    { borderColor: "#14b8a6", bg: "#f0fdfb", titleColor: "#0d9488" },
-  success: { borderColor: "#22c55e", bg: "#f0fdf4", titleColor: "#16a34a" },
-  warning: { borderColor: "#f59e0b", bg: "#fffbeb", titleColor: "#d97706" },
-  danger:  { borderColor: "#ef4444", bg: "#fef2f2", titleColor: "#dc2626" },
+  info:    { border: "border-l-teal-500",  bg: "bg-teal-50",  title: "text-teal-600" },
+  success: { border: "border-l-green-500", bg: "bg-green-50", title: "text-green-600" },
+  warning: { border: "border-l-amber-400", bg: "bg-amber-50", title: "text-amber-600" },
+  danger:  { border: "border-l-red-500",   bg: "bg-red-50",   title: "text-red-600" },
 };
 
 export function CalloutView({ block }: { block: CalloutBlock }) {
@@ -13,22 +14,20 @@ export function CalloutView({ block }: { block: CalloutBlock }) {
     <div
       role="note"
       aria-label={block.title ?? "Callout"}
-      style={{
-        borderLeft: `3px solid ${v.borderColor}`,
-        background: v.bg,
-        padding: "14px 18px",
-        borderRadius: "0 8px 8px 0",
-        margin: "24px 0",
-      }}
+      className={cn(
+        "border-l-4 rounded-r-lg p-4 my-6",
+        v.border,
+        v.bg
+      )}
     >
       {block.title && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: v.titleColor, letterSpacing: "0.01em" }}>
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className={cn("text-xs font-bold tracking-wide", v.title)}>
             {block.title}
           </span>
         </div>
       )}
-      <div style={{ fontSize: 14, lineHeight: 1.65, color: "#334155", margin: 0 }} dangerouslySetInnerHTML={{ __html: block.text }} />
+      <div className="text-sm leading-relaxed text-slate-700" dangerouslySetInnerHTML={{ __html: block.text }} />
     </div>
   );
 }
