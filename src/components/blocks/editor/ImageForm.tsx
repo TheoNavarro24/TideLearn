@@ -48,18 +48,13 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
             <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} />
             {user && (
               <>
-                <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
+                <input ref={inputRef} type="file" accept="image/*" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
                 <button
                   type="button"
                   onClick={() => inputRef.current?.click()}
                   disabled={uploading}
-                  style={{
-                    padding: "0 10px", borderRadius: 6,
-                    border: "1.5px solid #e0fdf4", background: "transparent",
-                    color: "#0d9488", fontSize: 12, fontWeight: 600,
-                    cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
-                  }}
+                  className="px-[10px] rounded-md border border-[color:hsl(var(--border))] bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploading ? "…" : "Upload"}
                 </button>
@@ -73,12 +68,12 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
         </div>
       </div>
       {/* Image preview */}
-      <div style={{ marginTop: 8 }}>
+      <div className="mt-2">
         {imgStatus === "empty" && (
-          <p className="text-xs text-muted-foreground" style={{ padding: "16px 0" }}>No image set</p>
+          <p className="text-xs text-muted-foreground py-4">No image set</p>
         )}
         {imgStatus === "error" && (
-          <p className="text-xs text-destructive" style={{ padding: "16px 0" }}>Image failed to load — check the URL</p>
+          <p className="text-xs text-destructive py-4">Image failed to load — check the URL</p>
         )}
         {block.src && (
           <img
@@ -86,12 +81,8 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
             alt={block.alt || "Preview"}
             onLoad={() => { clearTimeout(timeoutRef.current); setImgStatus("loaded"); }}
             onError={() => { clearTimeout(timeoutRef.current); setImgStatus("error"); }}
-            style={{
-              maxHeight: 200,
-              objectFit: "contain",
-              borderRadius: 6,
-              display: imgStatus === "loaded" ? "block" : "none",
-            }}
+            className="max-h-[200px] object-contain rounded-md"
+            style={{ display: imgStatus === "loaded" ? "block" : "none" }}
           />
         )}
       </div>
