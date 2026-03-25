@@ -67,19 +67,14 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
                 ref={inputRef}
                 type="file"
                 accept={currentType?.accept}
-                style={{ display: "none" }}
+                className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
               />
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading}
-                style={{
-                  padding: "0 10px", borderRadius: 6,
-                  border: "1.5px solid #e0fdf4", background: "transparent",
-                  color: "#0d9488", fontSize: 12, fontWeight: 600,
-                  cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
-                }}
+                className="px-[10px] rounded-md border border-[color:hsl(var(--border))] bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? "…" : "Upload"}
               </button>
