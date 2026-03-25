@@ -101,6 +101,7 @@ export default function View() {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!course) return;
@@ -118,6 +119,12 @@ export default function View() {
       if (target) { url.searchParams.set("lesson", target); url.searchParams.set("paged", "1"); history.replaceState(null, "", url.toString()); }
     }
   }, [course, gateEnabled, isPaged, params]);
+
+  useEffect(() => {
+    if (currentLessonId) {
+      requestAnimationFrame(() => mainContentRef.current?.focus());
+    }
+  }, [currentLessonId]);
 
   const currentHash = useMemo(() => window.location.hash.slice(1), []);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
@@ -558,7 +565,7 @@ export default function View() {
         </nav>
 
         {/* Reading area */}
-        <main id="main-content" className="flex-1 overflow-y-auto bg-white">
+        <main id="main-content" ref={mainContentRef} tabIndex={-1} className="flex-1 overflow-y-auto bg-white outline-none">
           <div className="max-w-[var(--reading-max-w)] mx-auto px-4 md:px-16 py-10 pb-32">
 
             {isPaged ? (
