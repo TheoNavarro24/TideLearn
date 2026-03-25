@@ -67,7 +67,7 @@ export function QuizForm({ block, onChange }: { block: QuizBlock; onChange: (b: 
       </Button>
 
       {/* Feedback section */}
-      <div className="border-t border-[color:hsl(var(--border))] pt-3 mt-1">
+      <div className="border-t border-border pt-3 mt-1">
         <div className="flex items-center gap-2 mb-2">
           <Switch
             id={`feedback-${block.id}`}

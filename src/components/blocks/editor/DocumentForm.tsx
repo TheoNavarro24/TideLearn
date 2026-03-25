@@ -74,7 +74,7 @@ export function DocumentForm({ block, onChange }: { block: DocumentBlock; onChan
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading}
-                className="px-[10px] rounded-md border border-[color:hsl(var(--border))] bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-[10px] rounded-md border border-border bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? "…" : "Upload"}
               </button>

@@ -54,7 +54,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
                   type="button"
                   onClick={() => inputRef.current?.click()}
                   disabled={uploading}
-                  className="px-[10px] rounded-md border border-[color:hsl(var(--border))] bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-[10px] rounded-md border border-border bg-transparent text-teal-600 text-xs font-semibold whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {uploading ? "…" : "Upload"}
                 </button>
@@ -81,8 +81,7 @@ export function ImageForm({ block, onChange }: { block: ImageBlock; onChange: (b
             alt={block.alt || "Preview"}
             onLoad={() => { clearTimeout(timeoutRef.current); setImgStatus("loaded"); }}
             onError={() => { clearTimeout(timeoutRef.current); setImgStatus("error"); }}
-            className="max-h-[200px] object-contain rounded-md"
-            style={{ display: imgStatus === "loaded" ? "block" : "none" }}
+            className={`max-h-[200px] object-contain rounded-md ${imgStatus === "loaded" ? "block" : "hidden"}`}
           />
         )}
       </div>
