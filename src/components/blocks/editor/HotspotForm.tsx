@@ -50,7 +50,24 @@ export function HotspotForm({ block, onChange }: Props) {
             )}
           </div>
           <p className="text-xs text-muted-foreground">Click the image to place a hotspot pin</p>
-          <div className="relative cursor-crosshair rounded-lg overflow-hidden border border-border" onClick={handleImageClick}>
+          <div
+            className="relative cursor-crosshair rounded-lg overflow-hidden border border-border"
+            onClick={handleImageClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                // For keyboard, place hotspot at center of image
+                const rect = imgRef.current?.getBoundingClientRect();
+                if (rect) {
+                  const syntheticEvent = { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 } as React.MouseEvent<HTMLDivElement>;
+                  handleImageClick(syntheticEvent);
+                }
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Click or press Enter to place a hotspot on the image"
+          >
             <img ref={imgRef} src={block.src} alt={block.alt} className="w-full block" />
             {block.hotspots.map((h, i) => (
               <div key={h.id} style={{ position: "absolute", left: `${h.x}%`, top: `${h.y}%`, transform: "translate(-50%, -50%)" }}
