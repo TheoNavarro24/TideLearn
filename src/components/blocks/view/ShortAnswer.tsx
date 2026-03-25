@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShortAnswerBlock } from "@/types/course";
+import { cn } from "@/lib/utils";
 
 export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
   const [value, setValue] = useState("");
@@ -20,77 +21,51 @@ export function ShortAnswerView({ block }: { block: ShortAnswerBlock }) {
     window.dispatchEvent(new CustomEvent("quiz:answered", { detail: { blockId: block.id, correct: ok } }));
   };
 
+  const isDisabled = revealed && correct === true;
+
   return (
-    <div style={{ margin: "24px 0", padding: 24, background: "#fafffe", border: "1px solid #e0fdf4", borderRadius: 12 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#0d9488", marginBottom: 10 }}>
+    <div className="my-6 p-6 rounded-xl border border-[var(--quiz-idle-border)] bg-[var(--canvas-white)]">
+      <div className="text-[9px] font-bold tracking-[0.1em] uppercase mb-2.5 text-[var(--quiz-correct-text)]">
         Short Answer
       </div>
-      <p style={{ fontSize: 15, fontWeight: 600, color: "#0d2926", lineHeight: 1.55, marginBottom: 14 }}>{block.question}</p>
+      <p className="text-[15px] font-semibold leading-[1.55] mb-[14px] text-[var(--ink)]">{block.question}</p>
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Type your answer…"
-        disabled={revealed && correct === true}
-        style={{
-          width: "100%",
-          border: "1.5px solid #d1faf4",
-          borderRadius: 8,
-          padding: "10px 14px",
-          fontSize: 14,
-          color: "#0d2926",
-          background: "#fff",
-          outline: "none",
-          fontFamily: "Inter, sans-serif",
-          boxSizing: "border-box",
-        }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = "#5eead4")}
-        onBlur={(e) => (e.currentTarget.style.borderColor = "#d1faf4")}
+        disabled={isDisabled}
+        className="w-full rounded-lg px-3.5 py-2.5 text-sm text-[var(--ink)] bg-white outline-none box-border border-[1.5px] border-[var(--quiz-idle-border)] focus:border-[var(--quiz-selected-border)] transition-[border-color] duration-150"
       />
-      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="flex gap-2 items-center">
           <button
             onClick={check}
-            disabled={revealed && correct === true}
-            style={{
-              background: (revealed && correct === true) ? "#e2e8f0" : "linear-gradient(135deg, #0d9488, #0891b2)",
-              border: "none",
-              borderRadius: 7,
-              color: (revealed && correct === true) ? "#94a3b8" : "#fff",
-              fontSize: 12,
-              fontWeight: 700,
-              padding: "6px 14px",
-              cursor: (revealed && correct === true) ? "not-allowed" : "pointer",
-              fontFamily: "Inter, sans-serif",
-            }}
+            disabled={isDisabled}
+            className={cn(
+              "border-none rounded-[7px] text-xs font-bold px-3.5 py-1.5",
+              isDisabled
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-gradient-to-br from-teal-600 to-sky-500 text-white cursor-pointer"
+            )}
           >
             Check
           </button>
           <button
             onClick={() => { setValue(""); setRevealed(false); setCorrect(null); }}
-            style={{
-              background: "none",
-              border: "1.5px solid #e0fdf4",
-              borderRadius: 7,
-              color: "#64748b",
-              fontSize: 12,
-              fontWeight: 600,
-              padding: "5px 12px",
-              cursor: "pointer",
-              fontFamily: "Inter, sans-serif",
-            }}
+            className="bg-transparent rounded-[7px] text-xs font-semibold px-3 py-[5px] cursor-pointer text-slate-500 border border-[var(--quiz-idle-border)]"
           >
             Reset
           </button>
           <div aria-live="polite" aria-atomic="true" role="status">
             {revealed && (
-              <span style={{ fontSize: 13, color: correct ? "#0d9488" : "#ef4444", fontWeight: 500 }}>
+              <span className={cn("text-[13px] font-medium", correct ? "text-teal-600" : "text-red-500")}>
                 {correct ? "Correct!" : "Try again."}
               </span>
             )}
           </div>
         </div>
         {block.showFeedback && block.feedbackMessage && revealed && (
-          <span style={{ fontSize: 13, color: "#475569" }}>
+          <span className="text-[13px] text-slate-600">
             {block.feedbackMessage}
           </span>
         )}
