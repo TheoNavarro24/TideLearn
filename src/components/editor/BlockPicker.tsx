@@ -139,7 +139,7 @@ export function AddBlockRow({
                     const meta = CATEGORY_META[cat];
                     return (
                       <div key={cat} className="px-3.5 pb-2.5">
-                        <div className="text-[9.5px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider mb-1.5 mt-1">
+                        <div className="text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider mb-1.5 mt-1">
                           {meta.label}
                         </div>
                         <div className="grid grid-cols-4 gap-1.5">
@@ -162,7 +162,7 @@ export function AddBlockRow({
                                 <div className={`w-[34px] h-[34px] ${meta.iconBg} rounded-md flex items-center justify-center`}>
                                   <spec.icon size={16} className="text-[var(--accent-hex)]" />
                                 </div>
-                                <span className="text-[10px] text-[var(--ink)] font-semibold text-center leading-tight">
+                                <span className="text-xs text-[var(--ink)] font-semibold text-center leading-tight">
                                   {spec.label}
                                 </span>
                               </button>

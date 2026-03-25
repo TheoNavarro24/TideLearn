@@ -262,7 +262,7 @@ export default function View() {
     for (const lesson of course.lessons) {
       if (lesson.kind !== "content") continue;
       for (const block of lesson.blocks) {
-        if (["quiz", "truefalse", "shortanswer"].includes((block as any).type)) {
+        if (["quiz", "truefalse", "shortanswer"].includes(block.type)) {
           if (block.id) allQuizIds.push(block.id);
         }
       }
@@ -585,11 +585,11 @@ export default function View() {
 
                   {/* Blocks */}
                   {currentLesson.kind === "content" && currentLesson.blocks.map((b) => {
-                    const spec = getSpec((b as any).type);
-                    const ViewComp = spec.View as any;
+                    const spec = getSpec(b.type);
+                    const ViewComp = spec.View;
                     return (
                       <article key={b.id}>
-                        <ViewComp block={b as any} />
+                        <ViewComp block={b} />
                       </article>
                     );
                   })}
@@ -630,7 +630,7 @@ export default function View() {
                   const isUnlocked = unlocked.has(l.id);
                   const nextId = course.lessons[lessonIdx + 1]?.id as string | undefined;
                   const quizIds = l.kind === "content"
-                    ? l.blocks.filter((b: any) => ["quiz", "truefalse", "shortanswer"].includes((b as any).type)).map((b: any) => (b as any).id)
+                    ? l.blocks.filter((b) => ["quiz", "truefalse", "shortanswer"].includes(b.type)).map((b) => b.id)
                     : [];
                   const totalChecks = quizIds.length;
                   const correctChecks = quizIds.filter((id: string) => answers[id]).length;
@@ -661,17 +661,17 @@ export default function View() {
                         <>
                           <div>
                             {l.kind === "content" && l.blocks.map((b) => {
-                              const spec = getSpec((b as any).type);
-                              const ViewComp = spec.View as any;
+                              const spec = getSpec(b.type);
+                              const ViewComp = spec.View;
                               return (
                                 <article key={b.id}>
-                                  <ViewComp block={b as any} />
+                                  <ViewComp block={b} />
                                 </article>
                               );
                             })}
                             {l.kind === "assessment" && (
                               <div className="italic text-[var(--text-muted)] text-sm py-4">
-                                Assessment: {(l as any).questions?.length ?? 0} questions —{" "}
+                                Assessment: {l.questions?.length ?? 0} questions —{" "}
                                 <button
                                   className="text-[var(--accent-hex)] hover:underline font-medium not-italic"
                                   onClick={() => { setIsPaged(true); setCurrentLessonId(l.id); }}

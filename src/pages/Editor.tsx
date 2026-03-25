@@ -34,7 +34,7 @@ const defaultLesson: ContentLesson = {
   blocks: [
     { id: uid(), type: "heading", text: "Welcome to My Course" },
     { id: uid(), type: "text", text: "This welcome page introduces your course. Use the Table of Contents below to jump to any lesson." },
-    { id: uid(), type: "toc" as any },
+    { id: uid(), type: "toc" as BlockType },
   ],
 };
 
@@ -291,7 +291,7 @@ export default function Editor() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isMac = (navigator as any).userAgentData?.platform === "macOS"
-        || navigator.platform?.toUpperCase().includes("MAC");
+        || /Mac|iPhone|iPod|iPad/.test(navigator.userAgent);
       const ctrl = isMac ? e.metaKey : e.ctrlKey;
       if (!ctrl) return;
 
@@ -493,7 +493,7 @@ export default function Editor() {
       <div className="px-4 pt-4 pb-3" style={{ borderBottom: "1px solid var(--accent-bg)" }}>
         <button
           onClick={() => navigate("/courses")}
-          className="flex items-center gap-1 text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0 mb-2"
+          className="flex items-center gap-1 text-xs bg-transparent border-none cursor-pointer transition-colors p-0 mb-2"
           style={{ color: "var(--sidebar-text)" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
@@ -503,7 +503,7 @@ export default function Editor() {
         <div className="font-display text-sm font-semibold leading-tight" style={{ color: "hsl(var(--sidebar-foreground))" }}>
           {courseTitle}
         </div>
-        <div className="text-[10px] mt-0.5" style={{ color: "var(--sidebar-text)" }}>
+        <div className="text-xs mt-0.5" style={{ color: "var(--sidebar-text)" }}>
           {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
           {(() => {
             const quizCount = lessons.filter(l => l.kind === "assessment").length;
@@ -528,11 +528,11 @@ export default function Editor() {
               onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text-hover)"; }}
               onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--sidebar-text)"; }}
             >
-              <span className="text-[10px] font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)", opacity: isActive ? 1 : 0.6 }}>
+              <span className="text-xs font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--sidebar-text)", opacity: isActive ? 1 : 0.6 }}>
                 {String(idx + 1).padStart(2, "0")}
               </span>
               <span className="flex-1 truncate">{l.title}</span>
-              <span className="text-[9px] opacity-50" aria-label={l.kind === "assessment" ? "Assessment lesson" : undefined}>{l.kind === "content" ? "doc" : "quiz"}</span>
+              <span className="text-xs opacity-50" aria-label={l.kind === "assessment" ? "Assessment lesson" : undefined}>{l.kind === "content" ? "doc" : "quiz"}</span>
             </button>
           );
         })}
@@ -583,7 +583,7 @@ export default function Editor() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => navigate("/courses")}
-            className="text-[10px] bg-transparent border-none cursor-pointer transition-colors p-0"
+            className="text-xs bg-transparent border-none cursor-pointer transition-colors p-0"
             style={{ color: "var(--text-muted)" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
@@ -713,8 +713,8 @@ export default function Editor() {
                     />
 
                     {blocks.map((b, idx) => {
-                      const spec = getSpec(b.type as BlockType);
-                      const EditorComp = spec.Editor as any;
+                      const spec = getSpec(b.type);
+                      const EditorComp = spec.Editor;
                       const isPickerBelowThis = pickerState !== null && pickerState.rowIndex <= idx;
                       return (
                         <div key={b.id} className={cn("transition-opacity", isPickerBelowThis && "opacity-25")}>
@@ -832,7 +832,7 @@ function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, o
         </div>
 
         <EditorComp
-          block={block as any}
+          block={block}
           onChange={(updated: any) => onUpdate(block.id, () => updated as Block)}
         />
       </div>
@@ -851,7 +851,7 @@ function BlockItem({ block, idx, total, spec, EditorComp, onMove, onDuplicate, o
             disabled={btn.disabled}
             aria-label={btn.ariaLabel}
             className={cn(
-              "bctrl-btn relative w-[26px] h-[26px] border rounded-[5px] text-[10px] flex items-center justify-center transition-colors",
+              "bctrl-btn relative w-[26px] h-[26px] border rounded-[5px] text-xs flex items-center justify-center transition-colors",
               "focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:outline-none",
               /* Pseudo-element expands touch target to ~44×44px without changing visual size */
               "after:content-[''] after:absolute after:inset-[-9px]",
