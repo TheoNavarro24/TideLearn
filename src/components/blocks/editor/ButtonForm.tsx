@@ -1,4 +1,5 @@
 import { ButtonBlock } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: ButtonBlock; onChange: (b: ButtonBlock) => void };
 
@@ -9,14 +10,14 @@ export function ButtonForm({ block, onChange }: Props) {
   return (
     <div className="space-y-3">
       <div>
-        <label className="block text-sm font-medium mb-1">Label</label>
+        <FieldLabel required>Label</FieldLabel>
         <input type="text" value={block.label} onChange={(e) => set("label", e.target.value)}
-          placeholder="Button text" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          placeholder="Button text" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">URL</label>
+        <FieldLabel required>URL</FieldLabel>
         <input type="url" value={block.url} onChange={(e) => set("url", e.target.value)}
-          placeholder="https://" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          placeholder="https://" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Style</label>

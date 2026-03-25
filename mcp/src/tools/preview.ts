@@ -136,8 +136,20 @@ export function renderQuestion(q: any): string {
       return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Fill-in-the-blank — ${(q.blanks ?? []).length} gap(s)]</p></div>`;
     case "matching":
       return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Matching — ${(q.left ?? []).length} pair(s)]</p></div>`;
-    case "sorting":
-      return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p><p style="font-size:0.875em;color:#64748b">[Sorting — ${(q.buckets ?? []).length} bucket(s), ${(q.items ?? []).length} item(s)]</p></div>`;
+    case "sorting": {
+      const bucketMap = new Map((q.buckets ?? []).map((b: any) => [b.id, b.label]));
+      return `
+    <div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0">
+      <p style="font-weight:600;margin:0 0 0.5em">${esc(q.text)}</p>
+      <p style="font-size:0.8em;color:#64748b;margin:0 0 0.5em">Sort into buckets: ${(q.buckets ?? []).map((b: any) => esc(b.label)).join(", ")}</p>
+      <ul style="margin:0 0 0.5em 1.25em;padding:0">
+        ${(q.items ?? []).map((item: any) =>
+          `<li>${esc(item.text)} → <strong>${esc((bucketMap.get(item.bucketId) as string | undefined) ?? "?")}</strong></li>`
+        ).join("")}
+      </ul>
+      ${q.feedback ? `<p style="font-size:0.875em;color:#64748b;margin:0;font-style:italic">Feedback: ${esc(q.feedback)}</p>` : ""}
+    </div>`;
+    }
     default:
       return `<div style="background:#f8fffe;border:1px solid #e0fdf4;border-radius:8px;padding:1em;margin:0.75em 0"><p style="font-style:italic;color:#94a3b8">[Unknown question kind: ${esc(q.kind ?? "unknown")}]</p></div>`;
   }

@@ -48,6 +48,29 @@ describe("injectQuestionSubItemIds", () => {
     expect(result.items[1].bucketId).toBe(result.buckets[1].id);
   });
 
+  it("sorting question: injects ids on buckets and items, converts bucketIndex to bucketId", () => {
+    const q = {
+      kind: "sorting", text: "Sort the items",
+      buckets: [{ label: "Even" }, { label: "Odd" }],
+      items: [{ text: "2", bucketIndex: 0 }, { text: "3", bucketIndex: 1 }, { text: "4", bucketIndex: 0 }],
+    };
+    const result = injectQuestionSubItemIds(q);
+    expect(result.buckets[0].id).toBeTruthy();
+    expect(result.items[0].bucketId).toBe(result.buckets[0].id); // 2 → Even
+    expect(result.items[1].bucketId).toBe(result.buckets[1].id); // 3 → Odd
+    expect(result.items[2].bucketId).toBe(result.buckets[0].id); // 4 → Even
+  });
+
+  it("sorting question: items without matching bucketIndex get a fallback id", () => {
+    const q = {
+      kind: "sorting", text: "Sort",
+      buckets: [{ label: "A" }],
+      items: [{ text: "x", bucketIndex: 99 }], // invalid index
+    };
+    const result = injectQuestionSubItemIds(q);
+    expect(result.items[0].bucketId).toBeTruthy(); // should not throw
+  });
+
   it("multipleresponse: injects id only (options are plain strings)", () => {
     const q = {
       kind: "multipleresponse", text: "Select all",

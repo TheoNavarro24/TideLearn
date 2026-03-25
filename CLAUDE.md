@@ -23,7 +23,7 @@ mcp/           → MCP server (Node, stdio transport, strict TS)
 supabase/      → Migrations & config
 ```
 
-- **28 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
+- **29 block types** registered in `src/components/blocks/registry.ts` — each has a factory, editor form, and view renderer
 - **Discriminated union lessons**: `kind: "content"` (has blocks) or `kind: "assessment"` (has questions)
 - **Dual storage**: localStorage (fast) + Supabase (sync via Google OAuth)
 - **SCORM 1.2 export** via jszip
@@ -53,6 +53,10 @@ supabase/      → Migrations & config
 - Text fields accept HTML; callout `text` should use HTML
 - Audio accepts `audio/mpeg` and `audio/wav` — not `audio/mp3`
 - Document block field is `src` not `url`
+- `fillinblank` template uses `{{n}}` gap markers — blank IDs injected by `injectSubItemIds`
+- `matching` pairs use `leftId`/`rightId` — MCP input uses `leftIndex`/`rightIndex`, IDs injected server-side
+- `AssessmentQuestion` is now a discriminated union — always check `kind` before accessing type-specific fields
+- Assessment lesson questions: MCQ, multipleresponse, fillinblank, matching, sorting — use `add_question` with correct `kind`
 
 ## AI Strategy
 
@@ -91,6 +95,8 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [x] **A.5 — Courses Overhaul** (merged to main)
 - [x] **Gunmetal UI Overhaul** (merged to main) — full dark-theme Gunmetal design system: AppShell, Auth, Settings, token migration, a11y hardening
 - [x] **Phase 2A — New Block Types** (merged to main) — Button/CTA, Embed, Flashcard, Timeline, Process, Chart, Sorting, Hotspot, Branching
+- [x] **Phase 2A+ — MCP Cleanup** (merged to main) — Fixed sortingBlockSchema, extended injectSubItemIds for all complex blocks, added renderBlock for Phase 2A types, updated tool descriptions & instructions, fixed update_assessment_config silent no-op, added 238 MCP tests
+- [x] **Phase 2B — Assessment Question Types** (on branch phase-2b) — 3 new blocks (multipleresponse, fillinblank, matching), 4 new question types (multipleresponse, fillinblank, matching, sorting), AssessmentQuestion discriminated union migration, Phase 2A validation catch-up (FieldLabel required, Zod schema tightening, hotspot MCP handoff banner)
 
 ## Design Context
 

@@ -158,3 +158,11 @@ export function gradeMatching(
 ): boolean {
   return pairs.every((p) => selections[p.leftId] === p.rightId);
 }
+
+/** Grade a sorting answer. Correct when all items are in their correct bucket. */
+export function gradeSorting(
+  items: Array<{ id: string; bucketId: string }>,
+  placements: Record<string, string> // itemId → bucketId
+): boolean {
+  return items.every((item) => placements[item.id] === item.bucketId);
+}

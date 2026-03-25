@@ -9,6 +9,7 @@ import {
   gradeMultipleResponse,
   gradeFillInBlank,
   gradeMatching,
+  gradeSorting,
 } from "@/lib/assessment";
 import { parseTemplate } from "@/components/blocks/editor/fillInBlankUtils";
 import { useAssessmentProgress } from "@/hooks/useAssessmentProgress";
@@ -29,6 +30,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
   const [selectedMultiple, setSelectedMultiple] = useState<number[]>([]);
   const [fillInputs, setFillInputs] = useState<string[]>([]);
   const [matchSelections, setMatchSelections] = useState<Record<string, string>>({});
+  const [sortingPlacements, setSortingPlacements] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "med" | "high" | null>(null);
   const [sessionCorrect, setSessionCorrect] = useState(0);
@@ -54,6 +56,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSelectedMultiple([]);
     setFillInputs([]);
     setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -75,6 +78,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSelectedMultiple([]);
     setFillInputs([]);
     setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -96,6 +100,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
     setSelectedMultiple([]);
     setFillInputs([]);
     setMatchSelections({});
+    setSortingPlacements({});
     setRevealed(false);
     setConfidence(null);
     setSessionCorrect(0);
@@ -115,6 +120,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
       if (fillInputs.length === 0 || fillInputs.some((v) => v.trim() === "")) return;
     } else if (currentQ.kind === "matching") {
       if (!currentQ.left.every((l) => matchSelections[l.id])) return;
+    } else if (currentQ.kind === "sorting") {
+      if (!currentQ.items.every((item) => sortingPlacements[item.id])) return;
     } else {
       if (selected === null) return;
     }
@@ -130,6 +137,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
       correct = gradeFillInBlank(currentQ.blanks, fillInputs);
     } else if (currentQ.kind === "matching") {
       correct = gradeMatching(currentQ.pairs, matchSelections);
+    } else if (currentQ.kind === "sorting") {
+      correct = gradeSorting(currentQ.items, sortingPlacements);
     } else {
       correct = false;
     }
@@ -154,6 +163,7 @@ export function AssessmentView({ lesson, courseId }: Props) {
       setSelectedMultiple([]);
       setFillInputs([]);
       setMatchSelections({});
+      setSortingPlacements({});
       setRevealed(false);
       setConfidence(null);
     }
@@ -287,7 +297,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
       (currentQ.kind === "mcq" && selected !== null) ||
       (currentQ.kind === "multipleresponse" && selectedMultiple.length > 0) ||
       (currentQ.kind === "fillinblank" && fillInputs.length > 0 && fillInputs.every((v) => v.trim() !== "")) ||
-      (currentQ.kind === "matching" && currentQ.left.every((l) => matchSelections[l.id]));
+      (currentQ.kind === "matching" && currentQ.left.every((l) => matchSelections[l.id])) ||
+      (currentQ.kind === "sorting" && currentQ.items.every((item) => sortingPlacements[item.id]));
     const checkDisabled = !isReadyToReveal || (isStudy && confidence === null);
 
     const revealedCorrect = revealed
@@ -299,6 +310,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
         ? gradeFillInBlank(currentQ.blanks, fillInputs)
         : currentQ.kind === "matching"
         ? gradeMatching(currentQ.pairs, matchSelections)
+        : currentQ.kind === "sorting"
+        ? gradeSorting(currentQ.items, sortingPlacements)
         : false
       : false;
     return (
@@ -451,7 +464,41 @@ export function AssessmentView({ lesson, courseId }: Props) {
           );
         })()}
 
-        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && currentQ.kind !== "fillinblank" && currentQ.kind !== "matching" && (
+        {currentQ.kind === "sorting" && (() => {
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Place each item in the correct bucket</p>
+              {currentQ.items.map((item) => {
+                const sel = sortingPlacements[item.id];
+                const isCorrect = revealed && sel === item.bucketId;
+                const isWrong = revealed && !!sel && sel !== item.bucketId;
+                return (
+                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ flex: 1, fontSize: 14 }}>{item.text}</span>
+                    <select
+                      value={sel ?? ""}
+                      disabled={revealed}
+                      onChange={(e) => setSortingPlacements((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                      style={{
+                        padding: "8px 12px", borderRadius: 8, fontSize: 14,
+                        border: `1.5px solid ${isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "hsl(var(--border))"}`,
+                        color: isCorrect ? "var(--accent-hex)" : isWrong ? "#ef4444" : "inherit",
+                        background: "var(--canvas-white)", width: 150,
+                      }}
+                    >
+                      <option value="">Bucket...</option>
+                      {currentQ.buckets.map((b) => (
+                        <option key={b.id} value={b.id}>{b.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
+        {currentQ.kind !== "mcq" && currentQ.kind !== "multipleresponse" && currentQ.kind !== "fillinblank" && currentQ.kind !== "matching" && currentQ.kind !== "sorting" && (
           <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 16px" }}>
             [This question type will be interactive in a future update]
           </p>
@@ -495,8 +542,8 @@ export function AssessmentView({ lesson, courseId }: Props) {
             </button>
           )}
           {revealed && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : (currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching") ? "#ef4444" : "#64748b" }}>
-              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching") && (revealedCorrect ? "Correct!" : "Incorrect")}
+            <span style={{ fontSize: 13, fontWeight: 600, color: revealedCorrect ? "var(--accent-hex)" : (currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching" || currentQ.kind === "sorting") ? "#ef4444" : "#64748b" }}>
+              {(currentQ.kind === "mcq" || currentQ.kind === "multipleresponse" || currentQ.kind === "fillinblank" || currentQ.kind === "matching" || currentQ.kind === "sorting") && (revealedCorrect ? "Correct!" : "Incorrect")}
             </span>
           )}
         </div>
@@ -606,6 +653,14 @@ export function AssessmentView({ lesson, courseId }: Props) {
                           const l = q.left.find((i) => i.id === p.leftId)?.label ?? "?";
                           const r = q.right.find((i) => i.id === p.rightId)?.label ?? "?";
                           return `${l} → ${r}`;
+                        }).join(" · ")}
+                      </p>
+                    )}
+                    {q.kind === "sorting" && (
+                      <p style={{ fontSize: 12, color: "var(--accent-hex)", margin: 0 }}>
+                        ✓ {q.items.map((item) => {
+                          const bucketLabel = q.buckets.find((b) => b.id === item.bucketId)?.label ?? "?";
+                          return `${item.text} → ${bucketLabel}`;
                         }).join(" · ")}
                       </p>
                     )}

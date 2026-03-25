@@ -466,7 +466,7 @@ export const timelineBlockSchema = z.object({
   type: z.literal("timeline"),
   items: z.array(z.object({
     id: z.string(), date: z.string().min(1), title: z.string().min(1), description: z.string().optional(),
-  })).min(1),
+  })).min(2),
 });
 
 export const processBlockSchema = z.object({
@@ -474,7 +474,7 @@ export const processBlockSchema = z.object({
   type: z.literal("process"),
   steps: z.array(z.object({
     id: z.string(), title: z.string().min(1), description: z.string().optional(),
-  })).min(1),
+  })).min(2),
 });
 
 export const chartBlockSchema = z.object({
@@ -509,7 +509,7 @@ export const hotspotBlockSchema = z.object({
   hotspots: z.array(z.object({
     id: z.string(), x: z.number().min(0).max(100), y: z.number().min(0).max(100),
     label: z.string().min(1), description: z.string().optional(),
-  })),
+  })).min(1),
 });
 
 export const branchingBlockSchema = z.object({

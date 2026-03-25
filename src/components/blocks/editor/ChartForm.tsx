@@ -1,4 +1,5 @@
 import { ChartBlock } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: ChartBlock; onChange: (b: ChartBlock) => void };
 
@@ -45,8 +46,8 @@ export function ChartForm({ block, onChange }: Props) {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Data</label>
-        <div className="rounded-md border border-border overflow-hidden">
+        <FieldLabel required>Data</FieldLabel>
+        <div className="mt-1 rounded-md border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted">
               <tr>

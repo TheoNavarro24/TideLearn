@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { HotspotBlock } from "@/types/course";
 import { uid } from "@/types/course";
+import { FieldLabel } from "./FieldLabel";
 
 type Props = { block: HotspotBlock; onChange: (b: HotspotBlock) => void };
 
@@ -26,9 +27,9 @@ export function HotspotForm({ block, onChange }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Image URL</label>
+        <FieldLabel required>Image URL</FieldLabel>
         <input type="url" value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })}
-          placeholder="https://" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          placeholder="https://" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Alt text</label>
@@ -37,6 +38,17 @@ export function HotspotForm({ block, onChange }: Props) {
       </div>
       {block.src && (
         <>
+          <div>
+            <FieldLabel required>Hotspots</FieldLabel>
+            {block.hotspots.length === 0 && (
+              <p className="text-xs text-destructive mt-1">Add at least 1 hotspot</p>
+            )}
+            {block.hotspots.some((h) => h.x === 50 && h.y === 50) && (
+              <div className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                Pin positions need setting — click the image to place each pin correctly.
+              </div>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">Click the image to place a hotspot pin</p>
           <div className="relative cursor-crosshair rounded-lg overflow-hidden border border-border" onClick={handleImageClick}>
             <img ref={imgRef} src={block.src} alt={block.alt} className="w-full block" />
