@@ -328,7 +328,16 @@ If changes requested:
 
 > **Load `step6-block-development.md` now.** Use it for all field-level content decisions and feedback quality rules.
 
-Work one lesson at a time. For each lesson, run the following sequence:
+### 6-pre. Build mode and content persistence
+
+Ask the user which mode they prefer:
+
+- **Whole-course mode:** Draft all lessons, saving each to markdown as completed. After all lessons are drafted, present the full draft for approval.
+- **Lesson-by-lesson mode (recommended for 4+ lessons):** Draft one lesson → save to markdown → present → PAUSE for approval → repeat for each lesson.
+
+**Per-lesson save (mandatory in both modes):** After drafting each lesson, immediately save it to the build file `docs/phase-3/course-build-<slug>.md` (same slug as source notes). Do this before moving to the next lesson. If context compacts mid-step, only the lesson currently being drafted is lost.
+
+Then work one lesson at a time through steps 6a–6g below.
 
 ### 6a. Instruction sequence
 
@@ -442,7 +451,29 @@ task_context: [the question text and the learning objective it addresses]
 
 Revise any feedback flagged as ego-level ("Well done!") or insufficiently specific.
 
-**Repeat Steps 6a–6g for every lesson. After all lessons drafted, proceed.**
+**After each lesson:** Save the drafted content to the build markdown file immediately.
+
+**In lesson-by-lesson mode:** Present the lesson draft and **→ PAUSE: Lesson [N] content approved?** before starting the next lesson.
+
+**After all lessons are drafted and saved:**
+
+### 6h. Content approval gate
+
+Present the full draft (whole-course mode) or confirm all individual lessons are approved (lesson-by-lesson mode).
+
+**→ PAUSE: All content approved? Proceed to media sourcing.**
+
+### 6i. Media sourcing
+
+1. Review the media inventory from Step 3
+2. Ask the user: "Are the following source files still in our conversation? If not, please re-upload: [list files from media inventory that contained usable assets]"
+3. For each media gap identified in Step 3, source or select appropriate assets (images, diagrams, videos, documents)
+4. Upload assets via `upload_media` and note the returned URLs in the build markdown file
+5. Update block drafts in the build file with media URLs
+
+Default: media sourcing is batched here, after all content is approved. In lesson-by-lesson mode, the user may request per-lesson media sourcing during the lesson loop — if they do, proceed as requested.
+
+**After media sourcing, proceed to Step 7.**
 
 ---
 
