@@ -62,7 +62,7 @@ function startCallbackServer(): Promise<string> {
 
     server.listen(0, "127.0.0.1", () => {
       const port = (server.address() as any).port;
-      const callbackUrl = `http://localhost:${port}/callback`;
+      const callbackUrl = `http://127.0.0.1:${port}/callback`;
       resolve(`${APP_URL}/auth?mcp_callback=${encodeURIComponent(callbackUrl)}`);
     });
 
