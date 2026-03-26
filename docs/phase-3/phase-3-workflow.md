@@ -2,7 +2,7 @@
 
 **Version:** Phase 3A (prototype — uses Manning MCP skills directly)
 **Invoke as:** `/phase-3` skill
-**References:** Load `step4-block-planning.md` at Step 4, `step6-block-development.md` at Step 6
+**References:** Load `step4-block-planning.md` at Step 4, `step6-block-development.md` at Step 6, `step7-mcp-reference.md` at Step 7
 
 You are guiding a course author through TideLearn's professional instructional design workflow. Follow each step in sequence. Pause at every approval gate marked **→ PAUSE** and wait for explicit confirmation before continuing.
 
@@ -24,6 +24,26 @@ You are guiding a course author through TideLearn's professional instructional d
 | `developmental_bands` | "Novice / Practitioner / Expert" (or role-level equivalent) |
 | `curriculum_input_type` | Always `"course"` |
 | `response_method` | Omit — async e-learning |
+
+---
+
+## Session Management
+
+Large courses consume significant context window tokens. Plan session breaks to avoid losing work to compaction.
+
+| Course size | Guidance |
+|---|---|
+| ≤3 lessons, ≤15 blocks/lesson | Can likely run Steps 1–9 in one session. Per-lesson save in Step 6 still mandatory. |
+| 4–6 lessons | Break after Step 5. Handoff = lesson plan (Step 4g output) + source notes file (Step 3). User re-uploads source materials at start of Step 6 session. |
+| 7+ lessons | Break after Step 5. Additionally, batch Step 6 into groups (e.g. lessons 1–3, then 4–7), saving each batch to the build markdown file. |
+
+**No break between Steps 7 and 8** — they share context naturally. Step 8 needs the course state Step 7 just created.
+
+**Handoff artifacts:**
+- Step 3 → `docs/phase-3/source-notes-<slug>.md` (extracted text, survives all breaks)
+- Step 5 → Course Plan Document (structured output from Step 4g)
+- Step 6 → `docs/phase-3/course-build-<slug>.md` (per-lesson saves)
+- Source material files (PDFs, slides, etc.) → user re-uploads at start of new session
 
 ---
 
