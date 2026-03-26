@@ -316,9 +316,14 @@ Lesson 2: [title]
 [Repeat per lesson]
 
 ASSESSMENT LESSON
-  Question types: [MCQ / shortanswer / fillinblank / matching / sorting]
-  Objectives covered: [all]
-  Leitner spaced repetition: yes
+  Question count: [total]
+  Per learning target:
+    LT 1: [N] × [kind] — [rationale for this question type]
+    LT 2: [N] × [kind] — [rationale]
+    ...
+  Non-assessable targets (content-block-only): [any LTs where supported question kinds cannot reach required Bloom level — these are assessed via branching/shortanswer blocks in content lessons only]
+  Leitner spaced repetition: yes/no
+  Supported kinds: mcq, multipleresponse, fillinblank, matching, sorting (NOT shortanswer)
 
 ASSESSMENT FLAGS
   [Threats from 4f]
