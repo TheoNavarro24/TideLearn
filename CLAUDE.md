@@ -44,6 +44,7 @@ supabase/      → Migrations & config
 
 - When adding a new block type, update **both** `courseSchema` AND `courseSchemaPermissive` in `src/types/course.ts` — stale permissive schema causes viewer to silently show "Course not found"
 - When adding a new block type with nested items, update `injectSubItemIds` in `mcp/src/tools/semantic.ts` and `renderBlock` in `mcp/src/tools/preview.ts`
+- When adding a new block type or assessment question type, update `docs/phase-3/step7-mcp-reference.md` with the new schema
 - `"schemaVersion": 1` is **required** in all course JSON
 - Never include `id` fields in blocks/lessons — auto-generated
 - Always `get_course` before editing — never guess IDs
@@ -102,6 +103,7 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [x] **RC2 — Frontend Test Suite** (merged to main) — 116 Vitest tests across 9 files (unit/component/integration), progress.ts extracted
 - [x] **RC3 — Block Modernisation** (merged to main) — all block components migrated from inline hex styles to Tailwind + CSS vars; quiz semantic colour tokens added to index.css
 - [x] **RC4 — Page Component Refactoring** (merged to main) — Editor/View/Courses decomposed into thin orchestrators; 11 custom hooks + 6 sub-components extracted; page files reduced from 776–873 lines to 144–380 lines
+- [x] **Phase 3A — Workflow Guidance Layer** (docs complete, ready to test) — 9-step instructional design workflow: `docs/phase-3/phase-3-workflow.md` (master workflow + Manning skill calls), `docs/phase-3/step4-block-planning.md` (block skeleton selection), `docs/phase-3/step6-block-development.md` (per-block field + feedback rules). All Manning skill schemas verified. Uses Manning MCP skills directly for Phase 3A prototyping; Phase 3B migrates validated skills server-side.
 
 ## Design Context
 
