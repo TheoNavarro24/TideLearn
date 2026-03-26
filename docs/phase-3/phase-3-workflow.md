@@ -556,7 +556,15 @@ learning_objective: [relevant objective]
 
 Apply adaptations via `update_block`. Then `save_course`.
 
-**→ PAUSE: Audit complete. Course ready for SME review. Proceed to Step 9.**
+### 8d. Audit re-run rule
+
+**Audit fixes do NOT trigger re-run.** Changes made to address findings from 8a–8c are scoped corrections the audit already identified.
+
+**User-requested changes after Step 8 DO trigger re-run.** If the user requests changes beyond what the audit found (e.g. "add a callout here", "rewrite this quiz", "change the branching scenario"), make the changes, then inform the user: "Since the course changed beyond audit fixes, I'm re-running the quality audit." Re-run 8a–8c on affected lessons.
+
+**Step 9 only proceeds after a clean audit state** — either the original audit + fixes, or the most recent re-run + fixes.
+
+**→ PAUSE: Audit complete (or re-run complete). Course ready for SME review. Proceed to Step 9.**
 
 ---
 
