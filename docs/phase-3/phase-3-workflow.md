@@ -479,27 +479,36 @@ Default: media sourcing is batched here, after all content is approved. In lesso
 
 ## Step 7 — Build in TideLearn
 
-**Goal:** Persist all drafted content into TideLearn via the MCP.
+**Goal:** Persist all drafted and approved content into TideLearn via the MCP.
+
+> **Load `step7-mcp-reference.md` now.** Use it for all field names, types, and constraints during building.
 
 Always `get_course` before any edits to confirm current state and IDs.
 
-**Build sequence:**
-1. `create_course` — title, description
-2. Per content lesson: `add_lesson` → then `add_block` per block in skeleton order
-3. Per assessment lesson: `add_assessment_lesson` → then `add_question` per question
-4. `upload_media` for image and audio assets
-5. `update_assessment_config` for Leitner settings
-6. `save_course`
+**Build method:** Use `add_lesson` + `add_block` per block, built from the approved build markdown file. Do NOT use `generate_lesson` — it produces generic content that ignores drafted material.
 
-**Critical field reminders:**
-- Never include `id` fields in blocks or lessons — auto-generated
-- Quiz `correctIndex` is 0-based; factory default is -1 — must set before publish
-- `fillinblank` template uses `{{1}}`, `{{2}}` gap markers
-- `matching` pairs: use `leftIndex`/`rightIndex` in MCP input; IDs injected server-side
-- `document` block field is `src` — not `url`
-- Audio accepts `audio/mpeg` or `audio/wav` — not `audio/mp3`
-- Assessment lessons: use `add_assessment_lesson`, not `add_lesson`
-- Block tools error on assessment lessons — use question tools only
+**Build sequence:**
+1. `create_course` — title, description from Step 1 brief
+2. Per content lesson:
+   a. `add_lesson` — title from course plan
+   b. `add_block` per block in skeleton order, using exact field names from `step7-mcp-reference.md`
+3. Per assessment lesson:
+   a. `add_assessment_lesson` — title (NOT `add_lesson`)
+   b. `add_question` per question with correct `kind` field
+   c. Prompt the user for assessment config: "What passing score, exam size would you like? (Default: no minimum, all questions)"
+   d. `update_assessment_config` with user-specified values
+4. `upload_media` for any image, audio, or document assets not yet uploaded
+5. `save_course`
+
+**Error recovery:**
+1. Read the error message — it names the exact field or constraint that failed
+2. Check `step7-mcp-reference.md` for the correct schema
+3. Fix the field and retry the tool call
+4. After build completes, verify block count and order per lesson against the build markdown file
+
+**Post-build verification:**
+- `get_course` to confirm lesson count, block counts, and assessment question count match the approved draft
+- Report any discrepancies to the user before proceeding to Step 8
 
 ---
 
