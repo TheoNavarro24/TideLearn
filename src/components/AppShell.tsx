@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthContext";
-import { BookOpen, Settings, HelpCircle, LogOut } from "lucide-react";
+import { BookOpen, Settings, ScrollText, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -58,10 +58,10 @@ export function AppShell({ children, sidebar, topBar }: AppShellProps) {
               onClick={() => navigate("/settings")}
             />
             <NavItem
-              icon={HelpCircle}
-              label="Help"
-              active={false}
-              onClick={() => {}}
+              icon={ScrollText}
+              label="Changelog"
+              active={location.pathname === "/changelog"}
+              onClick={() => navigate("/changelog")}
             />
           </nav>
         )}
