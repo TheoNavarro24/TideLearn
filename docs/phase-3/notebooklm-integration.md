@@ -164,7 +164,7 @@ Per lesson, after content is approved:
 4. Store each lesson draft in Memory notebook as it's approved
 5. `dual-coding-designer` (Manning skill) continues to plan visual content type — NotebookLM infographic is one option alongside manually sourced images, Chart blocks, Timeline blocks
 
-**Media sourcing enhancement**: NotebookLM-generated infographics, slides, and other visual artifacts reduce the number of gaps identified in the media inventory that require manual sourcing.
+**Media sourcing enhancement**: NotebookLM-generated infographics, slides, and other visual artifacts reduce the number of gaps identified in the media inventory that require manual sourcing. The **Google Image Search skill** (`glebis-claude-skills-google-image-search`) can source remaining image needs automatically — `dual-coding-designer` decides what visual is needed, Google Image Search finds it, Claude places it in the right block.
 
 ### Step 7: Build in TideLearn
 
@@ -238,7 +238,7 @@ No new block types required. All 27 existing block types cover every NotebookLM 
 | Infographic | **Image** | PNG/JPG | Complements `dual-coding-designer` visual planning |
 | Study guide / briefing doc / blog post | **Document** | PDF/DOCX | Good for summary/reference lessons |
 | Mind map | **Image** | PNG/SVG | Static export; useful for overview lessons |
-| Data table | **Text** (HTML table) | HTML | Text block accepts HTML — no Table block needed |
+| Data table | **Text** (HTML table) | HTML | Text block accepts HTML; if an HTML block is available, use that instead for richer rendering |
 | Quiz | **Assessment questions** | Parsed | Claude reads NotebookLM quiz, creates native MCQ/fill-in-blank/matching questions |
 | Flashcards | **Flashcard** block | Parsed | Claude reads NotebookLM flashcards, creates native Flashcard blocks |
 | Notebook link | **Button** | URL | `variant: "primary"`, `openInNewTab: true` |
@@ -261,6 +261,7 @@ The full content creation toolkit available during course authoring:
 | **Manning `dual-coding-designer`** | Plan visual content type per block | Step 6 (decides diagram vs chart vs timeline vs image) |
 | **Manning instructional design skills** (18 total) | Learning objectives, sequencing, assessment, feedback quality | Steps 2–8 |
 | **Mermaid diagrams** | Inline diagram generation (if Chart block extended) | Step 6 (alternative to sourced images) |
+| **Google Image Search skill** | Search for relevant images based on content needs | Step 6 (automated image sourcing for Image/Hotspot blocks) |
 | **External tools** (Napkin.ai, Gamma, etc.) | Manual infographic/presentation generation | Step 6 (manual step, not MCP-automated) |
 | **Claude direct authoring** | Write HTML content, structure blocks, draft assessments | Steps 6–7 |
 
