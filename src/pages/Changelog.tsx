@@ -1,133 +1,109 @@
 import { AppShell } from "@/components/AppShell";
 
-interface Release {
-  version: string;
-  date: string;
-  title: string;
-  items: { tag: "feat" | "fix" | "design" | "docs" | "test" | "refactor"; text: string }[];
+interface Commit {
+  datetime: string; // ISO-style display: "2026-03-25 17:08"
+  type: "feat" | "fix" | "refactor" | "design" | "test" | "docs" | "chore";
+  message: string;
 }
 
-const releases: Release[] = [
+interface Milestone {
+  label: string;
+  date: string; // completion date
+  commits: Commit[];
+}
+
+const milestones: Milestone[] = [
   {
-    version: "Phase 3A",
-    date: "March 2026",
-    title: "Workflow Guidance Layer",
-    items: [
-      { tag: "feat", text: "9-step instructional design workflow in docs/" },
-      { tag: "feat", text: "Block planning guide (step 4) with skeleton selection" },
-      { tag: "feat", text: "Per-block field rules and feedback guide (step 6)" },
-      { tag: "docs", text: "MCP schema reference document (step 7)" },
-      { tag: "docs", text: "Session boundary, media sourcing, and approval gate guidance" },
+    label: "Phase 3A — Workflow Guidance Layer",
+    date: "2026-03-26",
+    commits: [
+      { datetime: "2026-03-26 17:25", type: "fix",   message: "Use 127.0.0.1 instead of localhost for auth callback URL" },
+      { datetime: "2026-03-26 17:23", type: "docs",  message: "Add step7-mcp-reference.md to block type update checklist" },
+      { datetime: "2026-03-26 17:22", type: "docs",  message: "Expand Step 4g assessment plan with per-target question planning" },
+      { datetime: "2026-03-26 17:22", type: "docs",  message: "Update shortanswer guidance, add assessment question type section" },
+      { datetime: "2026-03-26 17:21", type: "docs",  message: "Add session boundary guidance and step7 reference to workflow header" },
+      { datetime: "2026-03-26 17:20", type: "docs",  message: "Add Step 8d audit re-run rule: user changes trigger re-run, audit fixes don't" },
+      { datetime: "2026-03-26 17:20", type: "docs",  message: "Rewrite Step 7: mandate add_lesson+add_block, add MCP reference, error recovery" },
+      { datetime: "2026-03-26 17:19", type: "docs",  message: "Add Step 6 build modes, per-lesson saves, approval gate, media sourcing" },
+      { datetime: "2026-03-26 17:19", type: "docs",  message: "Expand Step 3 with research offer, media inventory, source extraction" },
+      { datetime: "2026-03-26 17:18", type: "docs",  message: "Add step7-mcp-reference.md — MCP schema reference for workflow builds" },
     ],
   },
   {
-    version: "RC4",
-    date: "February 2026",
-    title: "Page Component Refactoring",
-    items: [
-      { tag: "refactor", text: "Editor.tsx decomposed into hooks and sub-components (873 → 380 lines)" },
-      { tag: "refactor", text: "View.tsx decomposed into hooks, ViewSidebar, and ViewBottomNav" },
-      { tag: "refactor", text: "Courses.tsx decomposed into hooks and CourseCard (775 → 144 lines)" },
-      { tag: "refactor", text: "11 custom hooks extracted across page components" },
+    label: "RC4 — Page Component Refactoring",
+    date: "2026-03-25",
+    commits: [
+      { datetime: "2026-03-25 22:03", type: "refactor", message: "Decompose Courses.tsx into hooks and CourseCard (775 → 144 lines)" },
+      { datetime: "2026-03-25 22:00", type: "refactor", message: "Decompose View.tsx — extract 4 hooks and ViewSidebar/ViewBottomNav components" },
+      { datetime: "2026-03-25 18:26", type: "refactor", message: "Decompose Editor.tsx into hooks and sub-components (873 → 380 lines)" },
     ],
   },
   {
-    version: "RC3",
-    date: "February 2026",
-    title: "Block Modernisation",
-    items: [
-      { tag: "design", text: "All block components migrated from inline hex styles to Tailwind + CSS vars" },
-      { tag: "design", text: "Quiz semantic colour tokens added (correct, incorrect, neutral)" },
-      { tag: "design", text: "Editor form components (Image, Video, Audio, Document) migrated to Tailwind" },
+    label: "RC3 — Block Modernisation",
+    date: "2026-03-25",
+    commits: [
+      { datetime: "2026-03-25 17:43", type: "design", message: "Complete block component hex colour cleanup" },
+      { datetime: "2026-03-25 17:38", type: "design", message: "Fix border token and dynamic display in editor form components" },
+      { datetime: "2026-03-25 17:36", type: "design", message: "Migrate DocumentForm, AudioForm, VideoForm, ImageForm editor forms to Tailwind" },
+      { datetime: "2026-03-25 17:35", type: "design", message: "Migrate ShortAnswerForm, TrueFalseForm, QuizForm editor forms to Tailwind" },
+      { datetime: "2026-03-25 17:31", type: "design", message: "Migrate DocumentView block to Tailwind" },
+      { datetime: "2026-03-25 17:27", type: "design", message: "Migrate ShortAnswer view to Tailwind + CSS vars" },
+      { datetime: "2026-03-25 17:26", type: "design", message: "Migrate TrueFalse view to Tailwind + CSS vars" },
+      { datetime: "2026-03-25 17:19", type: "design", message: "Migrate Quiz view from inline hex styles to Tailwind + CSS vars" },
+      { datetime: "2026-03-25 17:15", type: "design", message: "Migrate Callout block from inline hex styles to Tailwind classes" },
+      { datetime: "2026-03-25 17:12", type: "design", message: "Add quiz semantic colour tokens to CSS custom properties" },
     ],
   },
   {
-    version: "RC2",
-    date: "January 2026",
-    title: "Frontend Test Suite",
-    items: [
-      { tag: "test", text: "116 Vitest tests across 9 files" },
-      { tag: "test", text: "Unit tests for courses.ts, assessment.ts, scorm12.ts" },
-      { tag: "test", text: "Component tests for QuizView, CalloutView, AssessmentEditor" },
-      { tag: "test", text: "Integration tests for SCORM export, editor save/load, viewer progress" },
+    label: "RC2 — Frontend Test Suite",
+    date: "2026-03-25",
+    commits: [
+      { datetime: "2026-03-25 17:08", type: "feat", message: "RC2 frontend test suite — 116 tests across 9 files" },
+      { datetime: "2026-03-25 17:05", type: "test", message: "Integration test for viewer progress tracking" },
+      { datetime: "2026-03-25 17:02", type: "test", message: "Integration test for SCORM export zip structure" },
+      { datetime: "2026-03-25 16:59", type: "test", message: "Integration test for editor save/load roundtrip" },
+      { datetime: "2026-03-25 16:49", type: "test", message: "Component tests for AssessmentEditor AlertDialog delete flow" },
+      { datetime: "2026-03-25 16:44", type: "test", message: "Smoke tests for CalloutView ARIA and variants" },
+      { datetime: "2026-03-25 16:43", type: "test", message: "Component tests for QuizView interaction flow" },
+      { datetime: "2026-03-25 16:39", type: "test", message: "Unit tests for scorm12.ts pure helpers and zip structure" },
+      { datetime: "2026-03-25 16:34", type: "test", message: "Unit tests for courses.ts (CRUD, migration, roundtrip)" },
+      { datetime: "2026-03-25 16:31", type: "test", message: "Unit tests for assessment.ts Leitner algorithm and grading" },
+      { datetime: "2026-03-25 16:26", type: "test", message: "Add Vitest + Testing Library setup for frontend tests" },
     ],
   },
   {
-    version: "RC1",
-    date: "January 2026",
-    title: "Accessibility & UX Polish",
-    items: [
-      { tag: "fix", text: "Replaced window.confirm / window.prompt with accessible dialogs" },
-      { tag: "fix", text: "Added keyboard support to HotspotForm image interaction" },
-      { tag: "fix", text: "aria-live regions on all quiz and assessment result announcements" },
-      { tag: "fix", text: "Non-colour indicators (checkmarks) added to per-item quiz feedback" },
-      { tag: "fix", text: "Focus managed correctly after lesson navigation in viewer" },
+    label: "RC1 — Accessibility & UX Polish",
+    date: "2026-03-25",
+    commits: [
+      { datetime: "2026-03-25 16:05", type: "fix", message: "Manage focus after lesson navigation in viewer" },
+      { datetime: "2026-03-25 16:01", type: "fix", message: "Guard FillInBlankView indicators behind submitted state" },
+      { datetime: "2026-03-25 16:00", type: "fix", message: "Add non-colour indicators (checkmarks) to per-item quiz feedback" },
+      { datetime: "2026-03-25 15:57", type: "fix", message: "Add aria-live regions to all quiz and assessment result announcements" },
+      { datetime: "2026-03-25 15:54", type: "fix", message: "Refactor HotspotForm keyboard handler to avoid synthetic event casting" },
+      { datetime: "2026-03-25 15:52", type: "fix", message: "Add keyboard support to HotspotForm image interaction" },
+      { datetime: "2026-03-25 15:49", type: "fix", message: "Replace window.prompt with accessible Dialog for link insertion" },
+      { datetime: "2026-03-25 15:46", type: "fix", message: "Replace window.confirm with accessible AlertDialog in AssessmentEditor" },
     ],
   },
   {
-    version: "Phase 2B",
-    date: "December 2025",
-    title: "Assessment Question Types",
-    items: [
-      { tag: "feat", text: "3 new block types: Multiple Response, Fill-in-the-Blank, Matching" },
-      { tag: "feat", text: "4 new question types: multipleresponse, fillinblank, matching, sorting" },
-      { tag: "refactor", text: "AssessmentQuestion migrated to discriminated union (kind field)" },
-      { tag: "fix", text: "Phase 2A validation catch-up: FieldLabel required, Zod schema tightening" },
-    ],
-  },
-  {
-    version: "Phase 2A+",
-    date: "November 2025",
-    title: "MCP Cleanup",
-    items: [
-      { tag: "fix", text: "Fixed sortingBlockSchema and extended injectSubItemIds for complex blocks" },
-      { tag: "feat", text: "renderBlock support for all Phase 2A block types in preview tool" },
-      { tag: "fix", text: "Fixed update_assessment_config silent no-op" },
-      { tag: "test", text: "238 MCP Vitest tests added" },
-    ],
-  },
-  {
-    version: "Phase 2A",
-    date: "October 2025",
-    title: "New Block Types",
-    items: [
-      { tag: "feat", text: "Button/CTA, Embed, Flashcard, Timeline, Process, Chart blocks" },
-      { tag: "feat", text: "Sorting, Hotspot, and Branching interactive blocks" },
-      { tag: "feat", text: "Total of 29 registered block types" },
-    ],
-  },
-  {
-    version: "Gunmetal",
-    date: "September 2025",
-    title: "Gunmetal UI Overhaul",
-    items: [
-      { tag: "design", text: "Full dark-theme Gunmetal design system applied across the app" },
-      { tag: "design", text: "AppShell, Auth, and Settings pages updated" },
-      { tag: "design", text: "Design token migration — removed .card-surface, .text-gradient" },
-      { tag: "fix", text: "Accessibility hardening pass" },
-    ],
-  },
-  {
-    version: "A.1–A.5",
-    date: "August 2025",
-    title: "Rockpool Audit",
-    items: [
-      { tag: "design", text: "A.1: Cross-cutting foundations — DM Sans body font, Lora display, CSS layout vars" },
-      { tag: "design", text: "A.2: Editor overhaul — block editor chrome, sidebar, canvas spacing" },
-      { tag: "design", text: "A.3: Viewer overhaul — reading layout, progress bar, lesson nav" },
-      { tag: "design", text: "A.4: Landing page overhaul — hero, feature grid, brand voice" },
-      { tag: "design", text: "A.5: Courses overhaul — course card grid, empty state, header" },
+    label: "Phase 2B — Assessment Question Types",
+    date: "2026-03-25",
+    commits: [
+      { datetime: "2026-03-25 04:13", type: "feat", message: "Assessment question types — fillinblank, matching, sorting, multipleresponse" },
+      { datetime: "2026-03-25 03:46", type: "feat", message: "Sorting question type, Phase 2A validation catch-up, full tests" },
+      { datetime: "2026-03-25 03:37", type: "feat", message: "Fill-in-the-blank and matching block and question types" },
     ],
   },
 ];
 
-const tagStyles: Record<Release["items"][number]["tag"], { bg: string; color: string; label: string }> = {
-  feat:     { bg: "var(--accent-bg)",             color: "var(--accent-hex)",  label: "feat"     },
-  fix:      { bg: "hsl(var(--muted))",             color: "var(--ink)",         label: "fix"      },
-  design:   { bg: "rgba(139, 92, 246, 0.12)",      color: "#8b5cf6",            label: "design"   },
-  docs:     { bg: "rgba(59, 130, 246, 0.12)",      color: "#3b82f6",            label: "docs"     },
-  test:     { bg: "rgba(245, 158, 11, 0.12)",      color: "#d97706",            label: "test"     },
-  refactor: { bg: "rgba(16, 185, 129, 0.10)",      color: "#059669",            label: "refactor" },
+const typeStyles: Record<Commit["type"], { bg: string; color: string }> = {
+  feat:     { bg: "var(--accent-bg)",        color: "var(--accent-hex)" },
+  fix:      { bg: "hsl(var(--muted))",        color: "var(--ink)"        },
+  refactor: { bg: "rgba(16,185,129,0.10)",    color: "#059669"           },
+  design:   { bg: "rgba(139,92,246,0.12)",    color: "#8b5cf6"           },
+  test:     { bg: "rgba(245,158,11,0.12)",    color: "#d97706"           },
+  docs:     { bg: "rgba(59,130,246,0.12)",    color: "#3b82f6"           },
+  chore:    { bg: "hsl(var(--muted))",        color: "var(--text-muted)" },
 };
 
 export default function Changelog() {
@@ -139,62 +115,63 @@ export default function Changelog() {
         </span>
       }
     >
-      <div className="px-8 py-8 max-w-[640px]">
+      <div className="px-8 py-8 max-w-[720px]">
         <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>
-          A running record of releases and significant improvements to TideLearn.
+          All changes to TideLearn, in reverse chronological order.
         </p>
 
-        <div className="space-y-8">
-          {releases.map((release) => (
-            <div key={release.version} className="relative pl-5 border-l" style={{ borderColor: "hsl(var(--border))" }}>
-              {/* Timeline dot */}
-              <div
-                className="absolute -left-[5px] top-[5px] w-2.5 h-2.5 rounded-full border-2"
-                style={{ background: "var(--canvas)", borderColor: "var(--accent-hex)" }}
-              />
-
-              {/* Header */}
-              <div className="flex items-baseline gap-2.5 mb-2">
-                <span
-                  className="text-xs font-bold px-2 py-0.5 rounded font-mono"
-                  style={{ background: "var(--accent-bg)", color: "var(--accent-hex)" }}
-                >
-                  {release.version}
-                </span>
-                <span className="font-display text-[15px] font-semibold" style={{ color: "var(--ink)" }}>
-                  {release.title}
-                </span>
-                <span className="text-xs ml-auto flex-shrink-0" style={{ color: "var(--text-muted)" }}>
-                  {release.date}
+        <div className="space-y-10">
+          {milestones.map((milestone) => (
+            <section key={milestone.label}>
+              {/* Milestone header */}
+              <div className="flex items-baseline gap-3 mb-3">
+                <h2 className="font-display text-[15px] font-semibold" style={{ color: "var(--ink)" }}>
+                  {milestone.label}
+                </h2>
+                <span className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+                  {milestone.date}
                 </span>
               </div>
 
-              {/* Items */}
-              <ul className="space-y-1.5">
-                {release.items.map((item, i) => {
-                  const style = tagStyles[item.tag];
+              <div
+                className="rounded-md border overflow-hidden"
+                style={{ borderColor: "hsl(var(--border))", background: "var(--canvas-white)" }}
+              >
+                {milestone.commits.map((commit, i) => {
+                  const style = typeStyles[commit.type];
                   return (
-                    <li key={i} className="flex items-start gap-2">
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 px-4 py-2.5 border-b last:border-b-0"
+                      style={{ borderColor: "hsl(var(--border))" }}
+                    >
+                      {/* Time */}
                       <span
-                        className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 font-mono"
+                        className="text-[11px] font-mono flex-shrink-0 mt-0.5 w-[82px]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {commit.datetime.split(" ")[1]}
+                      </span>
+
+                      {/* Type badge */}
+                      <span
+                        className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5"
                         style={{ background: style.bg, color: style.color }}
                       >
-                        {style.label}
+                        {commit.type}
                       </span>
+
+                      {/* Message */}
                       <span className="text-sm leading-snug" style={{ color: "var(--ink)" }}>
-                        {item.text}
+                        {commit.message}
                       </span>
-                    </li>
+                    </div>
                   );
                 })}
-              </ul>
-            </div>
+              </div>
+            </section>
           ))}
         </div>
-
-        <p className="text-xs mt-10" style={{ color: "var(--text-muted)" }}>
-          TideLearn is in active development. Versions reflect feature milestones, not semantic releases.
-        </p>
       </div>
     </AppShell>
   );
