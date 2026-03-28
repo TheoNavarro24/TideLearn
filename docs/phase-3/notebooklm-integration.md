@@ -32,9 +32,29 @@ A second notebook serves as **persistent session memory**, storing all plans, dr
 - **Auth**: Cookie-based via `nlm login` (launches browser, user signs in with Google)
 - **Tools used**: 35 tools — notebooks, sources, querying, studio, downloads, research, notes, sharing
 
+### Setup script
+
+A one-command setup script (`scripts/setup-notebooklm.sh`) handles the full install:
+
+```bash
+./scripts/setup-notebooklm.sh
+```
+
+What it does:
+1. Checks for Python 3.8+ (exits with guidance if missing)
+2. Installs `notebooklm-mcp-cli` via pip
+3. Runs `nlm doctor` to verify installation
+4. Adds the NotebookLM MCP to the user's Claude Code MCP config (`~/.claude.json` or project `.mcp.json`)
+5. Prompts the user to run `nlm login` to authenticate with Google
+6. Verifies auth succeeded
+
+The script keeps TideLearn MCP and NotebookLM MCP as separate, independently updatable packages. We don't fork or bundle the NotebookLM code — we just automate the install and config wiring.
+
+**Why not bundle into TideLearn MCP**: NotebookLM MCP is Python (ours is TypeScript), uses undocumented APIs that break regularly (community fixes them fast — we'd be slow), and cookie-based auth still requires browser login regardless. Keeping them separate means the community maintains the API compatibility and we maintain the workflow integration.
+
 ### No official API
 
-All NotebookLM MCP servers use undocumented internal APIs. This integration could break if Google changes their internal endpoints. The workflow degrades gracefully — without the MCP, everything works as it does today.
+All NotebookLM MCP servers use undocumented internal APIs. This integration could break if Google changes their internal endpoints. The workflow degrades gracefully — without the MCP, everything works as it does today. Keeping the NotebookLM MCP as a separate package means updates from the community can be pulled independently (`pip install --upgrade notebooklm-mcp-cli`).
 
 ---
 
@@ -87,12 +107,11 @@ The skill instructions enforce this as part of each operation, not as a separate
 
 > I can enhance this course build with NotebookLM — grounded research from your source materials, plus auto-generated audio overviews, video explainers, slide decks, and infographics for your learners.
 >
-> To enable this, install the NotebookLM MCP:
+> To enable this, run the setup script:
 > ```
-> pip install notebooklm-mcp-cli
-> nlm login
+> ./scripts/setup-notebooklm.sh
 > ```
-> Then add it to your Claude Code MCP config.
+> It'll install the NotebookLM MCP, add it to your Claude Code config, and walk you through Google sign-in.
 >
 > This is optional — we can proceed without it and the workflow works the same way it always has.
 
@@ -290,9 +309,9 @@ Studio artifacts take 2–8 minutes each. The per-lesson pipeline (§6) mitigate
 
 All changes are in the skill/workflow layer. No TideLearn app or MCP server code changes.
 
-### Phase 1: Documentation
+### Phase 1: Documentation & Setup
 1. Write this spec (this document)
-2. Write setup guide: `docs/phase-3/notebooklm-setup.md`
+2. Create setup script: `scripts/setup-notebooklm.sh`
 3. Update `CLAUDE.md` with NotebookLM integration notes
 
 ### Phase 2: Workflow updates
