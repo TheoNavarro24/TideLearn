@@ -238,7 +238,7 @@ No new block types required. All 27 existing block types cover every NotebookLM 
 | Infographic | **Image** | PNG/JPG | Complements `dual-coding-designer` visual planning |
 | Study guide / briefing doc / blog post | **Document** | PDF/DOCX | Good for summary/reference lessons |
 | Mind map | **Image** | PNG/SVG | Static export; useful for overview lessons |
-| Data table | **Text** (HTML table) | HTML | Text block accepts HTML; if an HTML block is available, use that instead for richer rendering |
+| Data table | **Embed** | URL/HTML | Host as a page and embed via iframe, or export to Google Sheets and embed |
 | Quiz | **Assessment questions** | Parsed | Claude reads NotebookLM quiz, creates native MCQ/fill-in-blank/matching questions |
 | Flashcards | **Flashcard** block | Parsed | Claude reads NotebookLM flashcards, creates native Flashcard blocks |
 | Notebook link | **Button** | URL | `variant: "primary"`, `openInNewTab: true` |
