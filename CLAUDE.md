@@ -53,7 +53,7 @@ supabase/      → Migrations & config
 - Assessment lessons use `add_assessment_lesson` — NOT `add_lesson`
 - Block ops error on assessment lessons — use question tools instead
 - Text fields accept HTML; callout `text` should use HTML
-- Audio accepts `audio/mpeg` and `audio/wav` — not `audio/mp3`
+- Audio accepts `audio/mpeg`, `audio/wav`, `audio/ogg`, `audio/m4a`, `audio/x-m4a` — not `audio/mp3` (use `audio/mpeg`)
 - Document block field is `src` not `url`
 - `fillinblank` template uses `{{n}}` gap markers — blank IDs injected by `injectSubItemIds`
 - `matching` pairs use `leftId`/`rightId` — MCP input uses `leftIndex`/`rightIndex`, IDs injected server-side

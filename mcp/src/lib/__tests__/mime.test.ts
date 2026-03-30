@@ -28,6 +28,15 @@ describe("getMimeType", () => {
     expect(getMimeType("/path/to/file.xyz")).toBeNull();
     expect(getMimeType("/path/to/file.exe")).toBeNull();
   });
+  it("returns audio/mp4 for .m4a", () => {
+    expect(getMimeType("/path/to/file.m4a")).toBe("audio/mp4");
+  });
+  it("returns audio/mp4 for .M4A (case-insensitive)", () => {
+    expect(getMimeType("/path/to/file.M4A")).toBe("audio/mp4");
+  });
+  it("returns audio/ogg for .ogg", () => {
+    expect(getMimeType("/path/to/file.ogg")).toBe("audio/ogg");
+  });
 });
 
 describe("SUPPORTED_EXTENSIONS", () => {

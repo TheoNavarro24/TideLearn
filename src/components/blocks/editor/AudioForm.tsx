@@ -33,7 +33,7 @@ export function AudioForm({ block, onChange }: { block: AudioBlock; onChange: (b
         <Input value={block.src} onChange={(e) => onChange({ ...block, src: e.target.value })} placeholder="https://..." />
         {user && (
           <>
-            <input ref={inputRef} type="file" accept="audio/mpeg,audio/wav,audio/ogg" className="hidden"
+            <input ref={inputRef} type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/x-m4a" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
             <button
               type="button"
