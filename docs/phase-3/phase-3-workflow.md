@@ -47,6 +47,25 @@ Large courses consume significant context window tokens. Plan session breaks to 
 
 ---
 
+## Before Starting: NotebookLM Check (if MCP installed)
+
+If `notebooklm-mcp-cli` tools are available in this Claude Code session:
+
+**First turn — offer the enhancement:**
+> "I can use NotebookLM to make this course build much more powerful — grounded research from your source materials, auto-generated audio overviews, video explainers, slide decks, and infographics for each lesson, plus a persistent Memory notebook that survives context resets.
+> Shall I set this up now? (I'll create the Memory notebook immediately, and the Sources notebook once you share your materials.)"
+
+**If user accepts:**
+- `notebook_create("Course Memory: [title]")` — create Memory notebook now, before Step 1
+- Proceed through all steps writing to Memory notebook notes alongside local files (dual persistence)
+- Source notebook created at Step 3 when materials are uploaded
+
+**If not installed or user declines:** proceed with local files only — no degradation.
+
+**If auth is needed:** `nlm login` — prompt user to authenticate while Claude begins Step 1 analysis. The Memory notebook creation waits for auth; analysis does not.
+
+---
+
 ## Step 1 — Discovery
 
 **Goal:** Understand the performance problem, audience, and context.
@@ -77,6 +96,8 @@ Success measure: [measurement approach]
 ```
 
 **→ PAUSE: Confirm brief is accurate before proceeding.**
+
+*NotebookLM (if active):* `note_create(title="Course Brief", content=<brief>)` in Memory notebook.
 
 ---
 
@@ -136,6 +157,8 @@ programme_purpose: [business need]
 
 **→ PAUSE: Objectives confirmed? Proceed to Step 3.**
 
+*NotebookLM (if active):* `note_create(title="Learning Objectives", content=<objectives + Bloom levels + knowledge types>)` in Memory notebook.
+
 ---
 
 ## Step 3 — Content Gathering and Curation
@@ -187,6 +210,14 @@ Media gaps (blocks needing assets not in source materials):
 6. **Media note** — media asset files (images, PDFs, audio files) from source materials are not stored in the model's context. Step 6 will check asset availability and request re-uploads as needed.
 
 **→ PAUSE: Coverage matrix reviewed. Research gaps addressed. Media inventory complete. Source notes saved. Proceed to Step 4.**
+
+*NotebookLM (if active):*
+- `notebook_create("[Course Title] Sources")` — create Source notebook
+- `source_add` all uploaded materials (`source_type="file", file_path=<path>`) and URLs
+- `notebook_query` to validate coverage matrix against sources
+- For gaps: `research_start` → `research_import` → `source_add` new sources
+- `note_create(title="Coverage Matrix", content=<matrix>)` in Memory notebook
+- `note_create(title="Media Inventory", content=<inventory>)` in Memory notebook
 
 ---
 
@@ -332,6 +363,10 @@ ASSESSMENT FLAGS
 
 **→ PAUSE: Course plan approved? Any structural changes? Proceed to Step 5.**
 
+*NotebookLM (if active):*
+- `notebook_query` Source notebook to validate lesson depth and sequencing
+- `note_create(title="Course Plan", content=<full plan with block skeletons>)` in Memory notebook
+
 ---
 
 ## Step 5 — SME Approval Gate
@@ -344,6 +379,13 @@ If changes requested:
 - **Objective changes:** return to Step 2, re-run from 2b
 
 **→ PAUSE: Plan approved. Proceed to Step 6.**
+
+*NotebookLM (if active):*
+- `note_update(title="Course Plan", content=<approved plan + feedback>)` in Memory notebook
+- **Kick off Studio generation now** — plan is approved, sources are uploaded:
+  - Per lesson: `studio_create(notebook_id=<source_nb_id>, artifact_type="audio", audio_format="deep_dive", focus_prompt="Focus on [lesson N objectives]. Audience: [audience]. Lesson N of [total] — learners have covered [prior topics].", source_ids=[<ids relevant to this lesson>])`
+  - Repeat for `artifact_type="video"`, `"infographic"`, `"slide_deck"` per lesson as appropriate
+  - Generation takes 2–8 min per artifact — runs in parallel with Step 6
 
 ---
 
@@ -500,6 +542,12 @@ Default: media sourcing is batched here, after all content is approved. In lesso
 
 **After media sourcing, proceed to Step 7.**
 
+*NotebookLM (if active):*
+- After each lesson is approved: `note_create(title="Lesson [N] Draft", content=<draft>)` in Memory notebook
+- Check `studio_status` periodically between lessons
+- As artifacts complete: `download_artifact(output_path="/tmp/<file>")` → `upload_media(file_path=...)` → `add_block` with correct type and src URL
+- Mapping: audio (M4A) → Audio block, video (MP4) → Video block, slide deck (PPTX) → Document block, infographic (PNG) → Image block, study guide (Markdown) → Text block (render as HTML)
+
 ---
 
 ## Step 7 — Build in TideLearn
@@ -534,6 +582,13 @@ Always `get_course` before any edits to confirm current state and IDs.
 **Post-build verification:**
 - `get_course` to confirm lesson count, block counts, and assessment question count match the approved draft
 - Report any discrepancies to the user before proceeding to Step 8
+
+*NotebookLM (if active):*
+- `note_update(title="Build Log")` after each lesson/block is built
+- Before sharing: remove internal notes from Source notebook (gap analysis, rough drafts) — keep source materials and web research only
+- `notebook_share_public(notebook_id=<source_nb_id>)` → add Button block with the returned URL
+- ⚠️ NotebookLM notebooks are not embeddable — Button block only, not Embed
+- Remind author: if this course is later deleted, both notebooks remain in their Google account
 
 ---
 
@@ -591,6 +646,8 @@ Apply adaptations via `update_block`. Then `save_course`.
 
 **→ PAUSE: Audit complete (or re-run complete). Course ready for SME review. Proceed to Step 9.**
 
+*NotebookLM (if active):* `note_update(title="Audit Notes")` with findings and modifications.
+
 ---
 
 ## Step 9 — Publish and SME Approval
@@ -613,3 +670,22 @@ If changes requested:
 - Objective scope changes: return to Step 4
 
 **Course complete when SME explicitly approves.**
+
+---
+
+## Memory Notebook Sync Rules (NotebookLM active only)
+
+Every mutation to the course must be mirrored to the Memory notebook in the same step — not as a cleanup pass.
+
+| Action | Memory notebook update |
+|--------|----------------------|
+| Course plan approved | `note_update("Course Plan", <approved plan>)` |
+| Lesson draft approved | `note_create("Lesson [N] Draft", <draft>)` |
+| Lesson revised | `note_update("Lesson [N] Draft", <revised>)` |
+| Lesson deleted | `note_delete("Lesson [N] Draft")` |
+| Block revised | Update the relevant lesson draft note |
+| Build log entry | `note_update("Build Log", <append entry>)` |
+
+**After context compaction:** retrieve Memory notebook notes by exact title. Source notebook is still available for `notebook_query`. Local markdown files are the backup.
+
+⚠️ Verify the actual tool names (`note_create`, `note_update`, `note_get`, `note_delete`) against the installed `notebooklm-mcp-cli` before use — see `docs/notebooklm-setup.md`.
