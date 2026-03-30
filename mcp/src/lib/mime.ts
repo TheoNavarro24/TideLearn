@@ -13,6 +13,8 @@ const MIME_MAP: Record<string, string> = {
   ".webm": "video/webm",
   ".mp3": "audio/mpeg",
   ".wav": "audio/wav",
+  ".m4a": "audio/mp4",
+  ".ogg": "audio/ogg",
   ".pdf": "application/pdf",
 };
 
