@@ -42,13 +42,17 @@ MCPs cannot call each other. Claude coordinates between NotebookLM MCP and TideL
 | **Primary use** | `notebook_query` — grounded Q&A | `note_get` (or equivalent) — exact content retrieval |
 | **Storage type** | Sources | Notes (not sources — notes have full CRUD) |
 | **Shared with learners** | Yes (after cleanup — see below) | No |
-| **Created** | Step 3 (when user accepts NotebookLM) | Step 3 (same moment — see timing note below) |
+| **Created** | Step 3 (when materials are uploaded) | First turn (as soon as user accepts NotebookLM) |
 
 **Why notes for Memory notebook, not sources:**
 Sources have `source_add` and `source_delete` but no update operation. Notes have full CRUD. Since we're constantly revising the course plan, lesson drafts, and build log throughout the workflow, notes are the correct storage primitive. Both sources and notes return exact content — no AI processing on retrieval.
 
-**Memory notebook creation timing:**
-Both notebooks are created at the moment the user accepts NotebookLM enhancement (Step 3 for Entry B users; immediately for Entry C users). At that point, Claude retroactively adds the course brief and learning objectives (already captured in local files) as the first notes in the Memory notebook, then continues from Step 3 onwards.
+**Different creation triggers — this is intentional:**
+The Memory notebook exists to capture context as it is built, from Step 1 onwards. It must be created the moment the user accepts NotebookLM — before any course work begins. Waiting until Step 3 would mean losing the course brief and learning objectives, defeating the purpose.
+
+The Source notebook, by contrast, is only useful once there are materials to add. It is created at Step 3 when the user actually uploads files.
+
+These are two separate decisions with two separate triggers. Do not conflate them.
 
 **Note tool names:**
 The exact tool names for the Notes API (`note_create`, `note_update`, `note_delete`, `note_get`, etc.) should be confirmed against the actual `notebooklm-mcp-cli` tool list during Phase 3 validation. The spec uses intuitive names — verify before implementation.
@@ -77,43 +81,48 @@ config, and walks you through Google authentication. It takes about 2 minutes.
 We can proceed without it — or you can run the script and restart Claude Code.
 ```
 
-**After install and restart (Entry A → B):** On the next session, Claude will detect NotebookLM tools as available. The workflow picks up normally from wherever it left off. If a course brief was already captured, Claude offers to create the notebooks and retroactively adds prior artifacts as notes.
+**After install and restart (Entry A → B):** On the next session, Claude will detect NotebookLM tools as available and offer the full pitch at the start of the turn. If a course was already in progress, Claude offers to create the Memory notebook and populate it with any artifacts already in the local files before continuing.
 
 ### Entry B — NotebookLM MCP installed, fresh course
-As soon as the user provides materials, offer:
+**First turn** (before any course work begins), offer:
 
 ```
-I can create a NotebookLM notebook for this course and upload your materials
-as sources. This gives you grounded content generation and auto-generated
-learning assets (audio, video, slides, infographic) for each lesson.
+I can use NotebookLM to make this course build much more powerful — grounded
+research from your source materials, auto-generated audio overviews, video
+explainers, slide decks, and infographics for each lesson, plus a persistent
+Memory notebook that survives context resets.
 
-Ready to create the notebook — shall we proceed?
+Shall I set this up now? (I'll create the Memory notebook immediately, and
+the Sources notebook once you share your materials.)
 ```
 
-**Auth timing:** If auth is needed (`nlm login`), prompt the user to authenticate while Claude begins its own analysis (reading materials, building coverage matrix) — the NotebookLM upload waits for auth, but Claude's analysis doesn't.
+On acceptance: create Memory notebook immediately → begin Step 1 with notes from the start.
+
+**Auth timing:** If auth is needed (`nlm login`), prompt the user to authenticate while Claude begins its own analysis (reading the brief, clarifying objectives) — the Memory notebook creation waits for auth, but Claude's conversation analysis doesn't.
+
+**Source notebook timing:** Created at Step 3 when the user provides materials.
 
 ### Entry C — Power user with existing notebook
 If the user provides a notebook name or ID:
 ```
 notebook_list → confirm it exists → notebook_get → proceed from Step 3
 ```
-No upload prompt. Sources already present.
+Create Memory notebook immediately on session start. No source upload prompt — sources already present.
 
 ---
 
 ## Workflow Integration (Phase 3A Steps)
 
 ### Step 1: Discovery
-- Local file `docs/phase-3/source-notes-<slug>.md` created as normal
-- If Entry C (existing notebook): create Memory notebook now and add course brief note immediately
-- Otherwise: NotebookLM notebooks created at Step 3 when user provides materials and accepts
+- Memory notebook already created (acceptance happened first turn)
+- `note_create(title="Course Brief", content=<brief>)` in Memory notebook
+- Local file `docs/phase-3/source-notes-<slug>.md` also created (dual persistence)
 
 ### Step 2: Learning Objectives
-- Local file updated as normal
-- NotebookLM not yet active (unless Entry C)
+- `note_create(title="Learning Objectives", content=<objectives + Bloom levels + knowledge types>)` in Memory notebook
+- Local file updated
 
 ### Step 3: Content Gathering
-- **Entry B:** User provides materials → offer NotebookLM enhancement → on acceptance, create both notebooks, retroactively add brief + objectives as notes in Memory notebook
 - Create Source notebook: `notebook_create("[Course Title] Sources")`
 - `source_add` all uploaded materials (accepts local file paths: `source_type="file", file_path="/path/to/doc.pdf"`)
 - `source_add` any URLs
