@@ -39,13 +39,19 @@ MCPs cannot call each other. Claude coordinates between NotebookLM MCP and TideL
 |---|---|---|
 | **Purpose** | Materials + research | Session state + build artifacts |
 | **Contains** | PDFs, URLs, articles, web research | Course brief, objectives, plan, lesson drafts, build log |
-| **Primary use** | `notebook_query` — grounded Q&A | `note_read` — exact content retrieval |
+| **Primary use** | `notebook_query` — grounded Q&A | `note_get` (or equivalent) — exact content retrieval |
 | **Storage type** | Sources | Notes (not sources — notes have full CRUD) |
 | **Shared with learners** | Yes (after cleanup — see below) | No |
-| **Created** | Step 3 | Step 1 |
+| **Created** | Step 3 (when user accepts NotebookLM) | Step 3 (same moment — see timing note below) |
 
 **Why notes for Memory notebook, not sources:**
 Sources have `source_add` and `source_delete` but no update operation. Notes have full CRUD. Since we're constantly revising the course plan, lesson drafts, and build log throughout the workflow, notes are the correct storage primitive. Both sources and notes return exact content — no AI processing on retrieval.
+
+**Memory notebook creation timing:**
+Both notebooks are created at the moment the user accepts NotebookLM enhancement (Step 3 for Entry B users; immediately for Entry C users). At that point, Claude retroactively adds the course brief and learning objectives (already captured in local files) as the first notes in the Memory notebook, then continues from Step 3 onwards.
+
+**Note tool names:**
+The exact tool names for the Notes API (`note_create`, `note_update`, `note_delete`, `note_get`, etc.) should be confirmed against the actual `notebooklm-mcp-cli` tool list during Phase 3 validation. The spec uses intuitive names — verify before implementation.
 
 **Why upload_all_sources_upfront:**
 `studio_create` accepts a `source_ids` parameter to scope generation to specific sources. This eliminates any need to stagger uploads — all materials can be uploaded in Step 3, and each generation call is scoped to the appropriate subset.
@@ -70,6 +76,8 @@ config, and walks you through Google authentication. It takes about 2 minutes.
 
 We can proceed without it — or you can run the script and restart Claude Code.
 ```
+
+**After install and restart (Entry A → B):** On the next session, Claude will detect NotebookLM tools as available. The workflow picks up normally from wherever it left off. If a course brief was already captured, Claude offers to create the notebooks and retroactively adds prior artifacts as notes.
 
 ### Entry B — NotebookLM MCP installed, fresh course
 As soon as the user provides materials, offer:
@@ -96,15 +104,16 @@ No upload prompt. Sources already present.
 ## Workflow Integration (Phase 3A Steps)
 
 ### Step 1: Discovery
-- Create Memory notebook: `notebook_create("Course Memory: [title]")`
-- Add first note: `note_create(title="Course Brief", content=<brief text>)`
-- Local file `docs/phase-3/source-notes-<slug>.md` also created (belt-and-suspenders — see Persistence section)
+- Local file `docs/phase-3/source-notes-<slug>.md` created as normal
+- If Entry C (existing notebook): create Memory notebook now and add course brief note immediately
+- Otherwise: NotebookLM notebooks created at Step 3 when user provides materials and accepts
 
 ### Step 2: Learning Objectives
-- `note_create(title="Learning Objectives", content=<objectives + Bloom levels + knowledge types>)`
-- Update local file
+- Local file updated as normal
+- NotebookLM not yet active (unless Entry C)
 
 ### Step 3: Content Gathering
+- **Entry B:** User provides materials → offer NotebookLM enhancement → on acceptance, create both notebooks, retroactively add brief + objectives as notes in Memory notebook
 - Create Source notebook: `notebook_create("[Course Title] Sources")`
 - `source_add` all uploaded materials (accepts local file paths: `source_type="file", file_path="/path/to/doc.pdf"`)
 - `source_add` any URLs
@@ -206,7 +215,7 @@ All outputs map to existing block types. **Zero new block types required.**
 | Mind map | PNG/SVG | Image | Works as-is |
 | Quiz | JSON/MD | Assessment questions | Claude parses and creates via add_question |
 | Flashcards | JSON/MD | Flashcard block | Claude parses and creates |
-| Notebook link | URL | Button | Links learners to interactive notebook |
+| Notebook link | URL | Button | NotebookLM notebooks are not embeddable in iframes — Button block only |
 
 ### M4A audio format gap
 NotebookLM exports audio as `.m4a`. TideLearn's Audio block currently accepts `audio/mpeg` and `audio/wav` only.
@@ -234,7 +243,7 @@ The skill should explicitly prompt the author to review the notebook before shar
 |---|---|
 | NotebookLM Studio | Audio, video, slides, infographics, study guides — all grounded in sources |
 | Manning MCP skills (`dual-coding-designer`, etc.) | Decide *what* visual type is needed per concept |
-| Google Image Search skill | Find images for Image blocks where studio doesn't generate |
+| Google Image Search skill ([agentskills.so](https://agentskills.so/skills/glebis-claude-skills-google-image-search)) | Find images for Image blocks where studio doesn't generate |
 | Mermaid diagrams | Process flows, timelines — Claude generates as code, rendered as Image block |
 | External: Napkin.ai / Gamma | Manual visual creation for complex diagrams (out-of-skill step) |
 
