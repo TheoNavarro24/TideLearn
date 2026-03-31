@@ -356,8 +356,13 @@ LESSON STRUCTURE
 Lesson 1: [title]
   Clark content type: [Facts / Concepts / Processes / Procedures / Principles]
   Objectives addressed: [list]
-  Block skeleton: [list blocks in order — from step4-block-planning.md skeleton templates]
-  Hinge question: [from 4e]
+  Learner journey: [1–2 sentences — cognitive state on arrival, key challenge, what this lesson must accomplish for the learner]
+  Block skeleton (annotated):
+    [block type] | LT [N.N] | [I/We/You Do] | [cognitive purpose — one sentence: why this block exists at this position]
+    [block type] | LT [N.N] | [I/We/You Do] | [...]
+    ...
+  Hinge question: [stem + 4 options + correctIndex from 4e]
+  Diagnostic key: [per-distractor misconception explanation from 4e — used as feedbackIncorrect at Step 6f; must survive session breaks]
   Spaced review: [prior-lesson content to revisit at lesson open — from 4d]
 
 Lesson 2: [title]
@@ -379,6 +384,8 @@ ASSESSMENT FLAGS
   [Threats from 4f]
   [Type 3 flags from Step 2]
 ```
+
+> **Block skeleton annotation is mandatory.** Each block must have a row with: block type, LT number (from Step 2), I/We/You Do phase, and one sentence on why this block exists at this position for this learner. A block plan without this annotation is incomplete — it shows structure but not pedagogical reasoning. The Learner Journey paragraph and Diagnostic Key must also be present in every lesson entry.
 
 Present the plan to the user for review. Proceed to Step 5 for formal approval.
 
