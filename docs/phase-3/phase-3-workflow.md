@@ -192,6 +192,12 @@ Objective 2: [title]
 
 3.5. **Research offer** — for any ❌ Missing items: "I can research [topic] and draft content for this gap. Would you like me to do that, or will you provide additional materials?"
 
+3c. **Supplementary material sourcing** — proactively search for articles, videos, infographics, and other multimedia that supplement the primary sources. Do not wait for explicit ❌ gaps — even when the coverage matrix shows full concept coverage, primary sources are often text-only slides with no multimedia. A full coverage matrix does not mean media coverage is complete.
+
+Search for: practitioner articles, open-access guides (e.g. Devlin Peck, eLearning Industry), infographics, process diagrams, and video content relevant to the course objectives. Record all supplementary sources found in `docs/phase-3/source-notes-<slug>.md` with their LT relevance and intended use.
+
+> ⚠️ **Web search YouTube limitation:** The web search tool cannot return direct YouTube video URLs — it returns article summaries only. If video resources are needed: (a) ask the user to provide specific video URLs, (b) use `video_overview_create` in NotebookLM to generate a video explainer, or (c) search for embed pages on educational sites (TED-Ed, Coursera previews, Khan Academy).
+
 4. **Media inventory** — scan all uploaded materials and list any media assets that could be used in the course:
 
 ```
@@ -212,13 +218,13 @@ Media gaps (blocks needing assets not in source materials):
 
 6. **Media note** — media asset files (images, PDFs, audio files) from source materials are not stored in the model's context. Step 6 will check asset availability and request re-uploads as needed.
 
-**→ PAUSE: Coverage matrix reviewed. Research gaps addressed. Media inventory complete. Source notes saved. Proceed to Step 4.**
+**→ PAUSE: Coverage matrix reviewed. Research gaps addressed. Supplementary sources found (3c). Media inventory complete. Source notes saved. Proceed to Step 4.**
 
 *NotebookLM (if active):*
 - `notebook_create("[Course Title] Sources")` — create Source notebook
 - `source_add` all uploaded materials (`source_type="file", file_path=<path>`) and URLs
 - `notebook_query` to validate coverage matrix against sources
-- For gaps: `research_start` → `research_import` → `source_add` new sources
+- For gaps and supplementary sourcing: `research_start` → `research_import` → `source_add` new sources. If `research_import` times out (MCP error -32001), fall back immediately to `notebook_add_url` with individual source URLs from the research results. Do not retry `research_import` more than twice.
 - `note_create(title="Coverage Matrix", content=<matrix>)` in Memory notebook
 - `note_create(title="Media Inventory", content=<inventory>)` in Memory notebook
 
