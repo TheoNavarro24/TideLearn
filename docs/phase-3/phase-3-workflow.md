@@ -192,7 +192,7 @@ Objective 2: [title]
 
 3.5. **Research offer** — for any ❌ Missing items: "I can research [topic] and draft content for this gap. Would you like me to do that, or will you provide additional materials?"
 
-3c. **Supplementary material sourcing** — proactively search for articles, videos, infographics, and other multimedia that supplement the primary sources. Do not wait for explicit ❌ gaps — even when the coverage matrix shows full concept coverage, primary sources are often text-only slides with no multimedia. A full coverage matrix does not mean media coverage is complete.
+3.6. **Supplementary material sourcing** — proactively search for articles, videos, infographics, and other multimedia that supplement the primary sources. Do not wait for explicit ❌ gaps. A full coverage matrix does not mean media coverage is complete — primary sources are often text-only slides with no multimedia.
 
 Search for: practitioner articles, open-access guides (e.g. Devlin Peck, eLearning Industry), infographics, process diagrams, and video content relevant to the course objectives. Record all supplementary sources found in `docs/phase-3/source-notes-<slug>.md` with their LT relevance and intended use.
 
@@ -224,7 +224,7 @@ Media gaps (blocks needing assets not in source materials):
 - `notebook_create("[Course Title] Sources")` — create Source notebook
 - `source_add` all uploaded materials (`source_type="file", file_path=<path>`) and URLs
 - `notebook_query` to validate coverage matrix against sources
-- For gaps and supplementary sourcing: `research_start` → `research_import` → `source_add` new sources. If `research_import` times out (MCP error -32001), fall back immediately to `notebook_add_url` with individual source URLs from the research results. Do not retry `research_import` more than twice.
+- For gaps and supplementary sourcing: `research_start` → `research_import` → `source_add` new sources. If `research_import` times out (MCP error -32001), call `research_status` to retrieve the completed research results, then add individual source URLs via `notebook_add_url`. Do not retry `research_import` more than twice.
 - `note_create(title="Coverage Matrix", content=<matrix>)` in Memory notebook
 - `note_create(title="Media Inventory", content=<inventory>)` in Memory notebook
 
