@@ -740,8 +740,10 @@ Always `get_course` before any edits to confirm current state and IDs.
 4. After build completes, verify block count and order per lesson against the build markdown file
 
 **Post-build verification:**
-- `get_course` to confirm lesson count, block counts, and assessment question count match the approved draft
-- Report any discrepancies to the user before proceeding to Step 8
+- Call `review_course` on the built course
+- Compare the output against the Course Plan Document: lesson count, block count per lesson, assessment question count, and block sequence order per lesson
+- Any discrepancy (missing block, wrong order, wrong question count) must be corrected via `add_block` / `move_block` / `add_question` + `save_course` before proceeding to Step 8
+- Report the result to the user: "Build verified — [N] lessons, [N] blocks total, [N] assessment questions. No discrepancies." or list each item corrected.
 
 *NotebookLM (if active):*
 - `note_update(title="Build Log")` after each lesson/block is built
