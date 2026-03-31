@@ -2,7 +2,7 @@
 
 **Version:** Phase 3A (prototype — uses Manning MCP skills directly)
 **Invoke as:** `/phase-3` skill
-**References:** Load `step4-block-planning.md` at Step 4, `step6-block-development.md` at Step 6, `step7-mcp-reference.md` at Step 7
+**References:** `step4-block-planning.md` (loaded after Step 4 skill calls), `step6-block-development.md` (loaded after Step 6 skill calls), `step7-mcp-reference.md` (loaded at Step 7)
 
 You are guiding a course author through TideLearn's professional instructional design workflow. Follow each step in sequence. Pause at every approval gate marked **→ PAUSE** and wait for explicit confirmation before continuing.
 
@@ -41,9 +41,12 @@ Large courses consume significant context window tokens. Plan session breaks to 
 
 **Handoff artifacts:**
 - Step 3 → `docs/phase-3/source-notes-<slug>.md` (extracted text, survives all breaks)
-- Step 5 → Course Plan Document (structured output from Step 4g)
+- Step 5 → Course Plan Document (structured output from Step 4g, updated with artifact slots at Step 5a if NotebookLM active)
+- Step 5 → Artifact plan (saved to source notes file — block positions, purposes, prompts)
 - Step 6 → `docs/phase-3/course-build-<slug>.md` (per-lesson saves)
 - Source material files (PDFs, slides, etc.) → user re-uploads at start of new session
+
+**On session resume:** Before taking any action, re-read this document from the top. Do not rely on the session summary — it records completed artifacts, not workflow instructions. Session summaries describe *what was done*; this document specifies *what to do next*. If NotebookLM was used: Memory notebook ID and Source notebook ID were saved to the top of the source notes file (`docs/phase-3/source-notes-<slug>.md`) at Step 3. Retrieve those IDs on resume without a `notebook_list` call. If studio generation was kicked off before the break, check `studio_status` for all artifacts before continuing — download and upload any that completed while the session was inactive.
 
 ---
 
@@ -56,7 +59,7 @@ If `notebooklm-mcp-cli` tools are available in this Claude Code session:
 > Shall I set this up now? (I'll create the Memory notebook immediately, and the Sources notebook once you share your materials.)"
 
 **If user accepts:**
-- `notebook_create("Course Memory: [title]")` — create Memory notebook now, before Step 1
+- `notebook_create("Course Memory: [title]")` — create Memory notebook now, before Step 1; record the returned notebook ID — it will be saved to the source notes file at Step 3 so it persists across context resets
 - Proceed through all steps writing to Memory notebook notes alongside local files (dual persistence)
 - Source notebook created at Step 3 when materials are uploaded
 
@@ -132,7 +135,7 @@ assessment_purpose: "for course design and assessment planning"
 
 **Use from output:** `observable_indicators`, `prerequisite_knowledge`, `common_misconceptions`, `success_criteria`
 
-> **Save `common_misconceptions`** — used again in Steps 4 and 6.
+> **Save `common_misconceptions`** — used again in Steps 4 and 6. Append these to `docs/phase-3/source-notes-<slug>.md` under a `## Common Misconceptions` heading immediately after this step completes. This file survives context compaction and session breaks; the Memory notebook does not replace it for multi-session workflows.
 
 ### 2c. KUD knowledge type mapping
 
@@ -205,7 +208,7 @@ Media gaps (blocks needing assets not in source materials):
   - [block type + lesson + what's needed]
 ```
 
-5. **Source content extraction** — extract all text content from uploaded materials to `docs/phase-3/source-notes-<slug>.md` (where `<slug>` is the kebab-case working title from Step 1, e.g. `source-notes-financial-literacy.md`). This file survives context compaction and session breaks — it is the persistent record of source material content.
+5. **Source content extraction** — extract all text content from uploaded materials to `docs/phase-3/source-notes-<slug>.md` (where `<slug>` is the kebab-case working title from Step 1, e.g. `source-notes-financial-literacy.md`). This file survives context compaction and session breaks — it is the persistent record of source material content. If NotebookLM is active, prepend both notebook IDs (Memory and Sources, with their titles) to the top of this file so they can be retrieved on session resume without a `notebook_list` call.
 
 6. **Media note** — media asset files (images, PDFs, audio files) from source materials are not stored in the model's context. Step 6 will check asset availability and request re-uploads as needed.
 
@@ -225,7 +228,15 @@ Media gaps (blocks needing assets not in source materials):
 
 **Goal:** Design the full course structure — lesson sequence, block skeletons, assessment approach — before writing any content.
 
-> **Load `step4-block-planning.md` now.** Use it for all block type and skeleton decisions.
+**Step 4 mandatory skill calls — all 6 must be executed before assembling the Course Plan Document (4g):**
+- [ ] 4a `curriculum-knowledge-architecture-designer`
+- [ ] 4b `backwards-design-unit-planner`
+- [ ] 4c `interleaving-unit-planner` *(skip for ≤2 lessons or where sequence is fixed by prerequisites)*
+- [ ] 4d `spaced-practice-scheduler` *(skip for ≤2 lessons — uses final lesson order from 4c)*
+- [ ] 4e `hinge-question-designer` *(once per lesson)*
+- [ ] 4f `assessment-validity-checker`
+
+Do not load `step4-block-planning.md` yet — it is loaded after all skill calls complete (before 4g).
 
 ### 4a. Knowledge architecture
 
@@ -258,24 +269,7 @@ available_resources: [content inventory summary from Step 3]
 
 > **`stage_3_learning_plan` is the key output** — this becomes your lesson structure. Each activity in Stage 3 maps to one or more blocks.
 
-### 4c. Spaced practice scheduling
-
-*Skip for courses of 2 lessons or fewer.*
-
-Call `spaced-practice-scheduler`:
-
-```
-topics: [[list of lesson topics in planned sequence]]
-timeline: "[N]-lesson course"
-lessons_per_week: 1
-topic_difficulty: [[high/medium/low per topic]]
-curriculum_sequence: [sequencing_notes from Step 2c]
-```
-
-**Use from output:** `schedule`, `review_activity_suggestions`
-Note which lessons should open with a retrieval starter on previous lesson content.
-
-### 4d. Interleaving
+### 4c. Interleaving
 
 *Skip for courses of 2 lessons or fewer, or where sequence is fixed by prerequisites.*
 
@@ -288,7 +282,24 @@ unit_length: "[N] lessons"
 prerequisite_dependencies: [[topics that must precede others — from sequencing_notes Step 2c]]
 ```
 
-**Use from output:** `interleaved_sequence` — update lesson order if recommended
+**Use from output:** `interleaved_sequence` — update lesson order if recommended. If the order changes, use the updated order for all subsequent calls (4d, 4e, 4f).
+
+### 4d. Spaced practice scheduling
+
+*Skip for courses of 2 lessons or fewer.*
+
+Call `spaced-practice-scheduler`:
+
+```
+topics: [[list of lesson topics in final sequence — after any interleaving reorder from 4c]]
+timeline: "[N]-lesson course"
+lessons_per_week: 1
+topic_difficulty: [[high/medium/low per topic]]
+curriculum_sequence: [sequencing_notes from Step 2c]
+```
+
+**Use from output:** `schedule`, `review_activity_suggestions`
+Note which lessons should open with a retrieval starter on previous lesson content.
 
 ### 4e. Hinge questions
 
@@ -308,7 +319,7 @@ known_misconceptions: [relevant items from common_misconceptions in Step 2b]
 Call `assessment-validity-checker`:
 
 ```
-assessment_description: "Inline knowledge checks (quiz, shortanswer, fillinblank, matching, sorting blocks) per content lesson. Assessment lesson with Leitner spaced repetition for formal evaluation."
+assessment_description: "Inline knowledge checks (quiz, fillinblank, matching, sorting blocks; shortanswer for guided reflection only) per content lesson. Assessment lesson with Leitner spaced repetition for formal evaluation."
 intended_learning: [all learning objectives from Step 2]
 student_level: [learner profile]
 assessment_purpose: "formative (inline checks) and summative (assessment lesson)"
@@ -317,6 +328,8 @@ assessment_purpose: "formative (inline checks) and summative (assessment lesson)
 **Use from output:** `threats_identified`, `recommendations` — note any alignment gaps for Step 6.
 
 ### 4g. Assemble the Course Plan Document
+
+> **NOW load `step4-block-planning.md`.** Use its Clark classification, skeleton templates, and validation checklist to structure the skill outputs above into block skeletons. The guide is a post-processing layer on skill output — not a standalone content-generation tool.
 
 Compile all outputs into a plan and present to the user:
 
@@ -339,7 +352,7 @@ Lesson 1: [title]
   Objectives addressed: [list]
   Block skeleton: [list blocks in order — from step4-block-planning.md skeleton templates]
   Hinge question: [from 4e]
-  Spaced review: [prior-lesson content to revisit at lesson open — from 4c]
+  Spaced review: [prior-lesson content to revisit at lesson open — from 4d]
 
 Lesson 2: [title]
   ...
@@ -361,7 +374,7 @@ ASSESSMENT FLAGS
   [Type 3 flags from Step 2]
 ```
 
-**→ PAUSE: Course plan approved? Any structural changes? Proceed to Step 5.**
+Present the plan to the user for review. Proceed to Step 5 for formal approval.
 
 *NotebookLM (if active):*
 - `notebook_query` Source notebook to validate lesson depth and sequencing
@@ -369,7 +382,7 @@ ASSESSMENT FLAGS
 
 ---
 
-## Step 5 — SME Approval Gate
+## Step 5 — SME Approval + Artifact Planning
 
 Present the complete Course Plan Document. Wait for explicit approval.
 
@@ -378,14 +391,86 @@ If changes requested:
 - **Structural changes** (lesson reorder, new objective, scope change): re-run relevant Step 4 skills with updated inputs, then resubmit plan
 - **Objective changes:** return to Step 2, re-run from 2b
 
-**→ PAUSE: Plan approved. Proceed to Step 6.**
+**→ PAUSE: Plan approved. Proceed to 5a (if NotebookLM active) or Step 6 (if not).**
 
-*NotebookLM (if active):*
-- `note_update(title="Course Plan", content=<approved plan + feedback>)` in Memory notebook
-- **Kick off Studio generation now** — plan is approved, sources are uploaded:
-  - Per lesson: `studio_create(notebook_id=<source_nb_id>, artifact_type="audio", audio_format="deep_dive", focus_prompt="Focus on [lesson N objectives]. Audience: [audience]. Lesson N of [total] — learners have covered [prior topics].", source_ids=[<ids relevant to this lesson>])`
-  - Repeat for `artifact_type="video"`, `"infographic"`, `"slide_deck"` per lesson as appropriate
-  - Generation takes 2–8 min per artifact — runs in parallel with Step 6
+*NotebookLM (if active):* `note_update(title="Course Plan", content=<approved plan + feedback>)` in Memory notebook. Then proceed through 5a–5c below.
+
+### 5a. Artifact block planning
+
+**Select which artifact types each lesson needs.** Not every lesson requires all three. Choose based on content density and Clark type:
+
+| Artifact | Best for | Skip when |
+|---|---|---|
+| Audio overview | Concept-heavy or theory-heavy lessons (Concepts, Processes, Principles) | Short Facts lessons, lessons with <3 text blocks |
+| Infographic | Lessons with structured content — definitions, taxonomies, comparison frameworks | Procedure-only lessons where a process block is more useful |
+| Slide deck | Sequential or structured content suitable as a post-lesson reference | Lessons that are already highly structured (e.g. Procedures with process blocks) |
+
+For each lesson, plan where each selected artifact will sit in the block skeleton and what instructional purpose it serves **at that position**. The purpose at the planned position determines the generation prompt — not the other way around.
+
+```
+ARTIFACT PLAN
+
+Lesson [N]: [title]
+  Audio (position: block [N], after [block name]):
+    Purpose: [what this audio does at this position]
+    Prompt: [derived from purpose + exact LT text from Step 2 + learner profile + prior lesson context]
+  Infographic (position: block [N], before [block name]):
+    Purpose: [what this visual does at this position]
+    Prompt: [derived from purpose + specific content items to visualize]
+  Slide deck (position: block [N], last):
+    Purpose: [what this reference does at this position]
+    Prompt: [derived from purpose + lesson structure/headings]
+
+Lesson [M]: [title]
+  Audio: skip (short Facts lesson — insufficient content depth)
+  Infographic (position: ...):
+    ...
+```
+
+**Update the lesson skeletons** in the Course Plan Document to include artifact slots at the planned positions. Artifact blocks are structural parts of the lesson, not media to add later:
+
+```
+Block skeleton (updated):
+  heading
+  text → hook
+  audio [PENDING] — narrative introduction (purpose from artifact plan)
+  text → concept definition
+  ...
+  image [PENDING] — visual consolidation (purpose from artifact plan)
+  quiz × 2
+  document [PENDING] — structured reference (purpose from artifact plan)
+```
+
+Save the artifact plan and updated skeletons to the source notes file.
+
+### 5b. Create per-lesson notebooks and add scoped source content
+
+For each lesson that has at least one planned artifact:
+
+1. `notebook_create("L[N]: [lesson title]")` — record the returned notebook ID
+2. Add source content from the source notes file (`docs/phase-3/source-notes-<slug>.md`), scoped to this lesson's objectives and **tailored to what each artifact type needs**. Do not add the same undifferentiated content for all types:
+   - Audio: source material passages relevant to this lesson's objectives — narrative explanations, concept descriptions, examples (NotebookLM synthesizes the audio from this raw material)
+   - Infographic: structured content only — definitions, numbered lists, comparison tables, taxonomic relationships
+   - Slide deck: sequential content with clear headings, step-by-step descriptions, framework breakdowns
+3. Record all returned source IDs — these are needed for `studio_create` at 5c
+
+### 5c. Generate artifacts
+
+→ **EXECUTE:** For each lesson, call `studio_create` using the **purpose-informed prompts from the artifact plan** (5a) and the **source IDs captured at 5b**. Do not use a generic template — each prompt was derived from the instructional purpose at the planned block position.
+
+```
+studio_create(
+  notebook_id=<lesson_nb_id from 5b>,
+  artifact_type="audio",
+  audio_format="deep_dive",
+  focus_prompt="[prompt from artifact plan — written at 5a, derived from position + purpose]",
+  source_ids=[<source IDs for this artifact type, captured at 5b>]
+)
+```
+
+Repeat for `artifact_type="infographic"`, `"slide_deck"` per lesson as planned at 5a.
+
+Generation takes 2–8 min per artifact — runs in parallel with Step 6.
 
 ---
 
@@ -393,7 +478,16 @@ If changes requested:
 
 **Goal:** Draft full content for every block in every lesson.
 
-> **Load `step6-block-development.md` now.** Use it for all field-level content decisions and feedback quality rules.
+**Step 6 mandatory skill calls — per lesson, in this order:**
+- [ ] 6a `explicit-instruction-sequence-builder`
+- [ ] 6b `worked-example-fading-designer` *(procedural/Clark Type: Procedures content only)*
+- [ ] 6c `dual-coding-designer` *(per explanatory text block)*
+- [ ] 6d `elaborative-interrogation-generator`
+- [ ] 6e `retrieval-practice-generator` × 2 *(end-of-lesson + spaced opener from Lesson 2 onward; end-of-lesson only for Lesson 1)*
+— then load guide, draft content (6f) —
+- [ ] 6g `feedback-quality-analyser` *(per knowledge check block, after 6f)*
+
+Do not load `step6-block-development.md` yet — it is loaded after 6a–6e complete (before 6f).
 
 ### 6-pre. Build mode and content persistence
 
@@ -420,7 +514,7 @@ prior_knowledge: [prerequisites from Step 2b relevant to this lesson]
 
 **Use from output:** `i_do`, `we_do`, `you_do`, `cfu_points`, `timing_guide`
 
-Translate the I/We/You Do structure into the block skeleton from Step 4 using `step4-block-planning.md`.
+Translate the I/We/You Do structure into the block skeleton from the Step 4 Course Plan Document.
 
 ### 6b. Worked examples — procedural content only
 
@@ -446,7 +540,7 @@ prior_knowledge: [relevant prerequisites]
 For each explanatory text block, call `dual-coding-designer`:
 
 ```
-verbal_content: [the text block content]
+verbal_content: [outline of this text block's content — from source notes + 6a I Do structure]
 subject_and_level: "[topic domain], [learner experience level]"
 visual_constraints: "for web-based e-learning — image, chart, or timeline block"
 existing_visuals: [any visuals already planned for this lesson]
@@ -465,7 +559,7 @@ Call `elaborative-interrogation-generator`:
 topic: [the concept being learned in this lesson]
 student_level: [learner profile]
 prompt_count: 5
-content_text: [draft text content for this lesson]
+content_text: [lesson content outline — from source notes + 6a I/We/You Do structure]
 learning_objectives: [relevant objectives from Step 2]
 ```
 
@@ -484,13 +578,13 @@ time_since_learning: "immediately after initial learning"
 known_misconceptions: [from Step 2b]
 ```
 
-**Spaced opener (Lesson 2+ only — reviewing previous lesson):**
+**Spaced opener (Lesson 2+ only — reviewing earlier content per 4d schedule):**
 ```
-topic: [previous lesson's content]
+topic: [content scheduled for review at this lesson's opening — from 4d spaced-practice schedule]
 student_level: [learner profile]
 question_count: 3
-time_since_learning: "previous lesson"
-known_misconceptions: [from Step 2b relevant to prior lesson]
+time_since_learning: [gap since that content was taught — from 4d schedule]
+known_misconceptions: [from Step 2b relevant to the reviewed content]
 ```
 
 **Map retrieval type to block:**
@@ -500,12 +594,15 @@ known_misconceptions: [from Step 2b relevant to prior lesson]
 
 ### 6f. Draft all block content
 
-Draft full content for every block in the lesson skeleton. For each block:
+> **NOW load `step6-block-development.md`.** Use its field reference, knowledge check selection table, feedback rules, and hard rules to structure the skill outputs above into block content. The guide is a post-processing layer on skill output — not a standalone content-generation tool.
 
-1. Refer to `step6-block-development.md` for field requirements and quality rules
+Draft full content for every block in the lesson skeleton (including artifact blocks from Step 5 if NotebookLM is active). For each block:
+
+1. Use `step6-block-development.md` for field requirements and quality rules
 2. Write `feedbackCorrect` and `feedbackIncorrect` at **Task or Process level** — "Correct!" alone fails the quality check
 3. For `quiz` blocks: each distractor should represent a specific plausible misconception (use `diagnostic_key` from hinge question if available)
 4. For `branching` blocks: write three choice types — best / acceptable-but-not-ideal / poor
+5. For artifact blocks marked `[PENDING]`: draft the surrounding content (caption, intro text, alt text) and note `src: [PENDING: artifact_type]` — URLs are filled in at 6j when artifacts are downloaded
 
 ### 6g. Feedback quality check
 
@@ -524,13 +621,28 @@ Revise any feedback flagged as ego-level ("Well done!") or insufficiently specif
 
 **After all lessons are drafted and saved:**
 
-### 6h. Content approval gate
+### 6h. Assessment question drafting
 
-Present the full draft (whole-course mode) or confirm all individual lessons are approved (lesson-by-lesson mode).
+After all content lessons are drafted, draft the assessment lesson questions. Use the Course Plan Document's ASSESSMENT LESSON section (question counts, types, and rationale per learning target) as the specification. Use hinge questions from 4e and retrieval practice questions from 6e as a starting bank — adapt format to assessment question kinds. Draft additional questions to reach the count specified in the Course Plan Document.
 
-**→ PAUSE: All content approved? Proceed to media sourcing.**
+For each question:
+1. Write the question stem, referencing specific content from the drafted lessons
+2. Write options/items using `common_misconceptions` from Step 2b as distractors (MCQ, multipleresponse) or plausible wrong orderings (sorting)
+3. Write feedback at Task or Process level — explain why the correct answer is right and what the most likely error reveals
+4. For `fillinblank`: ensure gaps have enough surrounding context for cued recall; populate the `acceptable` array
+5. For `matching`: ensure each left item maps unambiguously to one right item
 
-### 6i. Media sourcing
+Save all assessment questions to the build markdown file.
+
+**Assessment question kinds:** mcq, multipleresponse, fillinblank, matching, sorting. NOT shortanswer (no automated grading in assessment lessons).
+
+### 6i. Content approval gate
+
+Present the full draft (whole-course mode) or confirm all individual lessons are approved (lesson-by-lesson mode). Present assessment questions for approval alongside content.
+
+**→ PAUSE: All content and assessment questions approved? Proceed to media sourcing.**
+
+### 6j. Media sourcing
 
 1. Review the media inventory from Step 3
 2. Ask the user: "Are the following source files still in our conversation? If not, please re-upload: [list files from media inventory that contained usable assets]"
@@ -545,8 +657,9 @@ Default: media sourcing is batched here, after all content is approved. In lesso
 *NotebookLM (if active):*
 - After each lesson is approved: `note_create(title="Lesson [N] Draft", content=<draft>)` in Memory notebook
 - Check `studio_status` periodically between lessons
-- As artifacts complete: `download_artifact(output_path="/tmp/<file>")` → `upload_media(file_path=...)` → `add_block` with correct type and src URL
-- Mapping: audio (M4A) → Audio block, video (MP4) → Video block, slide deck (PPTX) → Document block, infographic (PNG) → Image block, study guide (Markdown) → Text block (render as HTML)
+- As artifacts complete: `download_artifact(output_path="/tmp/<file>")` → `upload_media(file_path=...)` → replace `[PENDING]` URLs in the build markdown file with the returned media URLs
+- Artifact type → block type mapping: audio (M4A) → Audio block, infographic (PNG) → Image block, slide deck (PPTX) → Document block, study guide (Markdown) → Text block (render as HTML)
+- The artifact block positions and surrounding content (caption, alt text) were already drafted at 6f — media sourcing only fills in the `src` URL
 
 ---
 
@@ -557,6 +670,8 @@ Default: media sourcing is batched here, after all content is approved. In lesso
 > **Load `step7-mcp-reference.md` now.** Use it for all field names, types, and constraints during building.
 
 Always `get_course` before any edits to confirm current state and IDs.
+
+**NotebookLM pre-build check (if active):** Before building, check `studio_status` for all pending artifacts. Download and upload any completed artifacts via `download_artifact` → `upload_media`. Replace `[PENDING]` URLs in the build markdown file with actual media URLs. If some artifacts are still generating, build those blocks with a placeholder `src` and note them — update via `update_block` when artifacts complete after the build.
 
 **Build method:** Use `add_lesson` + `add_block` per block, built from the approved build markdown file. Do NOT use `generate_lesson` — it produces generic content that ignores drafted material.
 
@@ -586,7 +701,7 @@ Always `get_course` before any edits to confirm current state and IDs.
 *NotebookLM (if active):*
 - `note_update(title="Build Log")` after each lesson/block is built
 - Before sharing: remove internal notes from Source notebook (gap analysis, rough drafts) — keep source materials and web research only
-- `notebook_share_public(notebook_id=<source_nb_id>)` → add Button block with the returned URL
+- Share the Source notebook manually — provide the notebook URL to the user and instruct them to set sharing permissions in NotebookLM. Add a Button block with the shared URL.
 - ⚠️ NotebookLM notebooks are not embeddable — Button block only, not Embed
 - Remind author: if this course is later deleted, both notebooks remain in their Google account
 
@@ -679,12 +794,16 @@ Every mutation to the course must be mirrored to the Memory notebook in the same
 
 | Action | Memory notebook update |
 |--------|----------------------|
-| Course plan approved | `note_update("Course Plan", <approved plan>)` |
-| Lesson draft approved | `note_create("Lesson [N] Draft", <draft>)` |
+| Coverage matrix saved (Step 3) | `note_create("Coverage Matrix", <matrix>)` |
+| Media inventory saved (Step 3) | `note_create("Media Inventory", <inventory>)` |
+| Course plan approved (Step 5) | `note_update("Course Plan", <approved plan>)` |
+| Artifact plan saved (Step 5a) | `note_create("Artifact Plan", <plan>)` |
+| Lesson draft approved (Step 6) | `note_create("Lesson [N] Draft", <draft>)` |
 | Lesson revised | `note_update("Lesson [N] Draft", <revised>)` |
 | Lesson deleted | `note_delete("Lesson [N] Draft")` |
 | Block revised | Update the relevant lesson draft note |
-| Build log entry | `note_update("Build Log", <append entry>)` |
+| Build log entry (Step 7) | `note_update("Build Log", <append entry>)` |
+| Audit notes (Step 8) | `note_update("Audit Notes", <findings>)` |
 
 **After context compaction:** retrieve Memory notebook notes by exact title. Source notebook is still available for `notebook_query`. Local markdown files are the backup.
 
