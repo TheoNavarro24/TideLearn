@@ -397,6 +397,19 @@ Present the plan to the user for review. Proceed to Step 5 for formal approval.
 
 ## Step 5 — SME Approval + Artifact Planning
 
+### NotebookLM Architecture (if active)
+
+Two notebooks are used throughout this course build. No per-lesson notebooks are needed.
+
+| Notebook | Purpose | Shared with learners? |
+|---|---|---|
+| **Sources notebook** | All course materials (primary + supplementary). Used for all artifact generation (scoped via `source_ids` + `focus_prompt`). | Yes — share as learner study companion |
+| **Memory notebook** | Course plan, coverage matrix, learning objectives, lesson drafts, audit notes. Internal only. | No |
+
+Source content is not duplicated per lesson — `source_ids` scoping selects the relevant subset per artifact, and `focus_prompt` provides instructional direction.
+
+> **Steps 5a → 5b → 5c are sequential and interdependent.** You cannot write good generation prompts (5a) without an approved block plan. You cannot generate artifacts (5c) without knowing their purpose at position (5a). Do not generate any artifacts before 5a is complete and the block plan is approved.
+
 Present the complete Course Plan Document. Wait for explicit approval.
 
 If changes requested:
@@ -456,16 +469,18 @@ Block skeleton (updated):
 
 Save the artifact plan and updated skeletons to the source notes file.
 
-### 5b. Create per-lesson notebooks and add scoped source content
+### 5b. Scope sources per artifact
 
-For each lesson that has at least one planned artifact:
+For each lesson and artifact type planned at 5a, identify which source IDs from the Sources notebook are most relevant to that artifact's instructional purpose.
 
-1. `notebook_create("L[N]: [lesson title]")` — record the returned notebook ID
-2. Add source content from the source notes file (`docs/phase-3/source-notes-<slug>.md`), scoped to this lesson's objectives and **tailored to what each artifact type needs**. Do not add the same undifferentiated content for all types:
-   - Audio: source material passages relevant to this lesson's objectives — narrative explanations, concept descriptions, examples (NotebookLM synthesizes the audio from this raw material)
-   - Infographic: structured content only — definitions, numbered lists, comparison tables, taxonomic relationships
-   - Slide deck: sequential content with clear headings, step-by-step descriptions, framework breakdowns
-3. Record all returned source IDs — these are needed for `studio_create` at 5c
+1. Retrieve source IDs: use `source_list(notebook_id=<sources_nb_id>)` — record all returned IDs and their titles
+2. For each planned artifact, select the 2–4 source IDs most relevant to that lesson's objectives and artifact type:
+   - Audio: sources with narrative explanations, concept descriptions, and examples
+   - Infographic: sources with structured content — definitions, numbered lists, comparison tables, taxonomic relationships
+   - Slide deck: sources with sequential content — step-by-step descriptions, framework breakdowns, structured headings
+3. Record the selected `source_ids` list per artifact in the artifact plan (saved to source notes file at 5a)
+
+Do not use all sources for every artifact — unfocused source sets degrade generation quality. The `focus_prompt` + `source_ids` together provide the differentiation that per-lesson notebooks previously attempted.
 
 ### 5c. Generate artifacts
 
@@ -473,17 +488,34 @@ For each lesson that has at least one planned artifact:
 
 ```
 studio_create(
-  notebook_id=<lesson_nb_id from 5b>,
+  notebook_id=<sources_nb_id>,   ← same Sources notebook for all artifacts — scoped via source_ids
   artifact_type="audio",
   audio_format="deep_dive",
   focus_prompt="[prompt from artifact plan — written at 5a, derived from position + purpose]",
-  source_ids=[<source IDs for this artifact type, captured at 5b>]
+  source_ids=[<2–4 source IDs selected at 5b for this artifact>]
 )
 ```
 
 Repeat for `artifact_type="infographic"`, `"slide_deck"` per lesson as planned at 5a.
 
 Generation takes 2–8 min per artifact — runs in parallel with Step 6.
+
+### 5d. Inspect generated artifacts
+
+Before marking any artifact as ready for the block plan, inspect it:
+
+1. Call `studio_status` to confirm completion
+2. For each completed artifact, check three things:
+   - **Content accuracy** — Do the facts match the source material? Count taxonomy items, verify definitions, check nothing was collapsed or incorrectly merged.
+   - **Coverage** — Does the artifact address the instructional purpose stated at 5a? A lesson-opening audio should frame the lesson; a consolidation infographic should cover all key items in the skeleton.
+   - **Quality** — Is it clear, well-structured, and appropriate for the learner level from the course brief?
+3. For any artifact that fails inspection:
+   - Note the specific failure (e.g. "collapsed 5 components to 3", "missing application context examples")
+   - Revise the `focus_prompt` with more explicit constraints addressing the failure
+   - Regenerate using `studio_create` with the revised prompt and same `source_ids`
+4. Mark passing artifacts as `[READY]` in the artifact plan in the source notes file; mark failing ones as `[REGENERATING]` until they pass
+
+**Do not mark any artifact as `[READY]` without inspection. Assuming generation = quality is a workflow deviation.**
 
 ---
 
@@ -811,6 +843,7 @@ Every mutation to the course must be mirrored to the Memory notebook in the same
 | Media inventory saved (Step 3) | `note_create("Media Inventory", <inventory>)` |
 | Course plan approved (Step 5) | `note_update("Course Plan", <approved plan>)` |
 | Artifact plan saved (Step 5a) | `note_create("Artifact Plan", <plan>)` |
+| Artifact inspection complete (Step 5d) | `note_update("Artifact Plan", <inspection results: READY/REGENERATING status per artifact>)` |
 | Lesson draft approved (Step 6) | `note_create("Lesson [N] Draft", <draft>)` |
 | Lesson revised | `note_update("Lesson [N] Draft", <revised>)` |
 | Lesson deleted | `note_delete("Lesson [N] Draft")` |
