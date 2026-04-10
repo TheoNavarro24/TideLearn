@@ -9,6 +9,14 @@ interface Entry {
 
 const entries: Entry[] = [
   {
+    date: "2026-04-10",
+    label: "Landing Page — Smooth Scroll",
+    type: "feat",
+    items: [
+      "\"See what it does\" CTA now smooth-scrolls to the features section instead of jumping",
+    ],
+  },
+  {
     date: "2026-03-26",
     label: "Phase 3A — Workflow Guidance Layer",
     type: "docs",

@@ -339,12 +339,17 @@ const Index = () => {
             >
               Start authoring <span aria-hidden="true">&rarr;</span>
             </Link>
-            <a
-              href="#features"
-              className="inline-block px-7 py-3 rounded-[10px] border-[1.5px] border-[var(--accent-hex)]/40 text-[var(--accent-hex)] font-semibold text-[15px] no-underline bg-transparent hover:bg-[var(--accent-bg)] transition-colors"
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("features")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="inline-block px-7 py-3 rounded-[10px] border-[1.5px] border-[var(--accent-hex)]/40 text-[var(--accent-hex)] font-semibold text-[15px] no-underline bg-transparent hover:bg-[var(--accent-bg)] transition-colors cursor-pointer"
             >
               See what it does <span aria-hidden="true">&darr;</span>
-            </a>
+            </button>
           </div>
 
           {/* Editor preview card */}
