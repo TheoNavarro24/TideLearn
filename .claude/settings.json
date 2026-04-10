@@ -16,9 +16,9 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Review the conversation that just ended. If any meaningful changes were made to the codebase (new features, fixes, refactors, design changes, docs, tests), do the following:\n\n1. Update CLAUDE.md to reflect the current state of the project — specifically the Audit Progress checklist and any Key Files or Critical Rules that changed.\n\n2. Add an entry to src/pages/Changelog.tsx under the correct date. Use today's date as the date field. Choose the appropriate type (feat, fix, refactor, design, test, docs). Write the items as concise bullet points describing what was delivered, as a developer reader would want to know.\n\nIf no meaningful changes were made (e.g. the conversation was purely informational), do nothing.",
-            "statusMessage": "Updating CLAUDE.md and changelog..."
+            "type": "command",
+            "command": "bash .claude/hooks/on-stop.sh",
+            "statusMessage": "Checking for changes to document..."
           }
         ]
       }
