@@ -60,6 +60,12 @@ All colors MUST be HSL.
     --text-muted: #6a7a90;  /* kept as --text-muted (15+ codebase refs use this name) */
     --accent-hex: #40c8a0;
     --accent-bg: rgba(64,200,160,.1);
+    --tl-accent-border:      rgba(64,200,160,0.30);
+    --tl-accent-border-soft: rgba(64,200,160,0.15);
+    --tl-sans:    "DM Sans", system-ui, sans-serif;
+    --tl-display: "Lora", Georgia, serif;
+    --tl-hair:    #c8d4e0;
+    --tl-hair-2:  #dde3ec;
     --sidebar-text: #7a8da4;
     --sidebar-text-hover: #a0b0c4;
     --danger: #b04040;

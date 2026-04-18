@@ -19,8 +19,8 @@ content: [
 		},
 		extend: {
 			fontFamily: {
-				sans: ['DM Sans', 'system-ui', 'sans-serif'],
-				display: ['Lora', 'Georgia', 'serif'],
+				sans: ['var(--tl-sans)'],
+				display: ['var(--tl-display)'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
