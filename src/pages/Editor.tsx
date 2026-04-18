@@ -27,6 +27,7 @@ import { AddBlockRow } from "@/components/editor/BlockPicker";
 import { EditorSidebar } from "@/pages/EditorSidebar";
 import { EditorTopBar } from "@/pages/EditorTopBar";
 import { BlockItem } from "@/pages/BlockItem";
+import { BlockInspector } from "@/pages/BlockInspector";
 
 // AppShell
 import { AppShell } from "@/components/AppShell";
@@ -342,6 +343,29 @@ export default function Editor() {
           </div>
         </div>
       </AppShell>
+
+      {/* Block Inspector */}
+      {(() => {
+        if (!selectedBlockId || !selectedContentLesson) return null;
+        const selIdx = blocks.findIndex(b => b.id === selectedBlockId);
+        if (selIdx === -1) return null;
+        const selBlock = blocks[selIdx];
+        const selSpec = getSpec(selBlock.type);
+        return (
+          <BlockInspector
+            key={selectedBlockId}
+            block={selBlock}
+            spec={selSpec}
+            idx={selIdx}
+            total={blocks.length}
+            onClose={() => setSelectedBlockId(null)}
+            onUpdate={updateBlock}
+            onMove={moveBlock}
+            onDuplicate={(id) => { duplicateBlock(id); }}
+            onRemove={(id) => { removeBlock(id); setSelectedBlockId(null); }}
+          />
+        );
+      })()}
 
       {publishOpen && (
         <PublishModal
