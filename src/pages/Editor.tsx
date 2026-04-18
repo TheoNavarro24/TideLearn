@@ -56,6 +56,7 @@ export default function Editor() {
   const courseTitle = editorState.courseTitle;
   const lessons = editorState.lessons;
   const [selectedLessonId, setSelectedLessonId] = useState<string>(defaultLesson.id);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<"merge" | "replace">("replace");
   const [isDragOver, setIsDragOver] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -136,6 +137,11 @@ export default function Editor() {
       : { kind: "content", id, title: `Lesson ${lessons.length + 1}`, blocks: [] };
     pushHistory({ courseTitle, lessons: [...lessons, newLesson] });
     setSelectedLessonId(id);
+  };
+
+  const handleSelectLesson = (id: string) => {
+    setSelectedLessonId(id);
+    setSelectedBlockId(null);
   };
 
   const updateLessonTitle = (id: string, title: string) => {
@@ -233,7 +239,7 @@ export default function Editor() {
             lessons={lessons}
             selectedLessonId={selectedLessonId}
             blockCount={blocks.length}
-            onSelectLesson={setSelectedLessonId}
+            onSelectLesson={handleSelectLesson}
             onAddLesson={addLesson}
             onExportScorm={exportSCORM12}
             onLessonTitleChange={updateLessonTitle}
@@ -303,8 +309,10 @@ export default function Editor() {
                       return (
                         <div key={b.id} className={cn("transition-opacity", pickerState !== null && pickerState.rowIndex <= idx && "opacity-25")}>
                           <BlockItem
-                            block={b} idx={idx} total={blocks.length} spec={spec} EditorComp={spec.Editor}
-                            onMove={moveBlock} onDuplicate={duplicateBlock} onRemove={removeBlock} onUpdate={updateBlock}
+                            block={b}
+                            spec={spec}
+                            selected={selectedBlockId === b.id}
+                            onSelect={() => setSelectedBlockId(b.id)}
                           />
                           <AddBlockRow
                             rowIndex={idx + 1}
