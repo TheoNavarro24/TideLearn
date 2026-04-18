@@ -266,61 +266,59 @@ export default function Editor() {
           <div key={selectedLessonId} style={{ animation: "fade-in 150ms var(--ease-out)" }}>
             {/* Canvas body */}
             <div className="flex-1 px-4 md:px-12 py-6 pb-20">
-              <div className="max-w-[var(--canvas-max-w)] mx-auto">
-                {selectedLesson?.kind === "assessment" ? (
-                  <AssessmentEditor
-                    lesson={selectedLesson}
-                    onChange={(updated) => pushHistory({ courseTitle, lessons: lessons.map(l => l.id === updated.id ? updated : l) })}
+              {selectedLesson?.kind === "assessment" ? (
+                <AssessmentEditor
+                  lesson={selectedLesson}
+                  onChange={(updated) => pushHistory({ courseTitle, lessons: lessons.map(l => l.id === updated.id ? updated : l) })}
+                />
+              ) : (
+                <div className="max-w-[var(--reading-max-w)] mx-auto flex flex-col">
+                  <AddBlockRow
+                    rowIndex={0}
+                    pickerState={pickerState}
+                    onOpen={() => { setPickerState({ rowIndex: 0 }); setPickerSearch(""); }}
+                    pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
+                    pickerSearch={pickerSearch}
+                    setPickerSearch={setPickerSearch}
+                    filteredRegistry={filteredRegistry}
+                    pickerSearchRef={pickerSearchRef}
+                    onPickerSelect={(type) => { insertBlockAt(0, type); setPickerState(null); }}
+                    onPickerClose={() => setPickerState(null)}
                   />
-                ) : (
-                  <div className="max-w-[var(--reading-max-w)] mx-auto flex flex-col">
-                    <AddBlockRow
-                      rowIndex={0}
-                      pickerState={pickerState}
-                      onOpen={() => { setPickerState({ rowIndex: 0 }); setPickerSearch(""); }}
-                      pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
-                      pickerSearch={pickerSearch}
-                      setPickerSearch={setPickerSearch}
-                      filteredRegistry={filteredRegistry}
-                      pickerSearchRef={pickerSearchRef}
-                      onPickerSelect={(type) => { insertBlockAt(0, type); setPickerState(null); }}
-                      onPickerClose={() => setPickerState(null)}
-                    />
 
-                    {blocks.map((b, idx) => {
-                      const spec = getSpec(b.type);
-                      return (
-                        <div key={b.id} className={cn("transition-opacity", pickerState !== null && pickerState.rowIndex <= idx && "opacity-25")}>
-                          <BlockItem
-                            block={b}
-                            spec={spec}
-                            selected={selectedBlockId === b.id}
-                            onSelect={() => setSelectedBlockId(b.id)}
-                          />
-                          <AddBlockRow
-                            rowIndex={idx + 1}
-                            pickerState={pickerState}
-                            onOpen={() => { setPickerState({ rowIndex: idx + 1 }); setPickerSearch(""); }}
-                            pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
-                            pickerSearch={pickerSearch}
-                            setPickerSearch={setPickerSearch}
-                            filteredRegistry={filteredRegistry}
-                            pickerSearchRef={pickerSearchRef}
-                            onPickerSelect={(type) => { insertBlockAt(idx + 1, type); setPickerState(null); }}
-                            onPickerClose={() => setPickerState(null)}
-                          />
-                        </div>
-                      );
-                    })}
+                  {blocks.map((b, idx) => {
+                    const spec = getSpec(b.type);
+                    return (
+                      <div key={b.id} className={cn("transition-opacity", pickerState !== null && pickerState.rowIndex <= idx && "opacity-25")}>
+                        <BlockItem
+                          block={b}
+                          spec={spec}
+                          selected={selectedBlockId === b.id}
+                          onSelect={() => setSelectedBlockId(b.id)}
+                        />
+                        <AddBlockRow
+                          rowIndex={idx + 1}
+                          pickerState={pickerState}
+                          onOpen={() => { setPickerState({ rowIndex: idx + 1 }); setPickerSearch(""); }}
+                          pickerRef={rowIndex => pickerState?.rowIndex === rowIndex ? pickerRef : undefined}
+                          pickerSearch={pickerSearch}
+                          setPickerSearch={setPickerSearch}
+                          filteredRegistry={filteredRegistry}
+                          pickerSearchRef={pickerSearchRef}
+                          onPickerSelect={(type) => { insertBlockAt(idx + 1, type); setPickerState(null); }}
+                          onPickerClose={() => setPickerState(null)}
+                        />
+                      </div>
+                    );
+                  })}
 
-                    {blocks.length === 0 && (
-                      <p className="text-[11px] text-center py-8" style={{ color: "var(--text-muted)" }}>
-                        No blocks yet. Use the + button or press / to add your first block.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
+                  {blocks.length === 0 && (
+                    <p className="text-[11px] text-center py-8" style={{ color: "var(--text-muted)" }}>
+                      No blocks yet. Use the + button or press / to add your first block.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
