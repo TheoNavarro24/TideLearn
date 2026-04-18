@@ -243,7 +243,6 @@ export default function Editor() {
           <EditorTopBar
             courseTitle={courseTitle}
             lessonTitle={selectedLesson?.title ?? ""}
-            onLessonTitleChange={(title) => selectedLesson && updateLessonTitle(selectedLesson.id, title)}
             canUndo={canUndo}
             canRedo={canRedo}
             onUndo={undoHistory}

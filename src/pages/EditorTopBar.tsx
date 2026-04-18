@@ -4,7 +4,6 @@ import { Undo2, Redo2 } from "lucide-react";
 interface EditorTopBarProps {
   courseTitle: string;
   lessonTitle: string;
-  onLessonTitleChange: (title: string) => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -17,7 +16,6 @@ interface EditorTopBarProps {
 export function EditorTopBar({
   courseTitle,
   lessonTitle,
-  onLessonTitleChange,
   canUndo,
   canRedo,
   onUndo,
@@ -30,28 +28,21 @@ export function EditorTopBar({
 
   return (
     <div className="flex items-center w-full gap-3 h-full">
-      {/* Left: two-line breadcrumb + lesson title */}
-      <div className="flex flex-col justify-center flex-1 min-w-0">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => navigate("/courses")}
-            className="text-xs bg-transparent border-none cursor-pointer transition-colors p-0"
-            style={{ color: "var(--text-muted)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--accent-hex)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
-          >
-            ← {courseTitle || "My Courses"}
-          </button>
-        </div>
-        {/* Editable lesson title */}
-        <input
-          value={lessonTitle}
-          onChange={(e) => onLessonTitleChange(e.target.value)}
-          aria-label="Lesson title"
-          className="bg-transparent border-none outline-none w-full truncate"
-          style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--ink)" }}
-        />
+      {/* Left: breadcrumb */}
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <button
+          onClick={() => navigate("/courses")}
+          className="text-xs bg-transparent border-none cursor-pointer p-0 transition-colors shrink-0"
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--accent-hex)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
+        >
+          {courseTitle || "My Courses"}
+        </button>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>/</span>
+        <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>
+          {lessonTitle}
+        </span>
       </div>
 
       {/* Right: controls */}
