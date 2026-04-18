@@ -8,6 +8,7 @@ import { useBlockPicker } from "@/hooks/useBlockPicker";
 import { useEditorKeyboard } from "@/hooks/useEditorKeyboard";
 import { useCourseImportExport } from "@/hooks/useCourseImportExport";
 import { compressToEncodedURIComponent } from "lz-string";
+import { Sparkles } from "lucide-react";
 import { loadCourse, saveCourse, saveCourseToCloud, loadCourseFromCloud } from "@/lib/courses";
 import { useAuth } from "@/components/auth/AuthContext";
 import { cn } from "@/lib/utils";
@@ -313,9 +314,20 @@ export default function Editor() {
                   })}
 
                   {blocks.length === 0 && (
-                    <p className="text-[11px] text-center py-8" style={{ color: "var(--text-muted)" }}>
-                      No blocks yet. Use the + button or press / to add your first block.
-                    </p>
+                    <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                        style={{ background: "var(--accent-bg)", color: "var(--accent-hex)" }}
+                      >
+                        <Sparkles className="w-6 h-6" />
+                      </div>
+                      <h3 className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>
+                        Empty lesson
+                      </h3>
+                      <p className="text-xs max-w-[28ch]" style={{ color: "var(--text-muted)" }}>
+                        Add your first block using the <span className="font-semibold">+ Add block</span> button above, or press <kbd className="text-[10px] font-mono border rounded px-1 py-0.5">/</kbd> to open the picker.
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
