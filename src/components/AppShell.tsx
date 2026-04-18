@@ -9,9 +9,11 @@ interface AppShellProps {
   sidebar?: React.ReactNode;
   /** Top bar content */
   topBar: React.ReactNode;
+  /** Light/white sidebar theme for the editor */
+  lightSidebar?: boolean;
 }
 
-export function AppShell({ children, sidebar, topBar }: AppShellProps) {
+export function AppShell({ children, sidebar, topBar, lightSidebar }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -21,7 +23,10 @@ export function AppShell({ children, sidebar, topBar }: AppShellProps) {
       {/* Sidebar */}
       <aside
         className="hidden md:flex w-[var(--sidebar-w-editor)] flex-col flex-shrink-0"
-        style={{ background: "var(--sidebar)", borderRight: "1px solid var(--accent-bg)" }}
+        style={{
+          background: lightSidebar ? "var(--canvas-white)" : "var(--sidebar)",
+          borderRight: lightSidebar ? "1px solid hsl(var(--border))" : "1px solid var(--accent-bg)",
+        }}
       >
         {/* Logo */}
         <div
