@@ -89,4 +89,4 @@ App is auth-gated. Use **Control Chrome MCP** (already logged in as Theo):
 
 ## Completed Phases
 
-All audits and feature phases merged to main (A.1–A.5, Gunmetal, Phase 2A/2A+/2B, RC1–RC4, Phase 3A). See `docs/TideLearn/00-INDEX.md` for full documentation.
+All audits and feature phases merged to main (A.1–A.5, Gunmetal, Phase 2A/2A+/2B, RC1–RC4, Phase 3A, Consistency Foundation). See `docs/TideLearn/00-INDEX.md` for full documentation.
