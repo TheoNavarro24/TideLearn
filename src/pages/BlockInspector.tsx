@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { X, ArrowUp, ArrowDown, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/course";
 import type { getSpec } from "@/components/blocks/registry";
@@ -82,23 +82,23 @@ export function BlockInspector({
       >
         <div className="flex gap-1">
           {[
-            { label: "↑", ariaLabel: "Move block up", action: () => onMove(block.id, "up"), disabled: idx === 0 },
-            { label: "↓", ariaLabel: "Move block down", action: () => onMove(block.id, "down"), disabled: idx === total - 1 },
-            { label: "⧉", ariaLabel: "Duplicate block", action: () => onDuplicate(block.id), disabled: false },
-          ].map(btn => (
+            { Icon: ArrowUp, ariaLabel: "Move block up", action: () => onMove(block.id, "up"), disabled: idx === 0 },
+            { Icon: ArrowDown, ariaLabel: "Move block down", action: () => onMove(block.id, "down"), disabled: idx === total - 1 },
+            { Icon: Copy, ariaLabel: "Duplicate block", action: () => onDuplicate(block.id), disabled: false },
+          ].map(({ Icon, ariaLabel, action, disabled }) => (
             <button
-              key={btn.ariaLabel}
-              onClick={btn.action}
-              disabled={btn.disabled}
-              aria-label={btn.ariaLabel}
+              key={ariaLabel}
+              onClick={action}
+              disabled={disabled}
+              aria-label={ariaLabel}
               className={cn(
                 "w-7 h-7 border rounded text-xs flex items-center justify-center transition-colors cursor-pointer",
                 "focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)] focus-visible:outline-none",
-                btn.disabled ? "opacity-30 cursor-not-allowed" : "hover:border-[var(--accent-hex)]"
+                disabled ? "opacity-30 cursor-not-allowed" : "hover:border-[var(--accent-hex)]"
               )}
               style={{ background: "transparent", borderColor: "hsl(var(--border))", color: "var(--ink)" }}
             >
-              {btn.label}
+              <Icon className="w-3.5 h-3.5" />
             </button>
           ))}
         </div>
@@ -108,7 +108,7 @@ export function BlockInspector({
           className="w-7 h-7 border rounded text-xs flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none hover:bg-red-50 hover:border-red-300 hover:text-red-500"
           style={{ background: "transparent", borderColor: "hsl(var(--border))", color: "var(--ink)" }}
         >
-          ✕
+          <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
     </aside>
