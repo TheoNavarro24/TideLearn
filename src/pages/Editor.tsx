@@ -226,14 +226,17 @@ export default function Editor() {
       <input ref={scormImportInputRef} type="file" accept=".zip,application/zip" className="hidden" onChange={handleImportScormFile} />
 
       <AppShell
+        lightSidebar
         sidebar={
           <EditorSidebar
             courseTitle={courseTitle}
             lessons={lessons}
             selectedLessonId={selectedLessonId}
+            blockCount={blocks.length}
             onSelectLesson={setSelectedLessonId}
             onAddLesson={addLesson}
             onExportScorm={exportSCORM12}
+            onLessonTitleChange={updateLessonTitle}
           />
         }
         topBar={
