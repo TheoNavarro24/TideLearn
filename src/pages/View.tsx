@@ -141,7 +141,7 @@ export default function View() {
         <div className="h-full bg-[var(--accent-hex)] transition-all duration-300" style={{ width: `${courseProgress}%` }} />
       </div>
 
-      <header className="h-[var(--topbar-h)] bg-[var(--sidebar)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
+      <header className="h-[var(--topbar-h)] bg-[var(--sidebar-3)] flex items-center justify-between px-4 md:px-5 shrink-0 relative">
         <div className="flex items-center gap-2">
           <button className="md:hidden p-2 -ml-2 text-white/70 hover:text-white transition-colors" aria-label="Toggle lesson list" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu className="w-5 h-5" />

@@ -50,10 +50,10 @@ All colors MUST be HSL.
     --sidebar-ring:                160 52% 52%;
 
     /* ── Gunmetal custom properties ── */
-    --sidebar: #252c38;
+    --sidebar: #faf9f4;
     --sidebar-2: #2d3545;
     --sidebar-3: #1e242f;
-    --canvas: #edf1f7;
+    --canvas: #f7f6f1;
     --canvas-2: #f2f6fb;
     --canvas-white: #f8fbff;
     --ink: #1a2030;
@@ -66,8 +66,8 @@ All colors MUST be HSL.
     --tl-display: "Lora", Georgia, serif;
     --tl-hair:    #c8d4e0;
     --tl-hair-2:  #dde3ec;
-    --sidebar-text: #7a8da4;
-    --sidebar-text-hover: #a0b0c4;
+    --sidebar-text: #6a7a90;
+    --sidebar-text-hover: #1a2030;
     --danger: #b04040;
     --danger-bg: rgba(176,64,64,0.06);
     --danger-border: rgba(176,64,64,0.3);

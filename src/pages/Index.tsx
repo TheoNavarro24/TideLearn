@@ -101,7 +101,7 @@ function EditorCard() {
   return (
     <div className="max-w-[1000px] w-full mx-auto mt-16 rounded-2xl overflow-hidden border border-[var(--accent-hex)]/[0.18] shadow-[0_32px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(64,200,160,0.08)] bg-[var(--sidebar-3)] relative z-[2]">
       {/* Browser chrome */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-[var(--sidebar)] border-b border-white/[0.06]">
+      <div className="flex items-center gap-2 px-4 py-3 bg-[#252c38] border-b border-white/[0.06]">
         <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <div className="w-3 h-3 rounded-full bg-[#28c840]" />
@@ -296,7 +296,7 @@ const Index = () => {
       <Nav user={user} signOut={signOut} />
 
       {/* ── Hero ────────────────────────────────────────── */}
-      <section className="min-h-screen overflow-hidden relative bg-gradient-to-b from-[var(--sidebar-3)] via-[var(--sidebar)] to-[var(--sidebar-3)]">
+      <section className="min-h-screen overflow-hidden relative bg-gradient-to-b from-[var(--sidebar-3)] via-[#252c38] to-[var(--sidebar-3)]">
         {/* Subtle horizontal line texture overlay */}
         <div
           className="absolute inset-0 pointer-events-none"

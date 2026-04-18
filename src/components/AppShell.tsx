@@ -41,7 +41,7 @@ export function AppShell({ children, sidebar, topBar, lightSidebar }: AppShellPr
           </div>
           <span
             className="font-display text-sm font-semibold"
-            style={{ color: "hsl(var(--sidebar-foreground))" }}
+            style={{ color: "var(--ink)" }}
           >
             TideLearn
           </span>
