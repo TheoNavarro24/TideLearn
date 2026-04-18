@@ -12,10 +12,19 @@ interface BlockItemProps {
 export function BlockItem({ block, spec, selected, onSelect }: BlockItemProps) {
   const ViewComp = spec.View as React.ComponentType<{ block: Block }>;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       aria-pressed={selected}
       aria-label={`${spec.label} block — click to edit`}
       className={cn(
@@ -29,6 +38,6 @@ export function BlockItem({ block, spec, selected, onSelect }: BlockItemProps) {
       style={{ background: "transparent" }}
     >
       <ViewComp block={block} />
-    </button>
+    </div>
   );
 }
