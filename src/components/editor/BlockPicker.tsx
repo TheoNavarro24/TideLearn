@@ -94,7 +94,7 @@ export function AddBlockRow({
     <div className="abr-container relative my-1">
       <div className={`abr flex items-center w-full${isOpen ? " open" : ""}`}>
         {/* Left line */}
-        <div className="flex-1 h-px bg-[rgba(64,200,160,0.15)]" />
+        <div className="flex-1 h-px bg-[var(--tl-accent-border-soft)]" />
 
         {/* Pill button */}
         <div ref={pillRef} className="relative shrink-0">
@@ -194,7 +194,7 @@ export function AddBlockRow({
         </div>
 
         {/* Right line */}
-        <div className="flex-1 h-px bg-[rgba(64,200,160,0.15)]" />
+        <div className="flex-1 h-px bg-[var(--tl-accent-border-soft)]" />
       </div>
     </div>
   );
