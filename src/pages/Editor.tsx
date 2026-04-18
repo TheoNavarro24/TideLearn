@@ -261,7 +261,7 @@ export default function Editor() {
         }
       >
         {/* Canvas */}
-        <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--canvas)" }}>
+        <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--canvas-white)" }}>
           <div key={selectedLessonId} style={{ animation: "fade-in 150ms var(--ease-out)" }}>
             {/* Lesson header */}
             {selectedLesson && (

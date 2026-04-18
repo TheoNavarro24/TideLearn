@@ -46,7 +46,7 @@ export function EditorSidebar({
           onMouseEnter={e => (e.currentTarget.style.color = "var(--accent-hex)")}
           onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
         >
-          ← All courses
+          ← {courseTitle}
         </button>
       </div>
 
@@ -62,14 +62,14 @@ export function EditorSidebar({
             onChange={e => setTitleDraft(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditingTitle(false); }}
-            className="font-display text-sm font-semibold w-full bg-transparent border-b outline-none"
+            className="font-display text-xl font-bold leading-snug w-full bg-transparent border-b outline-none"
             style={{ color: "var(--ink)", borderColor: "var(--accent-hex)" }}
           />
         ) : (
           <button
             onClick={startEdit}
             title="Click to rename lesson"
-            className="font-display text-sm font-semibold text-left w-full bg-transparent border-none cursor-text p-0 truncate"
+            className="font-display text-xl font-bold leading-snug text-left w-full bg-transparent border-none cursor-text p-0"
             style={{ color: "var(--ink)" }}
           >
             {selectedLesson?.title ?? ""}

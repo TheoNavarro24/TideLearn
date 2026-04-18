@@ -20,13 +20,13 @@ export function BlockItem({ block, spec, selected, onSelect }: BlockItemProps) {
       aria-label={`${spec.label} block — click to edit`}
       className={cn(
         "block-item block-card w-full text-left relative mb-0",
-        "border-[1.5px] rounded-lg p-4 px-5 cursor-pointer",
+        "rounded-lg p-4 px-5 cursor-pointer",
         "transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)]",
         selected
-          ? "ring-2 ring-[var(--accent-hex)] border-transparent"
-          : "border-transparent hover:border-[hsl(var(--border))]"
+          ? "ring-2 ring-[var(--accent-hex)]"
+          : "hover:ring-1 hover:ring-[hsl(var(--border))]"
       )}
-      style={{ background: "var(--canvas-white)" }}
+      style={{ background: "transparent" }}
     >
       <ViewComp block={block} />
     </button>
