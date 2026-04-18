@@ -11,11 +11,12 @@ interface EditorSidebarProps {
   onAddLesson: (kind: "content" | "assessment") => void;
   onExportScorm: () => void;
   onLessonTitleChange: (id: string, title: string) => void;
+  onRemoveLesson: (id: string) => void;
 }
 
 export function EditorSidebar({
   courseTitle, lessons, selectedLessonId, blockCount,
-  onSelectLesson, onAddLesson, onExportScorm, onLessonTitleChange,
+  onSelectLesson, onAddLesson, onExportScorm, onLessonTitleChange, onRemoveLesson,
 }: EditorSidebarProps) {
   const navigate = useNavigate();
   const selectedLesson = lessons.find(l => l.id === selectedLessonId);
@@ -94,23 +95,37 @@ export function EditorSidebar({
         {lessons.map((l, idx) => {
           const isActive = l.id === selectedLessonId;
           return (
-            <button
-              key={l.id}
-              onClick={() => onSelectLesson(l.id)}
-              className="flex items-center gap-2 w-full text-left border-none rounded-md py-[6px] px-2.5 cursor-pointer mb-0.5 transition-colors text-xs font-medium"
-              style={{
-                background: isActive ? "rgba(64,200,160,0.08)" : "transparent",
-                color: isActive ? "var(--accent-hex)" : "var(--ink)",
-              }}
-            >
-              <span className="text-xs font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--text-muted)" }}>
-                {String(idx + 1).padStart(2, "0")}
-              </span>
-              <span className="flex-1 truncate">{l.title}</span>
-              <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                {l.kind === "content" ? "doc" : "quiz"}
-              </span>
-            </button>
+            <div key={l.id} className="group relative flex items-stretch">
+              <button
+                onClick={() => onSelectLesson(l.id)}
+                className="flex items-center gap-2 flex-1 text-left border-none rounded-md py-[6px] px-2.5 pr-8 cursor-pointer mb-0.5 transition-colors text-xs font-medium"
+                style={{
+                  background: isActive ? "rgba(64,200,160,0.08)" : "transparent",
+                  color: isActive ? "var(--accent-hex)" : "var(--ink)",
+                }}
+              >
+                <span className="text-xs font-mono font-bold min-w-[16px]" style={{ color: isActive ? "var(--accent-hex)" : "var(--text-muted)" }}>
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <span className="flex-1 truncate">{l.title}</span>
+                <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                  {l.kind === "content" ? "doc" : "quiz"}
+                </span>
+              </button>
+              {lessons.length > 1 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRemoveLesson(l.id); }}
+                  aria-label={`Remove lesson ${l.title}`}
+                  title="Remove lesson"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity border-none cursor-pointer"
+                  style={{ background: "transparent", color: "var(--text-muted)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "hsl(var(--destructive))")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           );
         })}
       </div>

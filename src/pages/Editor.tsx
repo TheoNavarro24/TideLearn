@@ -244,6 +244,7 @@ export default function Editor() {
             onAddLesson={addLesson}
             onExportScorm={exportSCORM12}
             onLessonTitleChange={updateLessonTitle}
+            onRemoveLesson={(id) => setLessonToRemove(id)}
           />
         }
         topBar={
@@ -263,25 +264,6 @@ export default function Editor() {
         {/* Canvas */}
         <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--canvas)" }}>
           <div key={selectedLessonId} style={{ animation: "fade-in 150ms var(--ease-out)" }}>
-            {/* Lesson header */}
-            {selectedLesson && (
-              <div className="px-6 py-4 border-b" style={{ background: "var(--canvas-white)", borderColor: "hsl(var(--border))" }}>
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    {blocks.length} block{blocks.length !== 1 ? "s" : ""}
-                  </span>
-                  {lessons.length > 1 && (
-                    <button
-                      onClick={() => setLessonToRemove(selectedLesson.id)}
-                      className="bg-transparent border-0 text-[11px] cursor-pointer p-0 transition-colors rounded text-destructive/70 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
-                    >
-                      Remove lesson
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
             {/* Canvas body */}
             <div className="flex-1 px-4 md:px-12 py-6 pb-20">
               <div className="max-w-[var(--canvas-max-w)] mx-auto">
