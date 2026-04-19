@@ -138,7 +138,7 @@ function NavItem({
         "flex items-center gap-2 w-full px-2.5 py-1.5 rounded text-xs font-medium transition-colors",
         active
           ? "text-[var(--accent-hex)]"
-          : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)]"
+          : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)] hover:bg-black/[0.04]"
       )}
       style={active ? { background: "var(--accent-bg)" } : undefined}
     >
