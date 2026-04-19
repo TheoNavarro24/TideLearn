@@ -43,43 +43,32 @@ export function QuestionForm({ initial, onSave, onCancel }: Props) {
     });
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "8px 10px",
-    border: "1.5px solid #e0fdf4",
-    borderRadius: 6,
-    fontSize: 13,
-    fontFamily: "Inter, sans-serif",
-    color: "#0d2926",
-    background: "#fff",
-    boxSizing: "border-box",
-  };
-
   return (
-    <div style={{ background: "#f8fffe", border: "1px solid #e0fdf4", borderRadius: 10, padding: 20, marginBottom: 12 }}>
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#0d9488", display: "block", marginBottom: 4 }}>Question *</label>
+    <div className="rounded-xl p-5 mb-3" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+      <div className="mb-3">
+        <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--accent-hex)" }}>Question *</label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={2}
-          style={{ ...inputStyle, resize: "vertical" }}
+          className="w-full px-2.5 py-2 rounded-md text-sm outline-none transition-colors resize-y"
+          style={{ background: "var(--canvas-white)", border: "1.5px solid hsl(var(--border))", color: "var(--ink)" }}
           placeholder="Enter your question..."
         />
       </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#0d9488", display: "block", marginBottom: 4 }}>Options *</label>
+      <div className="mb-3">
+        <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--accent-hex)" }}>Options *</label>
         {options.map((opt, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <div key={i} className="flex items-center gap-2 mb-1.5">
             <input
               type="radio"
               name="correct"
               checked={correctIndex === i}
               onChange={() => setCorrectIndex(i)}
-              style={{ accentColor: "#0d9488", flexShrink: 0 }}
+              style={{ accentColor: "var(--accent-hex)", flexShrink: 0 }}
             />
-            <span style={{ fontSize: 11, color: "#64748b", width: 14, flexShrink: 0 }}>{String.fromCharCode(65 + i)}</span>
+            <span className="text-[11px] flex-shrink-0 w-3.5" style={{ color: "var(--text-muted)" }}>{String.fromCharCode(65 + i)}</span>
             <input
               value={opt}
               onChange={(e) => {
@@ -87,49 +76,65 @@ export function QuestionForm({ initial, onSave, onCancel }: Props) {
                 next[i] = e.target.value;
                 setOptions(next);
               }}
-              style={{ ...inputStyle, flex: 1 }}
+              className="flex-1 px-2.5 py-2 rounded-md text-sm outline-none transition-colors"
+              style={{ background: "var(--canvas-white)", border: "1.5px solid hsl(var(--border))", color: "var(--ink)" }}
               placeholder={`Option ${String.fromCharCode(65 + i)}`}
             />
           </div>
         ))}
-        <p style={{ fontSize: 11, color: "#94a3b8", margin: "4px 0 0" }}>Select the radio button next to the correct answer.</p>
+        <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>Select the radio button next to the correct answer.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+      <div className="grid grid-cols-2 gap-3 mb-3">
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#0d9488", display: "block", marginBottom: 4 }}>Feedback (optional)</label>
-          <input value={feedback} onChange={(e) => setFeedback(e.target.value)} style={inputStyle} placeholder="Shown after answer is revealed" />
+          <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--accent-hex)" }}>Feedback (optional)</label>
+          <input
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            className="w-full px-2.5 py-2 rounded-md text-sm outline-none transition-colors"
+            style={{ background: "var(--canvas-white)", border: "1.5px solid hsl(var(--border))", color: "var(--ink)" }}
+            placeholder="Shown after answer is revealed"
+          />
         </div>
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#0d9488", display: "block", marginBottom: 4 }}>Source tag (optional)</label>
-          <input value={source} onChange={(e) => setSource(e.target.value)} style={inputStyle} placeholder="e.g. Week 3 Reading" />
+          <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--accent-hex)" }}>Source tag (optional)</label>
+          <input
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            className="w-full px-2.5 py-2 rounded-md text-sm outline-none transition-colors"
+            style={{ background: "var(--canvas-white)", border: "1.5px solid hsl(var(--border))", color: "var(--ink)" }}
+            placeholder="e.g. Week 3 Reading"
+          />
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#0d9488", display: "block", marginBottom: 4 }}>Bloom's level (optional)</label>
+      <div className="mb-3">
+        <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--accent-hex)" }}>Bloom's level (optional)</label>
         <select
           value={bloomLevel ?? ""}
           onChange={(e) => setBloomLevel((e.target.value as AssessmentQuestion["bloomLevel"]) || undefined)}
-          style={{ ...inputStyle, cursor: "pointer" }}
+          className="w-full px-2.5 py-2 rounded-md text-sm outline-none transition-colors cursor-pointer"
+          style={{ background: "var(--canvas-white)", border: "1.5px solid hsl(var(--border))", color: "var(--ink)" }}
         >
           <option value="">— none —</option>
           {BLOOM_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
 
-      {error && <p style={{ fontSize: 12, color: "#ef4444", marginBottom: 10 }}>{error}</p>}
+      {error && <p className="text-xs text-destructive mb-2.5">{error}</p>}
 
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="flex gap-2">
         <button
           onClick={handleSave}
-          style={{ background: "linear-gradient(135deg,#0d9488,#0891b2)", border: "none", borderRadius: 7, color: "#fff", fontSize: 12, fontWeight: 700, padding: "7px 16px", cursor: "pointer", fontFamily: "Inter,sans-serif" }}
+          className="text-xs font-bold rounded-md px-4 py-2 border-none cursor-pointer"
+          style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
         >
           {initial ? "Save changes" : "Add question"}
         </button>
         <button
           onClick={onCancel}
-          style={{ background: "none", border: "1.5px solid #e0fdf4", borderRadius: 7, color: "#64748b", fontSize: 12, fontWeight: 600, padding: "6px 14px", cursor: "pointer", fontFamily: "Inter,sans-serif" }}
+          className="text-xs font-medium rounded-md px-3 py-2 border cursor-pointer"
+          style={{ background: "transparent", color: "var(--text-muted)", borderColor: "hsl(var(--border))" }}
         >
           Cancel
         </button>
