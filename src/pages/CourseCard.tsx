@@ -87,8 +87,7 @@ export function CourseCard({
   }, [isOpen, setOpenDropdownId]);
 
   const animDelay = Math.min(animationIndex * 40, 200);
-  const coverColors = [["#2d3a4a", "#3a4d60"], ["#1e3245", "#2d4a65"], ["#2a3545", "#3d5068"]];
-  const colorPair = coverColors[course.title.charCodeAt(0) % coverColors.length];
+  const fallbackGradient = "linear-gradient(135deg, hsl(var(--muted)), var(--accent-bg))";
 
   return (
     <div
@@ -106,9 +105,9 @@ export function CourseCard({
       onClick={() => onOpen(course.id)}
     >
       {/* Cover strip */}
-      <div className="relative flex-shrink-0 flex items-end" style={{ height: 82, background: course.coverImageUrl ? undefined : `linear-gradient(135deg, ${colorPair[0]}, ${colorPair[1]})` }}>
+      <div className="relative flex-shrink-0 flex items-end" style={{ height: 82, background: course.coverImageUrl ? undefined : fallbackGradient }}>
         {course.coverImageUrl && <img src={course.coverImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-        <span className="relative z-10 px-3 pb-2 text-2xl leading-none text-white/70">{course.title.charAt(0).toUpperCase()}</span>
+        <span className="relative z-10 px-3 pb-2 text-2xl leading-none font-bold" style={{ color: "var(--text-muted)" }}>{course.title.charAt(0).toUpperCase()}</span>
 
         {/* ··· dropdown */}
         <div ref={dropRef} className="absolute top-2 right-2 z-20" onClick={(e) => e.stopPropagation()}>
