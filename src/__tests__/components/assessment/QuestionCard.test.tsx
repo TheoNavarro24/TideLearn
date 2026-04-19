@@ -27,12 +27,25 @@ describe("QuestionCard", () => {
 
   test("shows selected ring when selected=true", () => {
     const { container } = render(<QuestionCard question={q} index={0} selected onSelect={vi.fn()} />);
-    expect(container.querySelector(".question-card")?.className).toContain("ring-2");
+    expect(container.querySelector(".question-card")).toHaveAttribute("aria-pressed", "true");
   });
 
   test("renders no inline Edit or Delete buttons", () => {
     render(<QuestionCard question={q} index={0} selected={false} onSelect={vi.fn()} />);
     expect(screen.queryByText("Edit")).not.toBeInTheDocument();
     expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+  });
+
+  test("renders kind label for non-MCQ question types", () => {
+    const fillinblank = {
+      id: uid(),
+      kind: "fillinblank" as const,
+      text: "Fill in the {{1}}",
+      blanks: [{ id: uid(), acceptable: ["gap"], caseSensitive: false }],
+      feedback: undefined,
+    };
+    render(<QuestionCard question={fillinblank} index={2} selected={false} onSelect={vi.fn()} />);
+    expect(screen.queryByText(/✓/)).not.toBeInTheDocument();
+    expect(screen.getByText(/fillinblank/i)).toBeInTheDocument();
   });
 });
