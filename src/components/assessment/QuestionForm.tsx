@@ -34,6 +34,7 @@ export function QuestionForm({ initial, onSave, onCancel }: Props) {
     setError(null);
     onSave({
       id: initial?.id ?? uid(),
+      kind: "mcq" as const,
       text: text.trim(),
       options: options.map((o) => o.trim()) as [string, string, string, string],
       correctIndex,
