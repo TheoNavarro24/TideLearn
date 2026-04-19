@@ -111,7 +111,7 @@ Supabase projects: **Frontend** uses `wlevkqlsabvmfdkphnza` (in `src/integration
 - [ ] **Phase 3B — WYSIWYG Editor + Inspector Drawer** (planned) — plan at `docs/superpowers/plans/2026-04-18-wysiwyg-editor.md`: WYSIWYG canvas (View components), right-side BlockInspector drawer on block click, light-theme EditorSidebar, static breadcrumb TopBar.
 - [x] **Consistency Foundation** (merged to main) — `--tl-*` tokens, paper-default palette, `BlockItem` nested-button a11y fix, canvas cleanup (no duplicate header, flatter max-width, Lucide inspector icons, polished empty state), AddBlockRow token.
 - [x] **Non-Editor Polish** (merged to main) — Courses create-flow consolidated (top-bar button focuses input); CourseCard gradient tokenised; AppShell NavItem hover; View.tsx tokenisation drive-by.
-- [ ] **Assessment Editor WYSIWYG** (PR open) — `QuestionInspector` drawer mirrors `BlockInspector`; `QuestionCard` has WYSIWYG select affordance; `AssessmentConfigBar` replaces the full-width config form with a chip row; all inline hex / `Inter` styling replaced with tokens.
+- [x] **Assessment Editor WYSIWYG** (merged to main) — `QuestionInspector` drawer mirrors `BlockInspector`; `QuestionCard` WYSIWYG select affordance; `AssessmentConfigBar` compact chip row; all inline hex / `Inter` styling replaced with tokens.
 
 ## Design Context
 
