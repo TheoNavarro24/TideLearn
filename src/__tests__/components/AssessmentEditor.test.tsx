@@ -24,16 +24,20 @@ const LESSON: AssessmentLesson = {
 };
 
 describe("AssessmentEditor AlertDialog delete flow", () => {
-  it("clicking Delete button opens the AlertDialog with 'Delete question?' title", async () => {
+  it("clicking Delete button in inspector opens the AlertDialog with 'Delete question?' title", async () => {
     const user = userEvent.setup();
     render(<AssessmentEditor lesson={LESSON} onChange={vi.fn()} />);
 
-    const deleteBtn = screen.getByRole("button", { name: /delete/i });
+    // Open inspector by clicking the question card
+    await user.click(screen.getByRole("button", { name: /Question 1.*click to edit/i }));
+
+    // Click the trash/Delete button in the inspector footer
+    const deleteBtn = screen.getByRole("button", { name: /delete question/i });
     await user.click(deleteBtn);
 
     expect(screen.getByText("Delete question?")).toBeInTheDocument();
     expect(
-      screen.getByText(/This action cannot be undone/i)
+      screen.getByText(/This cannot be undone/i)
     ).toBeInTheDocument();
   });
 
@@ -42,7 +46,9 @@ describe("AssessmentEditor AlertDialog delete flow", () => {
     const onChange = vi.fn();
     render(<AssessmentEditor lesson={LESSON} onChange={onChange} />);
 
-    await user.click(screen.getByRole("button", { name: /delete/i }));
+    // Open inspector
+    await user.click(screen.getByRole("button", { name: /Question 1.*click to edit/i }));
+    await user.click(screen.getByRole("button", { name: /delete question/i }));
     expect(screen.getByText("Delete question?")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /cancel/i }));
@@ -56,13 +62,14 @@ describe("AssessmentEditor AlertDialog delete flow", () => {
     const onChange = vi.fn();
     render(<AssessmentEditor lesson={LESSON} onChange={onChange} />);
 
-    await user.click(screen.getByRole("button", { name: /delete/i }));
+    // Open inspector
+    await user.click(screen.getByRole("button", { name: /Question 1.*click to edit/i }));
+    await user.click(screen.getByRole("button", { name: /delete question/i }));
     expect(screen.getByText("Delete question?")).toBeInTheDocument();
 
     // Click the destructive Delete action button inside the dialog
     const buttons = screen.getAllByRole("button", { name: /delete/i });
-    // The dialog action button is the last one (the card's Delete opens the dialog,
-    // the AlertDialogAction is the confirmation Delete inside the dialog)
+    // The AlertDialogAction is the last "delete" button (after the inspector's trash)
     const confirmBtn = buttons[buttons.length - 1];
     await user.click(confirmBtn);
 

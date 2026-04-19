@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type { AssessmentLesson, AssessmentQuestion } from "@/types/course";
-import { QuestionForm } from "./QuestionForm";
+import { uid } from "@/types/course";
 import { QuestionCard } from "./QuestionCard";
+import { QuestionInspector } from "./QuestionInspector";
+import { AssessmentConfigBar } from "./AssessmentConfigBar";
 import { JsonImport } from "./JsonImport";
 import {
   AlertDialog,
@@ -19,124 +21,151 @@ type Props = {
   onChange: (updated: AssessmentLesson) => void;
 };
 
+function emptyMcq(): AssessmentQuestion {
+  return {
+    id: uid(),
+    kind: "mcq",
+    text: "",
+    options: ["", "", "", ""],
+    correctIndex: 0,
+  };
+}
+
 export function AssessmentEditor({ lesson, onChange }: Props) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [addingNew, setAddingNew] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  // Draft question for the "+ Add question" flow — lives in UI state until the
+  // user clicks Save in the inspector, so bailing doesn't leave an empty MCQ
+  // stranded in the lesson.
+  const [draftQuestion, setDraftQuestion] = useState<AssessmentQuestion | null>(null);
+
+  const questions = lesson.questions;
 
   function update(changes: Partial<Omit<AssessmentLesson, "kind" | "id">>) {
     onChange({ ...lesson, ...changes });
   }
 
-  function handleAdd(q: AssessmentQuestion) {
-    update({ questions: [...lesson.questions, q] });
-    setAddingNew(false);
+  function handleSave(q: AssessmentQuestion) {
+    const exists = questions.some((x) => x.id === q.id);
+    if (!exists) {
+      update({ questions: [...questions, q] });
+      setDraftQuestion(null);
+      setSelectedQuestionId(q.id);
+      return;
+    }
+    update({ questions: questions.map((x) => (x.id === q.id ? q : x)) });
   }
 
-  function handleUpdate(q: AssessmentQuestion) {
-    update({ questions: lesson.questions.map((existing) => existing.id === q.id ? q : existing) });
-    setEditingId(null);
+  function handleAddQuestion() {
+    const q = emptyMcq();
+    setDraftQuestion(q);
+    setSelectedQuestionId(q.id);
+  }
+
+  function handleCloseInspector() {
+    if (draftQuestion && selectedQuestionId === draftQuestion.id) {
+      setDraftQuestion(null);
+    }
+    setSelectedQuestionId(null);
+  }
+
+  function handleMove(id: string, dir: "up" | "down") {
+    const idx = questions.findIndex((q) => q.id === id);
+    if (idx < 0) return;
+    const target = dir === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= questions.length) return;
+    const next = [...questions];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    update({ questions: next });
+  }
+
+  function handleDuplicate(id: string) {
+    const q = questions.find((x) => x.id === id);
+    if (!q) return;
+    const copy: AssessmentQuestion = { ...q, id: uid() };
+    const idx = questions.findIndex((x) => x.id === id);
+    const next = [...questions.slice(0, idx + 1), copy, ...questions.slice(idx + 1)];
+    update({ questions: next });
+    setSelectedQuestionId(copy.id);
+  }
+
+  function handleRemove(id: string) {
+    setDeleteTargetId(id);
   }
 
   function confirmDelete() {
-    if (deleteTargetId) {
-      update({ questions: lesson.questions.filter((q) => q.id !== deleteTargetId) });
-      setDeleteTargetId(null);
-    }
+    if (!deleteTargetId) return;
+    update({ questions: questions.filter((q) => q.id !== deleteTargetId) });
+    if (selectedQuestionId === deleteTargetId) setSelectedQuestionId(null);
+    setDeleteTargetId(null);
   }
 
   function handleImport(imported: AssessmentQuestion[]) {
-    update({ questions: [...lesson.questions, ...imported] });
+    update({ questions: [...questions, ...imported] });
   }
 
-  const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: "#0d9488" };
-  const inputStyle: React.CSSProperties = {
-    padding: "7px 10px",
-    border: "1.5px solid #e0fdf4",
-    borderRadius: 6,
-    fontSize: 13,
-    fontFamily: "Inter, sans-serif",
-    color: "#0d2926",
-    background: "#fff",
-  };
+  const selectedIdx = selectedQuestionId ? questions.findIndex((q) => q.id === selectedQuestionId) : -1;
+  const selectedQuestion: AssessmentQuestion | null =
+    selectedIdx >= 0
+      ? questions[selectedIdx]
+      : draftQuestion && draftQuestion.id === selectedQuestionId
+        ? draftQuestion
+        : null;
+  const inspectorIdx = selectedIdx >= 0 ? selectedIdx : questions.length;
+  const inspectorTotal = selectedIdx >= 0 ? questions.length : questions.length + 1;
 
   return (
-    <div style={{ padding: "0 0 32px" }}>
-      {/* Config */}
-      <div style={{ background: "#f8fffe", border: "1px solid #e0fdf4", borderRadius: 10, padding: 16, marginBottom: 20, display: "flex", gap: 20, alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div>
-          <label style={{ ...labelStyle, display: "block", marginBottom: 4 }}>Passing score (%)</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={lesson.config.passingScore ?? 80}
-            onChange={(e) => update({ config: { ...lesson.config, passingScore: Number(e.target.value) } })}
-            style={{ ...inputStyle, width: 80 }}
-          />
-        </div>
-        <div>
-          <label style={{ ...labelStyle, display: "block", marginBottom: 4 }}>Exam size (questions)</label>
-          <input
-            type="number"
-            min={1}
-            max={lesson.questions.length || 100}
-            value={lesson.config.examSize ?? 20}
-            onChange={(e) => update({ config: { ...lesson.config, examSize: Number(e.target.value) } })}
-            style={{ ...inputStyle, width: 80 }}
-          />
-        </div>
-        <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
-          {lesson.questions.length} question{lesson.questions.length !== 1 ? "s" : ""} in bank
-        </p>
-      </div>
+    <>
+      <div className="max-w-[var(--reading-max-w)] mx-auto flex flex-col pb-8">
+        <AssessmentConfigBar lesson={lesson} onChange={onChange} />
 
-      {/* Question bank */}
-      <div style={{ marginBottom: 12 }}>
-        {lesson.questions.map((q, i) =>
-          editingId === q.id ? (
-            <QuestionForm
-              key={q.id}
-              initial={q}
-              onSave={handleUpdate}
-              onCancel={() => setEditingId(null)}
-            />
-          ) : (
-            <QuestionCard
-              key={q.id}
-              question={q}
-              index={i}
-              onEdit={() => setEditingId(q.id)}
-              onDelete={() => setDeleteTargetId(q.id)}
-            />
-          )
+        {questions.length === 0 && (
+          <p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>
+            No questions yet. Add your first question below.
+          </p>
         )}
-      </div>
 
-      {addingNew && (
-        <QuestionForm
-          onSave={handleAdd}
-          onCancel={() => setAddingNew(false)}
-        />
-      )}
+        {questions.map((q, i) => (
+          <QuestionCard
+            key={q.id}
+            question={q}
+            index={i}
+            selected={selectedQuestionId === q.id}
+            onSelect={() => setSelectedQuestionId(q.id)}
+          />
+        ))}
 
-      {!addingNew && (
         <button
-          onClick={() => { setAddingNew(true); setEditingId(null); }}
-          style={{ background: "linear-gradient(135deg,#0d9488,#0891b2)", border: "none", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, padding: "9px 20px", cursor: "pointer", fontFamily: "Inter,sans-serif" }}
+          onClick={handleAddQuestion}
+          className="mt-2 self-start text-xs font-bold rounded-md px-4 py-2 border-none cursor-pointer"
+          style={{ background: "var(--accent-hex)", color: "#0a1c18" }}
         >
           + Add question
         </button>
-      )}
 
-      <JsonImport onImport={handleImport} />
+        <JsonImport onImport={handleImport} />
+      </div>
+
+      {selectedQuestion && (
+        <QuestionInspector
+          key={selectedQuestion.id}
+          question={selectedQuestion}
+          idx={inspectorIdx}
+          total={inspectorTotal}
+          onClose={handleCloseInspector}
+          onSave={handleSave}
+          onMove={handleMove}
+          onDuplicate={handleDuplicate}
+          onRemove={handleRemove}
+        />
+      )}
 
       <AlertDialog open={deleteTargetId !== null} onOpenChange={(open) => { if (!open) setDeleteTargetId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete question?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The question will be permanently removed from this lesson.
+              This cannot be undone. The question will be permanently removed from this lesson.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -147,6 +176,6 @@ export function AssessmentEditor({ lesson, onChange }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
