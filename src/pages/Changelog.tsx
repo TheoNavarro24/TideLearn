@@ -9,6 +9,20 @@ interface Entry {
 
 const entries: Entry[] = [
   {
+    date: "2026-04-19",
+    label: "Consistency Foundation",
+    type: "design",
+    items: [
+      "Added --tl-accent-border, --tl-accent-border-soft, --tl-sans, --tl-display, --tl-hair tokens",
+      "Default palette switched to warm paper neutrals (canvas #f7f6f1, sidebar #faf9f4); learner header pinned to --sidebar-3",
+      "BlockItem: replaced nested <button> with div[role=button] + keyboard handler (a11y fix)",
+      "Canvas: removed redundant lesson-header bar; 'Remove lesson' moved to sidebar hover ✕ button",
+      "Canvas max-width nesting flattened; AddBlockRow divider tokenised to --tl-accent-border-soft",
+      "BlockInspector footer: emoji glyphs replaced with Lucide icons (ArrowUp, ArrowDown, Copy, Trash2)",
+      "Empty canvas state: Sparkles icon + heading + /kbd keyboard hint",
+    ],
+  },
+  {
     date: "2026-04-10",
     label: "Landing Page — Smooth Scroll",
     type: "feat",
