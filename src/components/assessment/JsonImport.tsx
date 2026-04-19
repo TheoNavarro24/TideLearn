@@ -85,7 +85,7 @@ export function JsonImport({ onImport }: Props) {
             placeholder='[{"text":"Question?","options":["A","B","C","D"],"correctIndex":0}]'
           />
           {errors.length > 0 && (
-            <ul style={{ margin: "8px 0", padding: "0 0 0 16px", color: "var(--destructive)", fontSize: 12 }}>
+            <ul style={{ margin: "8px 0", padding: "0 0 0 16px", color: "hsl(var(--destructive))", fontSize: 12 }}>
               {errors.map((e, i) => <li key={i}>{e}</li>)}
             </ul>
           )}
