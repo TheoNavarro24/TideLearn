@@ -18,7 +18,11 @@ export function AssessmentConfigBar({ lesson, onChange }: Props) {
           min={0}
           max={100}
           value={lesson.config.passingScore ?? 80}
-          onChange={(e) => onChange({ ...lesson, config: { ...lesson.config, passingScore: Number(e.target.value) } })}
+          onChange={(e) => {
+            const raw = e.target.value;
+            const val = raw === "" ? undefined : Math.max(0, Math.min(100, parseInt(raw, 10)));
+            onChange({ ...lesson, config: { ...lesson.config, passingScore: val } });
+          }}
           aria-label="Passing score percentage"
           className="w-14 px-2 py-1 rounded text-xs outline-none"
           style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", color: "var(--ink)" }}
@@ -33,9 +37,14 @@ export function AssessmentConfigBar({ lesson, onChange }: Props) {
         <input
           type="number"
           min={1}
-          max={lesson.questions.length || 100}
+          max={lesson.questions.length > 0 ? lesson.questions.length : 100}
           value={lesson.config.examSize ?? 20}
-          onChange={(e) => onChange({ ...lesson, config: { ...lesson.config, examSize: Number(e.target.value) } })}
+          onChange={(e) => {
+            const raw = e.target.value;
+            const max = lesson.questions.length > 0 ? lesson.questions.length : 100;
+            const val = raw === "" ? undefined : Math.max(1, Math.min(max, parseInt(raw, 10)));
+            onChange({ ...lesson, config: { ...lesson.config, examSize: val } });
+          }}
           aria-label="Exam size — number of questions"
           className="w-14 px-2 py-1 rounded text-xs outline-none"
           style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))", color: "var(--ink)" }}
