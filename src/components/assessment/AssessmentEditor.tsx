@@ -97,6 +97,7 @@ export function AssessmentEditor({ lesson, onChange }: Props) {
     if (!deleteTargetId) return;
     update({ questions: questions.filter((q) => q.id !== deleteTargetId) });
     if (selectedQuestionId === deleteTargetId) setSelectedQuestionId(null);
+    if (draftQuestion?.id === deleteTargetId) setDraftQuestion(null);
     setDeleteTargetId(null);
   }
 
