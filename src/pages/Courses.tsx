@@ -31,6 +31,10 @@ export default function Courses() {
   const { searchTerm, setSearchTerm, filteredCourses } = useCourseSearch(courses);
 
   const onCreate = () => {
+    if (!newTitle.trim()) {
+      newCourseInputRef.current?.focus();
+      return;
+    }
     createCourse(newTitle);
     setNewTitle("");
   };
@@ -82,7 +86,7 @@ export default function Courses() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="border bg-transparent text-xs font-medium rounded-md px-3 py-1.5 transition-colors" style={{ borderColor: "hsl(var(--border))", color: "var(--text-muted)" }} onClick={() => importRef.current?.click()}>Import JSON</button>
-            <button className="text-xs font-bold rounded-md px-3.5 py-1.5 border-none cursor-pointer" style={{ background: "var(--accent-hex)", color: "#0a1c18" }} onClick={onCreate}>+ New Course</button>
+            <button className="text-xs font-bold rounded-md px-3.5 py-1.5 border-none cursor-pointer" style={{ background: "var(--accent-hex)", color: "#0a1c18" }} onClick={() => newCourseInputRef.current?.focus()}>+ New Course</button>
           </div>
         }
       >
