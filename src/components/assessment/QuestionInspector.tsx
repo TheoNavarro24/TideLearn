@@ -47,6 +47,8 @@ export function QuestionInspector({
           aria-label="Close inspector"
           className="flex items-center justify-center w-6 h-6 rounded transition-colors border-none cursor-pointer"
           style={{ background: "transparent", color: "var(--text-muted)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
         >
           <X className="w-3.5 h-3.5" />
         </button>
