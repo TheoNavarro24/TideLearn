@@ -1,63 +1,62 @@
+import { cn } from "@/lib/utils";
 import type { AssessmentQuestion } from "@/types/course";
 
 type Props = {
   question: AssessmentQuestion;
   index: number;
-  onEdit: () => void;
-  onDelete: () => void;
+  selected: boolean;
+  onSelect: () => void;
 };
 
-export function QuestionCard({ question, index, onEdit, onDelete }: Props) {
+export function QuestionCard({ question, index, selected, onSelect }: Props) {
+  const isMcq = question.kind === "mcq";
+  const correctAnswer = isMcq ? question.options[question.correctIndex] : null;
+
   return (
-    <div style={{
-      background: "#fff",
-      border: "1.5px solid #e0fdf4",
-      borderRadius: 8,
-      padding: "12px 14px",
-      marginBottom: 8,
-      display: "flex",
-      alignItems: "flex-start",
-      gap: 12,
-    }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", minWidth: 24, paddingTop: 2 }}>
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      aria-label={`Question ${index + 1} — click to edit`}
+      className={cn(
+        "question-card w-full text-left flex items-start gap-3 rounded-lg px-4 py-3 mb-2 cursor-pointer transition-all",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hex)]",
+        selected ? "ring-2 ring-[var(--accent-hex)]" : "hover:ring-1 hover:ring-[hsl(var(--border))]"
+      )}
+      style={{ background: "var(--canvas-white)", border: "1px solid hsl(var(--border))" }}
+    >
+      <span className="text-[11px] font-bold min-w-[22px] pt-0.5" style={{ color: "var(--text-muted)" }}>
         {index + 1}.
       </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "#0d2926", margin: "0 0 4px", lineHeight: 1.4 }}>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold leading-snug mb-1" style={{ color: "var(--ink)" }}>
           {question.text}
         </p>
-        <p style={{ fontSize: 11, color: "#0d9488", margin: 0 }}>
-          ✓ {question.options[question.correctIndex]}
-        </p>
+        {correctAnswer && (
+          <p className="text-[11px]" style={{ color: "var(--accent-hex)" }}>
+            ✓ {correctAnswer}
+          </p>
+        )}
+        {!isMcq && (
+          <p className="text-[11px] uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+            {question.kind}
+          </p>
+        )}
         {(question.bloomLevel || question.source) && (
-          <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+          <div className="flex gap-1.5 mt-1">
             {question.bloomLevel && (
-              <span style={{ fontSize: 10, background: "#f0fdf4", color: "#0d9488", borderRadius: 4, padding: "1px 6px", fontWeight: 600 }}>
+              <span className="text-[10px] font-semibold rounded px-1.5 py-0.5" style={{ background: "var(--accent-bg)", color: "var(--accent-hex)" }}>
                 {question.bloomLevel}
               </span>
             )}
             {question.source && (
-              <span style={{ fontSize: 10, background: "#f0f9ff", color: "#0891b2", borderRadius: 4, padding: "1px 6px", fontWeight: 600 }}>
+              <span className="text-[10px] font-semibold rounded px-1.5 py-0.5" style={{ background: "hsl(var(--muted))", color: "var(--text-muted)" }}>
                 {question.source}
               </span>
             )}
           </div>
         )}
       </div>
-      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-        <button
-          onClick={onEdit}
-          style={{ background: "none", border: "1px solid #e0fdf4", borderRadius: 5, color: "#0d9488", fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: "Inter,sans-serif" }}
-        >
-          Edit
-        </button>
-        <button
-          onClick={onDelete}
-          style={{ background: "none", border: "1px solid #fecaca", borderRadius: 5, color: "#ef4444", fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: "Inter,sans-serif" }}
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+    </button>
   );
 }
